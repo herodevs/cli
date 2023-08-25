@@ -1,22 +1,19 @@
-import {Args, Command, Flags} from '@oclif/core'
+import { Args, Command, Flags } from "@oclif/core";
 
 export default class Committer extends Command {
-  static description = 'Gets committer info'
+  static description = "Gets committer info";
 
-  static examples = [
-    `$ @herodevs/ndk committer`,
-  ]
+  static examples = [`$ @herodevs/cli committer`];
 
-  static flags = {
-  }
+  static flags = {};
 
   static args = {
     //person: Args.string({description: 'Person to say hello to', required: true}),
-  }
+  };
 
   async run(): Promise<void> {
-    const {args, flags} = await this.parse(Committer)
+    const { args, flags } = await this.parse(Committer);
 
-    this.log(`committer info`)
+    this.log(`committer info`);
   }
 }

@@ -1,85 +1,140 @@
-HeroDevs NES Developer Kit -- `@herodevs/ndk`
-=================
+# HeroDevs NES Developer Kit -- `@herodevs/cli`
 
 <!-- [![herodevs](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://herodevs.com)
 [![CircleCI](https://circleci.com/gh/oclif/hello-world/tree/main.svg?style=shield)](https://circleci.com/gh/oclif/hello-world/tree/main)
 [![GitHub license](https://img.shields.io/github/license/oclif/hello-world)](https://github.com/oclif/hello-world/blob/main/LICENSE) -->
 
 <!-- toc -->
+* [HeroDevs NES Developer Kit -- `@herodevs/cli`](#herodevs-nes-developer-kit----herodevscli)
 * [Usage](#usage)
 * [Commands](#commands)
 <!-- tocstop -->
+
 # Usage
+
 <!-- usage -->
 ```sh-session
-$ npm install -g @herodevs/ndk
-$ @herodevs/ndk COMMAND
+$ npm install -g @herodevs/cli
+$ @herodevs/cli COMMAND
 running command...
-$ @herodevs/ndk (--version)
-@herodevs/ndk/0.0.0 darwin-arm64 node-v18.17.1
-$ @herodevs/ndk --help [COMMAND]
+$ @herodevs/cli (--version)
+@herodevs/cli/0.0.1 linux-x64 node-v18.14.0
+$ @herodevs/cli --help [COMMAND]
 USAGE
-  $ @herodevs/ndk COMMAND
+  $ @herodevs/cli COMMAND
 ...
 ```
 <!-- usagestop -->
+
 # Commands
+
 <!-- commands -->
-* [`@herodevs/ndk committer get-all`](#herodevsndk-committer-get-all)
-* [`@herodevs/ndk help [COMMANDS]`](#herodevsndk-help-commands)
-* [`@herodevs/ndk plugins`](#herodevsndk-plugins)
-* [`@herodevs/ndk plugins:install PLUGIN...`](#herodevsndk-pluginsinstall-plugin)
-* [`@herodevs/ndk plugins:inspect PLUGIN...`](#herodevsndk-pluginsinspect-plugin)
-* [`@herodevs/ndk plugins:install PLUGIN...`](#herodevsndk-pluginsinstall-plugin-1)
-* [`@herodevs/ndk plugins:link PLUGIN`](#herodevsndk-pluginslink-plugin)
-* [`@herodevs/ndk plugins:uninstall PLUGIN...`](#herodevsndk-pluginsuninstall-plugin)
-* [`@herodevs/ndk plugins:uninstall PLUGIN...`](#herodevsndk-pluginsuninstall-plugin-1)
-* [`@herodevs/ndk plugins:uninstall PLUGIN...`](#herodevsndk-pluginsuninstall-plugin-2)
-* [`@herodevs/ndk plugins update`](#herodevsndk-plugins-update)
+* [`@herodevs/cli committer`](#herodevscli-committer)
+* [`@herodevs/cli committer:get-all [flags [-s][-e][-x]]`](#herodevscli-committerget-all-flags--s-e-x)
+* [`@herodevs/cli hello PERSON`](#herodevscli-hello-person)
+* [`@herodevs/cli hello world`](#herodevscli-hello-world)
+* [`@herodevs/cli help [COMMANDS]`](#herodevscli-help-commands)
+* [`@herodevs/cli plugins`](#herodevscli-plugins)
+* [`@herodevs/cli plugins:install PLUGIN...`](#herodevscli-pluginsinstall-plugin)
+* [`@herodevs/cli plugins:inspect PLUGIN...`](#herodevscli-pluginsinspect-plugin)
+* [`@herodevs/cli plugins:install PLUGIN...`](#herodevscli-pluginsinstall-plugin-1)
+* [`@herodevs/cli plugins:link PLUGIN`](#herodevscli-pluginslink-plugin)
+* [`@herodevs/cli plugins:uninstall PLUGIN...`](#herodevscli-pluginsuninstall-plugin)
+* [`@herodevs/cli plugins:uninstall PLUGIN...`](#herodevscli-pluginsuninstall-plugin-1)
+* [`@herodevs/cli plugins:uninstall PLUGIN...`](#herodevscli-pluginsuninstall-plugin-2)
+* [`@herodevs/cli plugins update`](#herodevscli-plugins-update)
+* [`@herodevs/cli update [CHANNEL]`](#herodevscli-update-channel)
 
-## `@herodevs/ndk committer get-all`
+## `@herodevs/cli committer`
 
-Get All Committers Between Two Dates
+Gets committer info
 
 ```
 USAGE
-  $ @herodevs/ndk committer get-all -s {yyyy-MM-dd} -e {yyyy-MM-dd} -x {path 1} -x {path 2} -x {path 3}
-
-ARGUMENTS
-  COMMANDS  Command to show help for.
-
-FLAGS
-  -s, --startDate  The most recent date to report from
-  -e, --endDate    The oldest date to report from
-  -x, --exclude    Files to exclude when reporting
-                   Multiple values accepted (eg. `-x ./foo/bar -x ./baz/boo -x ./yet/another`)
-
-GLOBAL FLAGS
-  --json           Format output as json
-  --log-level      Sets output log level
+  $ @herodevs/cli committer
 
 DESCRIPTION
-  Get All Committers Between Two Dates
+  Gets committer info
 
 EXAMPLES
-  $ @herodevs/ndk committer get-all -s 2023-08-19 -e 2023-01-01 -x ./src/test -x ./dist
-  -----------------------------------------------------------------------------
-  Committer               | # of Commits      | Between Dates (oldest - newest)
-  -----------------------------------------------------------------------------
-  shotaro-kaneda-1        | 11                | 2023-06-01 - 2023-08-19
-  tetsuoshima             | 8                 | 2023-03-22 - 2023-06-10
-
+  $ @herodevs/cli committer
 ```
 
-_See code: [dist/commands/committer/get-all.ts](dist/commands/committer/get-all.ts)_
+_See code: [dist/commands/committer/index.ts](https://github.com/herodevs/cli/blob/v0.0.1/dist/commands/committer/index.ts)_
 
-## `@herodevs/ndk help [COMMANDS]`
+## `@herodevs/cli committer:get-all [flags [-s][-e][-x]]`
 
-Display help for @herodevs/ndk.
+Get Committers Between Two Dates
 
 ```
 USAGE
-  $ @herodevs/ndk help [COMMANDS] [-n]
+  $ @herodevs/cli committer get-all [flags [-s][-e][-x]]
+
+FLAGS
+  -e, --endDate=<value>     [default: 2022-08-25] End Date (format: yyyy-MM-dd)
+  -s, --startDate=<value>   [default: 2023-08-25] Start Date (format: yyyy-MM-dd)
+  -x, --exclude=<value>...  [default: ''] Path Exclusions (eg -x="./src/bin" -x="./dist")
+
+GLOBAL FLAGS
+  --json                Format output as json.
+  --log-level=<option>  Specify level for logging.
+                        <options: debug|info|warn|error>
+
+EXAMPLES
+  $ @herodevs/cli committer get-all
+```
+
+_See code: [dist/commands/committer/get-all.ts](https://github.com/herodevs/cli/blob/v0.0.1/dist/commands/committer/get-all.ts)_
+
+## `@herodevs/cli hello PERSON`
+
+Say hello
+
+```
+USAGE
+  $ @herodevs/cli hello PERSON -f <value>
+
+ARGUMENTS
+  PERSON  Person to say hello to
+
+FLAGS
+  -f, --from=<value>  (required) Who is saying hello
+
+DESCRIPTION
+  Say hello
+
+EXAMPLES
+  $ oex hello friend --from oclif
+  hello friend from oclif! (./src/commands/hello/index.ts)
+```
+
+_See code: [dist/commands/hello/index.ts](https://github.com/herodevs/cli/blob/v0.0.1/dist/commands/hello/index.ts)_
+
+## `@herodevs/cli hello world`
+
+Say hello world
+
+```
+USAGE
+  $ @herodevs/cli hello world
+
+DESCRIPTION
+  Say hello world
+
+EXAMPLES
+  $ @herodevs/cli hello world
+  hello world! (./src/commands/hello/world.ts)
+```
+
+_See code: [dist/commands/hello/world.ts](https://github.com/herodevs/cli/blob/v0.0.1/dist/commands/hello/world.ts)_
+
+## `@herodevs/cli help [COMMANDS]`
+
+Display help for @herodevs/cli.
+
+```
+USAGE
+  $ @herodevs/cli help [COMMANDS] [-n]
 
 ARGUMENTS
   COMMANDS  Command to show help for.
@@ -88,18 +143,18 @@ FLAGS
   -n, --nested-commands  Include all nested commands in the output.
 
 DESCRIPTION
-  Display help for @herodevs/ndk.
+  Display help for @herodevs/cli.
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v5.2.16/src/commands/help.ts)_
 
-## `@herodevs/ndk plugins`
+## `@herodevs/cli plugins`
 
 List installed plugins.
 
 ```
 USAGE
-  $ @herodevs/ndk plugins [--json] [--core]
+  $ @herodevs/cli plugins [--json] [--core]
 
 FLAGS
   --core  Show core plugins.
@@ -111,18 +166,18 @@ DESCRIPTION
   List installed plugins.
 
 EXAMPLES
-  $ @herodevs/ndk plugins
+  $ @herodevs/cli plugins
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.5/src/commands/plugins/index.ts)_
 
-## `@herodevs/ndk plugins:install PLUGIN...`
+## `@herodevs/cli plugins:install PLUGIN...`
 
 Installs a plugin into the CLI.
 
 ```
 USAGE
-  $ @herodevs/ndk plugins:install PLUGIN...
+  $ @herodevs/cli plugins:install PLUGIN...
 
 ARGUMENTS
   PLUGIN  Plugin to install.
@@ -144,23 +199,23 @@ DESCRIPTION
 
 
 ALIASES
-  $ @herodevs/ndk plugins add
+  $ @herodevs/cli plugins add
 
 EXAMPLES
-  $ @herodevs/ndk plugins:install myplugin 
+  $ @herodevs/cli plugins:install myplugin 
 
-  $ @herodevs/ndk plugins:install https://github.com/someuser/someplugin
+  $ @herodevs/cli plugins:install https://github.com/someuser/someplugin
 
-  $ @herodevs/ndk plugins:install someuser/someplugin
+  $ @herodevs/cli plugins:install someuser/someplugin
 ```
 
-## `@herodevs/ndk plugins:inspect PLUGIN...`
+## `@herodevs/cli plugins:inspect PLUGIN...`
 
 Displays installation properties of a plugin.
 
 ```
 USAGE
-  $ @herodevs/ndk plugins:inspect PLUGIN...
+  $ @herodevs/cli plugins:inspect PLUGIN...
 
 ARGUMENTS
   PLUGIN  [default: .] Plugin to inspect.
@@ -176,18 +231,18 @@ DESCRIPTION
   Displays installation properties of a plugin.
 
 EXAMPLES
-  $ @herodevs/ndk plugins:inspect myplugin
+  $ @herodevs/cli plugins:inspect myplugin
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.5/src/commands/plugins/inspect.ts)_
 
-## `@herodevs/ndk plugins:install PLUGIN...`
+## `@herodevs/cli plugins:install PLUGIN...`
 
 Installs a plugin into the CLI.
 
 ```
 USAGE
-  $ @herodevs/ndk plugins:install PLUGIN...
+  $ @herodevs/cli plugins:install PLUGIN...
 
 ARGUMENTS
   PLUGIN  Plugin to install.
@@ -209,25 +264,25 @@ DESCRIPTION
 
 
 ALIASES
-  $ @herodevs/ndk plugins add
+  $ @herodevs/cli plugins add
 
 EXAMPLES
-  $ @herodevs/ndk plugins:install myplugin 
+  $ @herodevs/cli plugins:install myplugin 
 
-  $ @herodevs/ndk plugins:install https://github.com/someuser/someplugin
+  $ @herodevs/cli plugins:install https://github.com/someuser/someplugin
 
-  $ @herodevs/ndk plugins:install someuser/someplugin
+  $ @herodevs/cli plugins:install someuser/someplugin
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.5/src/commands/plugins/install.ts)_
 
-## `@herodevs/ndk plugins:link PLUGIN`
+## `@herodevs/cli plugins:link PLUGIN`
 
 Links a plugin into the CLI for development.
 
 ```
 USAGE
-  $ @herodevs/ndk plugins:link PLUGIN
+  $ @herodevs/cli plugins:link PLUGIN
 
 ARGUMENTS
   PATH  [default: .] path to plugin
@@ -245,18 +300,18 @@ DESCRIPTION
 
 
 EXAMPLES
-  $ @herodevs/ndk plugins:link myplugin
+  $ @herodevs/cli plugins:link myplugin
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.5/src/commands/plugins/link.ts)_
 
-## `@herodevs/ndk plugins:uninstall PLUGIN...`
+## `@herodevs/cli plugins:uninstall PLUGIN...`
 
 Removes a plugin from the CLI.
 
 ```
 USAGE
-  $ @herodevs/ndk plugins:uninstall PLUGIN...
+  $ @herodevs/cli plugins:uninstall PLUGIN...
 
 ARGUMENTS
   PLUGIN  plugin to uninstall
@@ -269,17 +324,17 @@ DESCRIPTION
   Removes a plugin from the CLI.
 
 ALIASES
-  $ @herodevs/ndk plugins unlink
-  $ @herodevs/ndk plugins remove
+  $ @herodevs/cli plugins unlink
+  $ @herodevs/cli plugins remove
 ```
 
-## `@herodevs/ndk plugins:uninstall PLUGIN...`
+## `@herodevs/cli plugins:uninstall PLUGIN...`
 
 Removes a plugin from the CLI.
 
 ```
 USAGE
-  $ @herodevs/ndk plugins:uninstall PLUGIN...
+  $ @herodevs/cli plugins:uninstall PLUGIN...
 
 ARGUMENTS
   PLUGIN  plugin to uninstall
@@ -292,19 +347,19 @@ DESCRIPTION
   Removes a plugin from the CLI.
 
 ALIASES
-  $ @herodevs/ndk plugins unlink
-  $ @herodevs/ndk plugins remove
+  $ @herodevs/cli plugins unlink
+  $ @herodevs/cli plugins remove
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.5/src/commands/plugins/uninstall.ts)_
 
-## `@herodevs/ndk plugins:uninstall PLUGIN...`
+## `@herodevs/cli plugins:uninstall PLUGIN...`
 
 Removes a plugin from the CLI.
 
 ```
 USAGE
-  $ @herodevs/ndk plugins:uninstall PLUGIN...
+  $ @herodevs/cli plugins:uninstall PLUGIN...
 
 ARGUMENTS
   PLUGIN  plugin to uninstall
@@ -317,17 +372,17 @@ DESCRIPTION
   Removes a plugin from the CLI.
 
 ALIASES
-  $ @herodevs/ndk plugins unlink
-  $ @herodevs/ndk plugins remove
+  $ @herodevs/cli plugins unlink
+  $ @herodevs/cli plugins remove
 ```
 
-## `@herodevs/ndk plugins update`
+## `@herodevs/cli plugins update`
 
 Update installed plugins.
 
 ```
 USAGE
-  $ @herodevs/ndk plugins update [-h] [-v]
+  $ @herodevs/cli plugins update [-h] [-v]
 
 FLAGS
   -h, --help     Show CLI help.
@@ -338,4 +393,41 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.5/src/commands/plugins/update.ts)_
+
+## `@herodevs/cli update [CHANNEL]`
+
+update the @herodevs/cli CLI
+
+```
+USAGE
+  $ @herodevs/cli update [CHANNEL] [-a] [-v <value> | -i] [--force]
+
+FLAGS
+  -a, --available        Install a specific version.
+  -i, --interactive      Interactively select version to install. This is ignored if a channel is provided.
+  -v, --version=<value>  Install a specific version.
+  --force                Force a re-download of the requested version.
+
+DESCRIPTION
+  update the @herodevs/cli CLI
+
+EXAMPLES
+  Update to the stable channel:
+
+    $ @herodevs/cli update stable
+
+  Update to a specific version:
+
+    $ @herodevs/cli update --version 1.0.0
+
+  Interactively select version:
+
+    $ @herodevs/cli update --interactive
+
+  See available versions:
+
+    $ @herodevs/cli update --available
+```
+
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v3.1.32/src/commands/update.ts)_
 <!-- commandsstop -->
