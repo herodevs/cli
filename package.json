@@ -1,6 +1,6 @@
 {
   "name": "@herodevs/cli",
-  "version": "0.0.1",
+  "version": "0.1.16",
   "description": "HeroDevs NES Developer Kit",
   "author": "@herodevs",
   "bin": {
@@ -15,14 +15,16 @@
     "/bin",
     "/dist",
     "/npm-shrinkwrap.json",
-    "/oclif.manifest.json"
+    "/oclif.manifest.json",
+    "package.json"
   ],
   "dependencies": {
+    "@badisi/latest-version": "^6.1.10",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^3.2.0",
-    "@oclif/plugin-update": "^3.1.32",
     "date-fns": "^2.30.0",
+    "module-alias": "^2.2.3",
     "shelljs": "^0.8.5"
   },
   "devDependencies": {
@@ -47,8 +49,7 @@
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-plugins",
-      "@oclif/plugin-update"
+      "@oclif/plugin-plugins"
     ],
     "topicSeparator": " ",
     "topics": {
@@ -64,13 +65,39 @@
     "dev": "./bin/dev",
     "preprod": "npm run build",
     "prod": "./bin/run",
-    "build": "shx rm -rf dist && tsc -b",
+    "build": "shx rm -rf dist && tsc -b && shx cp package.json dist/package.json",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
     "prepack": "npm run build && oclif manifest && oclif readme",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
-    "version": "oclif readme && git add README.md"
+    "version": "oclif readme && git add README.md",
+    "amendCommit": "git add . -A && git commit --amend --no-edit",
+    "version:branch": "npm version prerelease --preid $(git rev-parse --short=8 HEAD^) --no-git-tag",
+    "prepublish:branch": "npm run version:branch",
+    "publish:branch": "npm publish --tag $(git rev-parse --short=8 HEAD^) --access public",
+    "postpublish:branch": "npm run amendCommit",
+    "version:beta": "npm version prerelease --preid beta --no-git-tag",
+    "prepublish:beta": "npm run version:beta",
+    "publish:beta": "npm publish --tag beta --access public",
+    "postpublish:beta": "npm run amendCommit",
+    "version:major": "npm version major --no-git-tag",
+    "prepublish:major": "npm run version:major",
+    "publish:major": "npm publish --access public",
+    "postpublish:major": "npm run amendCommit",
+    "version:minor": "npm version minor --no-git-tag",
+    "prepublish:minor": "npm run version:minor",
+    "publish:minor": "npm publish --access public",
+    "postpublish:minor": "npm run amendCommit",
+    "version:patch": "npm version patch --no-git-tag",
+    "prepublish:patch": "npm run version:patch",
+    "publish:patch": "npm publish --access public",
+    "postpublish:patch": "npm run amendCommit",
+    "buildAndPublishBranch": "npm run build && npm run publish:branch",
+    "buildAndPublishBeta": "npm run build && npm run publish:beta && npm dist-tag add @herodevs/cli@$(node -e \"console.log(require('./package.json').version)\") latest",
+    "buildAndPublishMajor": "npm run build && npm run publish:major",
+    "buildAndPublishMinor": "npm run build && npm run publish:minor",
+    "buildAndPublishPatch": "npm run build && npm run publish:patch"
   },
   "engines": {
     "node": ">=12.0.0"

@@ -18,7 +18,7 @@ $ npm install -g @herodevs/cli
 $ @herodevs/cli COMMAND
 running command...
 $ @herodevs/cli (--version)
-@herodevs/cli/0.0.1 linux-x64 node-v18.14.0
+@herodevs/cli/0.1.16 darwin-arm64 node-v18.17.1
 $ @herodevs/cli --help [COMMAND]
 USAGE
   $ @herodevs/cli COMMAND
@@ -29,10 +29,8 @@ USAGE
 # Commands
 
 <!-- commands -->
-* [`@herodevs/cli committer`](#herodevscli-committer)
+* [`@herodevs/cli committer [GET-ALL]`](#herodevscli-committer-get-all)
 * [`@herodevs/cli committer:get-all [flags [-s][-e][-x]]`](#herodevscli-committerget-all-flags--s-e-x)
-* [`@herodevs/cli hello PERSON`](#herodevscli-hello-person)
-* [`@herodevs/cli hello world`](#herodevscli-hello-world)
 * [`@herodevs/cli help [COMMANDS]`](#herodevscli-help-commands)
 * [`@herodevs/cli plugins`](#herodevscli-plugins)
 * [`@herodevs/cli plugins:install PLUGIN...`](#herodevscli-pluginsinstall-plugin)
@@ -43,15 +41,19 @@ USAGE
 * [`@herodevs/cli plugins:uninstall PLUGIN...`](#herodevscli-pluginsuninstall-plugin-1)
 * [`@herodevs/cli plugins:uninstall PLUGIN...`](#herodevscli-pluginsuninstall-plugin-2)
 * [`@herodevs/cli plugins update`](#herodevscli-plugins-update)
-* [`@herodevs/cli update [CHANNEL]`](#herodevscli-update-channel)
 
-## `@herodevs/cli committer`
+## `@herodevs/cli committer [GET-ALL]`
 
 Gets committer info
 
 ```
 USAGE
-  $ @herodevs/cli committer
+  $ @herodevs/cli committer [GET-ALL] [--json] [--log-level debug|info|warn|error]
+
+GLOBAL FLAGS
+  --json                Format output as json.
+  --log-level=<option>  Specify level for logging.
+                        <options: debug|info|warn|error>
 
 DESCRIPTION
   Gets committer info
@@ -60,7 +62,7 @@ EXAMPLES
   $ @herodevs/cli committer
 ```
 
-_See code: [dist/commands/committer/index.ts](https://github.com/herodevs/cli/blob/v0.0.1/dist/commands/committer/index.ts)_
+_See code: [dist/commands/committer/index.ts](https://github.com/herodevs/cli/blob/v0.1.16/dist/commands/committer/index.ts)_
 
 ## `@herodevs/cli committer:get-all [flags [-s][-e][-x]]`
 
@@ -71,9 +73,9 @@ USAGE
   $ @herodevs/cli committer get-all [flags [-s][-e][-x]]
 
 FLAGS
-  -e, --endDate=<value>     [default: 2022-08-25] End Date (format: yyyy-MM-dd)
-  -s, --startDate=<value>   [default: 2023-08-25] Start Date (format: yyyy-MM-dd)
-  -x, --exclude=<value>...  [default: ''] Path Exclusions (eg -x="./src/bin" -x="./dist")
+  -e, --endDate=<value>     [default: 2022-09-01] End Date (format: yyyy-MM-dd)
+  -s, --startDate=<value>   [default: 2023-09-01] Start Date (format: yyyy-MM-dd)
+  -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
 
 GLOBAL FLAGS
   --json                Format output as json.
@@ -84,49 +86,7 @@ EXAMPLES
   $ @herodevs/cli committer get-all
 ```
 
-_See code: [dist/commands/committer/get-all.ts](https://github.com/herodevs/cli/blob/v0.0.1/dist/commands/committer/get-all.ts)_
-
-## `@herodevs/cli hello PERSON`
-
-Say hello
-
-```
-USAGE
-  $ @herodevs/cli hello PERSON -f <value>
-
-ARGUMENTS
-  PERSON  Person to say hello to
-
-FLAGS
-  -f, --from=<value>  (required) Who is saying hello
-
-DESCRIPTION
-  Say hello
-
-EXAMPLES
-  $ oex hello friend --from oclif
-  hello friend from oclif! (./src/commands/hello/index.ts)
-```
-
-_See code: [dist/commands/hello/index.ts](https://github.com/herodevs/cli/blob/v0.0.1/dist/commands/hello/index.ts)_
-
-## `@herodevs/cli hello world`
-
-Say hello world
-
-```
-USAGE
-  $ @herodevs/cli hello world
-
-DESCRIPTION
-  Say hello world
-
-EXAMPLES
-  $ @herodevs/cli hello world
-  hello world! (./src/commands/hello/world.ts)
-```
-
-_See code: [dist/commands/hello/world.ts](https://github.com/herodevs/cli/blob/v0.0.1/dist/commands/hello/world.ts)_
+_See code: [dist/commands/committer/get-all.ts](https://github.com/herodevs/cli/blob/v0.1.16/dist/commands/committer/get-all.ts)_
 
 ## `@herodevs/cli help [COMMANDS]`
 
@@ -393,41 +353,4 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.5/src/commands/plugins/update.ts)_
-
-## `@herodevs/cli update [CHANNEL]`
-
-update the @herodevs/cli CLI
-
-```
-USAGE
-  $ @herodevs/cli update [CHANNEL] [-a] [-v <value> | -i] [--force]
-
-FLAGS
-  -a, --available        Install a specific version.
-  -i, --interactive      Interactively select version to install. This is ignored if a channel is provided.
-  -v, --version=<value>  Install a specific version.
-  --force                Force a re-download of the requested version.
-
-DESCRIPTION
-  update the @herodevs/cli CLI
-
-EXAMPLES
-  Update to the stable channel:
-
-    $ @herodevs/cli update stable
-
-  Update to a specific version:
-
-    $ @herodevs/cli update --version 1.0.0
-
-  Interactively select version:
-
-    $ @herodevs/cli update --interactive
-
-  See available versions:
-
-    $ @herodevs/cli update --available
-```
-
-_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v3.1.32/src/commands/update.ts)_
 <!-- commandsstop -->

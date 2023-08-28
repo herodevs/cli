@@ -1,12 +1,18 @@
 {
   "compilerOptions": {
+    "baseUrl": "src",
     "declaration": true,
     "importHelpers": true,
     "module": "commonjs",
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
-    "target": "es2019"
+    "target": "es2019",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "paths": {
+      "@shared": ["shared/index.ts"],
+    },
   },
   "include": [
     "src/**/*"
