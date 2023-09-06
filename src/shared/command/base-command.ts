@@ -1,8 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/baseCommand.ts
-import '@oclif/core/lib/interfaces/parser';
 import { Command, Flags } from '@oclif/core';
 import { Flags as flagType, Args as argType } from '../types';
+import { ensureVersionIsUpToDate } from '../lib';
 
 enum LogLevel {
   debug = 'debug',
@@ -28,15 +26,16 @@ export abstract class BaseCommand<T extends typeof Command> extends Command {
   protected args!: argType<T>
 
   public override async init(): Promise<void> {
-    await super.init()
+    await super.init();
     const {args, flags} = await this.parse({
       flags: this.ctor.flags,
       baseFlags: ((super.ctor as typeof BaseCommand).baseFlags),
       args: this.ctor.args,
       strict: this.ctor.strict,
-    } as any)
-    this.flags = flags as flagType<T>
-    this.args = args as argType<T>
+    } as any);
+    this.flags = flags as flagType<T>;
+    this.args = args as argType<T>;
+    await ensureVersionIsUpToDate(this);
   }
 
   protected async catch(err: Error & {exitCode?: number}): Promise<any> {

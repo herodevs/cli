@@ -1,6 +1,8 @@
 import { Args, Command, Flags } from "@oclif/core";
+import { CommitterGetAll } from "./get-all";
+import { BaseCommand } from "../../shared";
 
-export default class Committer extends Command {
+export default class Committer extends BaseCommand<typeof CommitterGetAll> {
   static description = "Gets committer info";
 
   static examples = [`$ @herodevs/cli committer`];
@@ -8,12 +10,10 @@ export default class Committer extends Command {
   static flags = {};
 
   static args = {
-    //person: Args.string({description: 'Person to say hello to', required: true}),
-  };
+    'get-all': CommitterGetAll.args
+  } as any;
 
   async run(): Promise<void> {
-    const { args, flags } = await this.parse(Committer);
 
-    this.log(`committer info`);
   }
 }
