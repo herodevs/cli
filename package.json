@@ -22,7 +22,7 @@
     "@badisi/latest-version": "^6.1.10",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
-    "@oclif/plugin-plugins": "^3.2.0",
+    "@oclif/plugin-plugins": "^3.5.0",
     "date-fns": "^2.30.0",
     "module-alias": "^2.2.3",
     "shelljs": "^0.8.5"
