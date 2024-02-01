@@ -19,7 +19,6 @@
     "package.json"
   ],
   "dependencies": {
-    "@badisi/latest-version": "^6.1.10",
     "@oclif/core": "^2",
     "@oclif/plugin-help": "^5",
     "@oclif/plugin-plugins": "^3.2.0",
@@ -29,6 +28,7 @@
     "chartjs-plugin-autocolors": "^0.2.2",
     "chartjs-plugin-datalabels": "^2.2.0",
     "date-fns": "^2.30.0",
+    "get-json": "^1.0.1",
     "git-last-commit": "^1.0.1",
     "module-alias": "^2.2.3",
     "shelljs": "^0.8.5",
