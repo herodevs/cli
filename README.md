@@ -18,7 +18,7 @@ $ npm install -g @herodevs/cli
 $ @herodevs/cli COMMAND
 running command...
 $ @herodevs/cli (--version)
-@herodevs/cli/0.1.16 darwin-arm64 node-v18.17.1
+@herodevs/cli/0.1.16 linux-x64 node-v20.11.0
 $ @herodevs/cli --help [COMMAND]
 USAGE
   $ @herodevs/cli COMMAND
@@ -41,6 +41,9 @@ USAGE
 * [`@herodevs/cli plugins:uninstall PLUGIN...`](#herodevscli-pluginsuninstall-plugin-1)
 * [`@herodevs/cli plugins:uninstall PLUGIN...`](#herodevscli-pluginsuninstall-plugin-2)
 * [`@herodevs/cli plugins update`](#herodevscli-plugins-update)
+* [`@herodevs/cli tracker [INIT] [RUN]`](#herodevscli-tracker-init-run)
+* [`@herodevs/cli tracker init`](#herodevscli-tracker-init)
+* [`@herodevs/cli tracker run`](#herodevscli-tracker-run)
 
 ## `@herodevs/cli committer [GET-ALL]`
 
@@ -73,8 +76,8 @@ USAGE
   $ @herodevs/cli committer get-all [flags [-s][-e][-x]]
 
 FLAGS
-  -e, --endDate=<value>     [default: 2022-09-01] End Date (format: yyyy-MM-dd)
-  -s, --startDate=<value>   [default: 2023-09-01] Start Date (format: yyyy-MM-dd)
+  -e, --endDate=<value>     [default: 2023-02-01] End Date (format: yyyy-MM-dd)
+  -s, --startDate=<value>   [default: 2024-02-01] Start Date (format: yyyy-MM-dd)
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
 
 GLOBAL FLAGS
@@ -353,4 +356,60 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v3.2.5/src/commands/plugins/update.ts)_
+
+## `@herodevs/cli tracker [INIT] [RUN]`
+
+Tracker info
+
+```
+USAGE
+  $ @herodevs/cli tracker [INIT] [RUN]
+
+DESCRIPTION
+  Tracker info
+
+EXAMPLES
+  $ @herodevs/cli tracker
+```
+
+_See code: [dist/commands/tracker/index.ts](https://github.com/herodevs/cli/blob/v0.1.16/dist/commands/tracker/index.ts)_
+
+## `@herodevs/cli tracker init`
+
+Initialize the tracker configuration
+
+```
+USAGE
+  $ @herodevs/cli tracker init
+
+DESCRIPTION
+  Initialize the tracker configuration
+
+EXAMPLES
+  $ @herodevs/cli tracker init
+```
+
+_See code: [dist/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v0.1.16/dist/commands/tracker/init.ts)_
+
+## `@herodevs/cli tracker run`
+
+Run the tracker
+
+```
+USAGE
+  $ @herodevs/cli tracker run [-r <value>] [-c <value>] [--chart <value>]
+
+FLAGS
+  -c, --config=<value>  path to config file
+  -r, --root=<value>    root dir of the project
+  --chart=<value>       chart configuration
+
+DESCRIPTION
+  Run the tracker
+
+EXAMPLES
+  $ @herodevs/cli tracker run
+```
+
+_See code: [dist/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v0.1.16/dist/commands/tracker/run.ts)_
 <!-- commandsstop -->
