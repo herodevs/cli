@@ -1,0 +1,16 @@
+name: 'Verify'
+description: 'Verifies the current branch'
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+        registry-url: 'https://registry.npmjs.org'
+    - run: npm install
+      shell: bash
+    - run: npm run build
+      shell: bash
+    - run: npm run test
+      shell: bash

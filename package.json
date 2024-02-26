@@ -1,7 +1,7 @@
 {
   "name": "@herodevs/cli",
   "version": "0.1.16",
-  "description": "HeroDevs NES Developer Kit",
+  "description": "HeroDevs CLI",
   "author": "@herodevs",
   "bin": {
     "@herodevs/cli": "./bin/run",
@@ -55,16 +55,15 @@
     "dirname": "@herodevs/cli",
     "commands": "./dist/commands",
     "plugins": [
-      "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
+      "@oclif/plugin-help"
     ],
     "topicSeparator": " ",
     "topics": {
-      "committer": {
-        "description": "Committer actions"
+      "report": {
+        "description": "Run reports for the current project (commands: committers)"
       },
       "tracker": {
-        "description": "Track project progress"
+        "description": "Track project progress based upon lines of code (commands: init, run)"
       }
     }
   },
@@ -78,7 +77,7 @@
     "build": "shx rm -rf dist && tsc -b && shx cp package.json dist/package.json",
     "lint": "eslint . --ext .ts --config .eslintrc",
     "postpack": "shx rm -f oclif.manifest.json",
-    "posttest": "npm run lint",
+    "posttestXXX": "npm run lint",
     "prepack": "npm run build && oclif manifest && oclif readme",
     "test": "mocha --forbid-only \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md",
