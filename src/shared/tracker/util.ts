@@ -92,7 +92,6 @@ export function readConfig(rootDirectory: string, optionsPath?: string): Config 
       ? join(rootDirectory, optionsPath)
       : join(rootDirectory, 'hd-tracker', 'config.json');
 
-  console.error(`READ FILE: ${path}`);
   const contents = readFileSync(path).toString('utf-8');
 
   return JSON.parse(contents);

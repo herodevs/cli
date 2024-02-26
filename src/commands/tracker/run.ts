@@ -43,6 +43,10 @@ export class TrackerRun extends Command {
 
     const chartConfig = new ChartConfig(flags.chart);
 
-    await createDataVizIn(chartConfig, parentDir, allData);
+    try {
+      await createDataVizIn(chartConfig, parentDir, allData);
+    } catch (error) {
+      console.log('Error creating visualization');
+    }
   }
 }

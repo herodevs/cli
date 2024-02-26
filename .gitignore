@@ -4,6 +4,7 @@
 dist
 tmp
 /out-tsc
+hd-tracker
 
 # dependencies
 node_modules
