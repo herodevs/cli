@@ -33,10 +33,3 @@ Get a list of committers within a git repository
 ```
 hd report committers
 ```
-
-Track a project's progress via lines of code
-
-```
-hd tracker init
-hd tracker run
-```
