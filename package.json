@@ -1,6 +1,6 @@
 {
   "name": "@herodevs/cli",
-  "version": "0.1.16",
+  "version": "0.0.0",
   "description": "HeroDevs CLI",
   "author": "@herodevs",
   "bin": {

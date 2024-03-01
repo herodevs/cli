@@ -1,6 +1,6 @@
-import { Flags } from '@oclif/core';
-import { BaseCommand, Flags as flagType, run } from '../../shared';
-import { format, subMonths, parse } from 'date-fns';
+import { Flags, ux } from '@oclif/core';
+import { BaseCommand, run } from '../../shared';
+import { format, subMonths, parse, eachMonthOfInterval, max, min, isWithinInterval } from 'date-fns';
 
 const gammaDelimiter = 'ΓΓΓΓ';
 const monthsToSubtract = 12;
@@ -9,7 +9,15 @@ const defaultStartDate = format(new Date(), dateFmt);
 const defaultEndDate = format(subMonths(new Date(), monthsToSubtract), dateFmt);
 const gitOutputFormat = `"${['%h', '%an', '%ad'].join(gammaDelimiter)}"`;
 
-type committerCommits = { name: string; commits: string[] };
+type committerCommits = { name: string; commits: string[] }
+
+type MonthlyData = {
+  name: string
+  start: Date, end: Date,
+  committers: Record<string, { hash: string, date: string }[]>
+}
+type SortedCommitterInfo = { committers: committerCommits[], monthly: MonthlyData[] }
+
 
 export class ReportCommitters extends BaseCommand<typeof ReportCommitters> {
   static summary = 'Get Committers Between Two Dates';
@@ -37,6 +45,13 @@ export class ReportCommitters extends BaseCommand<typeof ReportCommitters> {
       required: false,
       // default: () => "" as any
     }),
+    monthly: Flags.boolean({
+      char: 'm',
+      summary: 'Break down by calendar month, rather than by committer.  (eg -m)',
+      required: false,
+      default: false
+    }),
+    
   };
 
   private _parseDateFlags(startDate: string, endDate: string) {
@@ -50,7 +65,7 @@ export class ReportCommitters extends BaseCommand<typeof ReportCommitters> {
     });
   }
 
-  private _collapseAndSortCommitterInfo(rawEntries: string[]): committerCommits[] {
+  private _collapseAndSortCommitterInfo(rawEntries: string[]): SortedCommitterInfo {
     const entries = this._parseGitLogEntries(rawEntries);
     const hash = {} as any;
     for (let i = 0; i < entries.length; i++) {
@@ -63,12 +78,49 @@ export class ReportCommitters extends BaseCommand<typeof ReportCommitters> {
       sortable.push({ name, commits: hash[name] });
     });
 
-    return sortable.sort((a, b) => {
+    const committers = sortable.sort((a, b) => {
       return b.commits.length - a.commits.length;
     });
+    
+    const monthly = this.parseMonthly(entries)
+    return { committers, monthly }
   }
 
-  private _printOutput(committers: committerCommits[]) {
+  private parseMonthly(entries: { commitHash: string; committer: string; date: string; }[]) {
+    const monthly: MonthlyData[] = []
+    const dates = [ new Date(this.flags.startDate), new Date(this.flags.endDate)]
+    const ival = {
+      start: min(dates),
+      end: max(dates)
+    }
+    const range = eachMonthOfInterval(ival);
+    for(const idxr in range ){
+      const idx = parseInt(idxr)
+      if( idx + 1 >= range.length){
+        continue
+      }
+      const [ start, end ] = [range[idx], range[idx + 1]]
+      const month: MonthlyData = {
+        name: format(start, 'LLLL yyyy'),
+        start, end, 
+        committers: {}
+      }
+
+      for(const rec of entries){
+        if( isWithinInterval(new Date(rec.date), { start, end }) ){
+          month.committers[rec.committer] = month.committers[rec.committer] || []
+          month.committers[rec.committer].push({ hash: rec.commitHash, date: rec.date })
+        }
+      }
+      
+      if( Object.keys(month.committers).length > 0 ){
+        monthly.push(month)
+      }
+    }
+    return monthly
+  }
+
+  private printCommitters(committers: committerCommits[]) {
     if (!Object.keys(committers).length) {
       this.log('NO COMMITTERS IN PERIOD');
     }
@@ -84,15 +136,92 @@ export class ReportCommitters extends BaseCommand<typeof ReportCommitters> {
     this.log('---------------------------------------------------\n');
   }
 
-  public async run(): Promise<flagType<typeof ReportCommitters>> {
-    const { flags } = (await this.parse(ReportCommitters)) as any;
+
+  private printMonthly(md: MonthlyData[]) {
+    if (!Object.keys(md).length) {
+      this.log('NO COMMITTERS IN PERIOD');
+      return
+    }
+
+    const rows = md
+      .flatMap(r => {
+        return Object
+          .entries(r.committers)
+          .flatMap(([committer, commits]) => 
+            commits.flatMap(commit => 
+              ({ month: r.name, committer, commit })
+            )
+          )
+      }).map(r => ({ ...r, flags: { newMonth: true, newCommitter: true } as any }))
+
+    // ugly flag hack for now
+    rows.forEach( (r, idx) => {
+      let newMonth = true
+      let newCommitter = true 
+      if( idx == 0 || r.month !== rows[idx - 1].month ){
+        // first row / new month? always show both
+      }else if(r.committer !== rows[idx - 1].committer){
+        // month's same but new committer
+        newMonth = false
+      }else{
+        // show both
+        newMonth = false
+        newCommitter = false
+      }
+
+      r.flags = { newMonth, newCommitter }
+    })
+
+    const distinctCommitters = rows.reduce( (arr, row) => arr.includes(row.committer) ? arr : [...arr, row.committer], [])
+
+    this.log('\n')
+    ux.table(rows, {
+      month: { 
+        header: 'Month', 
+        minWidth: 20,
+        get: row => row.flags.newMonth ? row.month : ''
+      },
+      committer: {
+        header: 'Contributor',
+        minWidth: 25,
+        get: row => row.flags.newCommitter ? row.committer : ''
+      },
+      commit: {
+        header: 'Commit SHA',
+        get: row => row.commit.hash,
+        minWidth: 15,
+        
+      },
+      date: {
+        header: 'Commit Date',
+        get: row => row.commit.date,
+        minWidth: 20
+      },
+      // flags: {}
+    })
+
+    const unique = distinctCommitters.sort()
+    this.log(`\n\n\nThere were ${unique.length} contributors reported: ${unique.join(', ')}\n`)
+  }
+    
+  // public async run(): Promise<flagType<typeof ReportCommitters>> {
+  public async run(): Promise<any> {
+
+    const { flags } = this
     const dates = this._parseDateFlags(flags.startDate, flags.endDate);
     const ignores =
       flags.exclude && flags.exclude.length ? `-- . "!(${flags.exclude.join('|')})"` : '';
     const gitCommand = `git log --since "${dates[0]}" --until "${dates[1]}" --pretty=format:${gitOutputFormat} ${ignores}`;
     const result = await run(gitCommand);
-    const committers = this._collapseAndSortCommitterInfo((result as string).split('\n'));
-    this._printOutput(committers);
-    return Promise.resolve() as any;
+
+    const { committers, monthly } = this._collapseAndSortCommitterInfo((result as string).split('\n'));
+    if( flags.monthly ){
+      this.printMonthly(monthly)
+      return monthly
+    }else{
+      this.printCommitters(committers);
+      return committers
+    }
   }
+
 }
