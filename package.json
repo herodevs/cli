@@ -27,7 +27,7 @@
     "git-last-commit": "^1.0.1",
     "module-alias": "^2.2.3",
     "shelljs": "^0.8.5",
-    "sloc": "^0.2.1"
+    "sloc": "^0.3.2"
   },
   "devDependencies": {
     "@oclif/test": "^2.4.4",
