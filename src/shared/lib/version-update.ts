@@ -24,8 +24,8 @@ export async function isVersionUpToDate(
   command: Command,
   quietIfSuccessful = false
 ): Promise<boolean> {
-  if( env.packageVersion === '0.0.0' ){
-    return true
+  if (env.packageVersion === '0.0.0') {
+    return true;
   }
   const latestVersion = await getLatestVersion(env.packageName);
   if (latestVersion === env.packageVersion) {

@@ -56,6 +56,9 @@
     "topics": {
       "report": {
         "description": "Run reports for the current project (commands: committers)"
+      },
+      "tracker": {
+        "description": "Track project progress based upon lines of code (commands: init, run)"
       }
     }
   },
