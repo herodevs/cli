@@ -1,14 +1,14 @@
 import { Args, Command, Flags } from '@oclif/core';
 import { resolve } from 'path';
 import {
-  createDataVizIn,
+  // createDataVizIn,
   getData,
   getTheRootDirectory,
   readConfig,
   saveResults,
 } from '../../shared/tracker/util';
 import { processConfig } from '../../shared/tracker/process-config';
-import { ChartConfig } from '../../shared/tracker/models/chart-config';
+// import { ChartConfig } from '../../shared/tracker/models/chart-config';
 
 export class TrackerRun extends Command {
   static description = 'Run the tracker';
@@ -18,9 +18,9 @@ export class TrackerRun extends Command {
   static flags = {
     root: Flags.string({ char: 'r', description: 'root dir of the project' }),
     config: Flags.string({ char: 'c', description: 'path to config file' }),
-    chart: Flags.custom<ChartConfig>({
-      description: 'chart configuration',
-    })(),
+    // chart: Flags.custom<ChartConfig>({
+    //   description: 'chart configuration',
+    // })(),
   };
 
   static args = {};
@@ -41,12 +41,12 @@ export class TrackerRun extends Command {
 
     const parentDir = resolve(localRootDir, config.outputDir);
 
-    const chartConfig = new ChartConfig(flags.chart);
+    // const chartConfig = new ChartConfig(flags.chart);
 
-    try {
-      await createDataVizIn(chartConfig, parentDir, allData);
-    } catch (error) {
-      console.log('Error creating visualization');
-    }
+    // try {
+    //   await createDataVizIn(chartConfig, parentDir, allData);
+    // } catch (error) {
+    //   console.log('Error creating visualization');
+    // }
   }
 }

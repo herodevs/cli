@@ -43,6 +43,10 @@ export async function isVersionUpToDate(
 }
 
 export async function ensureVersionIsUpToDate(command: Command): Promise<void> {
+  if (process.env.SKIP_VERSION_CHECK) {
+    return;
+  }
+
   const versionUpToDate = await isVersionUpToDate(command);
   if (!versionUpToDate) {
     // see `update-plugin-behavior` branch for previous implementation of auto-update

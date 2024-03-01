@@ -4,9 +4,9 @@ import { format } from 'date-fns';
 import { Commit, getLastCommit } from 'git-last-commit';
 import { Config } from './models/config';
 import { ProcessResult } from './models/process-result';
-import { AggregateResult } from './models/aggregate-result';
-import { TrackerChart } from './tracker-chart';
-import { ChartConfig } from './models/chart-config';
+// import { AggregateResult } from './models/aggregate-result';
+// import { TrackerChart } from './tracker-chart';
+// import { ChartConfig } from './models/chart-config';
 
 const DATE_FORMAT = 'yyyy-MM-dd-HH-mm-ss-SSS';
 
@@ -49,15 +49,15 @@ function getLastCommitAsPromise(): Promise<Commit> {
  *
  */
 
-export async function createDataVizIn(
-  chartConfig: ChartConfig,
-  parentDirectory: string,
-  allJsonData: ProcessResult[],
-  graphablePropertyName: keyof AggregateResult = 'total'
-): Promise<void> {
-  const chart = new TrackerChart(chartConfig, allJsonData, DATE_FORMAT);
-  return chart.writeTo(parentDirectory, graphablePropertyName);
-}
+// export async function createDataVizIn(
+//   chartConfig: ChartConfig,
+//   parentDirectory: string,
+//   allJsonData: ProcessResult[],
+//   graphablePropertyName: keyof AggregateResult = 'total'
+// ): Promise<void> {
+//   const chart = new TrackerChart(chartConfig, allJsonData, DATE_FORMAT);
+//   return chart.writeTo(parentDirectory, graphablePropertyName);
+// }
 
 export function getData(localRootDir: string, outputDir: string) {
   const outputPath = getDataFilePath(localRootDir, outputDir);
