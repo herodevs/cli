@@ -1,0 +1,19 @@
+{
+  "name": "tracker-run",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/tracker/run/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/tracker/run",
+        "main": "libs/tracker/run/src/index.ts",
+        "tsConfig": "libs/tracker/run/tsconfig.lib.json",
+        "assets": ["libs/tracker/run/*.md"]
+      }
+    }
+  }
+}

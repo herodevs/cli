@@ -1,0 +1,31 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "paths": {
+      "@herodevs/cli": ["apps/cli/src/main.ts"],
+      "@herodevs/core-types": ["libs/core-types/src/index.ts"],
+      "@herodevs/nes-init": ["libs/nes/init/src/index.ts"],
+      "@herodevs/report-committers": ["libs/report/committers/src/index.ts"],
+      "@herodevs/report-diagnostics": ["libs/report/diagnostics/src/index.ts"],
+      "@herodevs/tracker-init": ["libs/tracker/init/src/index.ts"],
+      "@herodevs/tracker-run": ["libs/tracker/run/src/index.ts"],
+      "@herodevs/tracker-shared": ["libs/tracker/shared/src/index.ts"],
+      "@herodevs/utility": ["libs/utility/src/index.ts"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

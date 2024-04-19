@@ -1,0 +1,19 @@
+{
+  "name": "tracker-shared",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/tracker/shared/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/tracker/shared",
+        "main": "libs/tracker/shared/src/index.ts",
+        "tsConfig": "libs/tracker/shared/tsconfig.lib.json",
+        "assets": ["libs/tracker/shared/*.md"]
+      }
+    }
+  }
+}

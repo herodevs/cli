@@ -1,0 +1,19 @@
+{
+  "name": "utility",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/utility/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/utility",
+        "main": "libs/utility/src/index.ts",
+        "tsConfig": "libs/utility/tsconfig.lib.json",
+        "assets": ["libs/utility/*.md"]
+      }
+    }
+  }
+}
