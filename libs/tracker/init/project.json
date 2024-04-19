@@ -1,0 +1,19 @@
+{
+  "name": "tracker-init",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/tracker/init/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/tracker/init",
+        "main": "libs/tracker/init/src/index.ts",
+        "tsConfig": "libs/tracker/init/tsconfig.lib.json",
+        "assets": ["libs/tracker/init/*.md"]
+      }
+    }
+  }
+}

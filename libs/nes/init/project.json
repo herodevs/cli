@@ -1,0 +1,19 @@
+{
+  "name": "init",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/nes/init/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/nes/init",
+        "main": "libs/nes/init/src/index.ts",
+        "tsConfig": "libs/nes/init/tsconfig.lib.json",
+        "assets": ["libs/nes/init/*.md"]
+      }
+    }
+  }
+}

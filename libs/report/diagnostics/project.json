@@ -1,0 +1,19 @@
+{
+  "name": "report-diagnostics",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/report/diagnostics/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/report/diagnostics",
+        "main": "libs/report/diagnostics/src/index.ts",
+        "tsConfig": "libs/report/diagnostics/tsconfig.lib.json",
+        "assets": ["libs/report/diagnostics/*.md"]
+      }
+    }
+  }
+}
