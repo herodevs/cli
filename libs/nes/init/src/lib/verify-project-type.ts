@@ -11,7 +11,7 @@ export function verifyProjectType(): {
   let error: string | undefined = undefined;
   if (types.length === 0) {
     valid = false;
-    error = 'Project type not recognized.';
+    error = 'Unable to recognize a supported project type.';
   }
 
   return {

@@ -17,7 +17,7 @@ interface Options {
 export const reportCommittersCommand: CommandModule<object, Options> = {
   command: 'committers',
   describe: 'show git committers',
-  aliases: ['commit', 'c'],
+  aliases: [],
   builder: {
     startDate: {
       alias: 's',
@@ -27,7 +27,7 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
     },
     endDate: {
       alias: 'e',
-      describe: `End Date (format: yyyy-MM-dd)`,
+      describe: `End Date (format: ${dateFormat})`,
       required: false,
       default: format(subMonths(new Date(), monthsToSubtract), dateFormat),
     },
@@ -49,9 +49,9 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
 };
 
 async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
-  const { startDate, endDate } = parseDateFlags(dateFormat, args.endDate, args.startDate);
+  const { startDate, endDate } = parseDateFlags(dateFormat, args.startDate, args.endDate);
   const ignores = args.exclude && args.exclude.length ? `-- . "!(${args.exclude.join('|')})"` : '';
-  const gitCommand = `git log --since "${startDate}" --until "${endDate}" --pretty=format:${gitOutputFormat} ${ignores}`;
+  const gitCommand = `git log --since "${endDate}" --until "${startDate}" --pretty=format:${gitOutputFormat} ${ignores}`;
   const result = await runCommand(gitCommand);
 
   const rawEntries = (result as string).split('\n');
@@ -71,6 +71,7 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
     return;
   }
   const entries = parseGitLogEntries(rawEntries);
+  console.error(`entries: ${JSON.stringify(entries, null, 2)}`);
   const committerCounts = getCommitterCounts(entries);
   outputCommitters(committerCounts);
 }

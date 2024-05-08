@@ -23,6 +23,11 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
 
   const projectType = verifyProjectType();
 
+  if (!projectType.valid) {
+    console.error(projectType.error);
+    return;
+  }
+
   if (
     !(await confirm({
       message: 'Before initializing, please commit all changes. Continue?',
@@ -43,7 +48,7 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
   const releaseTrain = await select({
     message: 'select a product',
     choices: productList,
-    pageSize: productList.length,
+    pageSize: productList.length, // no scrolling
   });
 
   const packageList = getPackageChoices(releaseTrain).map((p) => ({
