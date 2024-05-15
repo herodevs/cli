@@ -5,25 +5,44 @@ import { getFileContents } from './get-file-contents';
 import { getDiagnosticTypes } from './get-diagnostic-types';
 import { ArgumentsCamelCase, CommandBuilder, CommandModule } from 'yargs';
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface Options {}
+interface Options {
+  all: boolean;
+  consent: boolean;
+}
 
 export const reportDiagnosticsCommand: CommandModule<object, Options> = {
   command: 'diagnostics',
   describe: 'show diagnostic information',
   aliases: ['diag', 'd'],
-  builder: {} as CommandBuilder<unknown, Options>,
+  builder: {
+    all: {
+      describe: 'Return all available diagnostics',
+      required: false,
+      default: false,
+      boolean: true,
+    },
+    consent: {
+      describe: 'Agree to understanding that sensitive data may be outputted',
+      required: false,
+      default: false,
+      boolean: true,
+    },
+  } as CommandBuilder<unknown, Options>,
   handler: run,
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
-  const answer = await confirm({
-    message:
-      'Data produced by the command may contain sensitive data, please review before sharing it. Continue?',
-  });
-  if (!answer) {
-    return;
+  const consentPrompt =
+    'Data produced may contain sensitive data, please review before sharing it.';
+  if (!args.consent) {
+    const answer = await confirm({
+      message: `${consentPrompt} Continue?`,
+    });
+    if (!answer) {
+      return;
+    }
+  } else {
+    console.log(consentPrompt);
   }
 
   const diagTypeList = getDiagnosticTypes().map((d) => ({
@@ -31,12 +50,14 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
     checked: true,
   }));
 
-  const diagTypes = await checkbox({
-    message: 'select diagnostic(s) to run',
-    choices: diagTypeList,
-    required: true,
-    pageSize: diagTypeList.length,
-  });
+  const diagTypes = args.all
+    ? diagTypeList.map((d) => d.value)
+    : await checkbox({
+        message: 'select diagnostic(s) to run',
+        choices: diagTypeList,
+        required: true,
+        pageSize: diagTypeList.length,
+      });
 
   for (let i = 0; i < diagTypes.length; i++) {
     let output = '';
