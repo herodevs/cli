@@ -1,11 +1,10 @@
 {
   "name": "@herodevs/cli",
   "version": "0.0.0",
-  "bin": "./src/main.js",
+  "bin": "./main.js",
   "dependencies": {
     "tslib": "^2.3.0"
   },
-  "type": "commonjs",
-  "main": "./src/main.js",
-  "typings": "./src/main.d.ts"
+  "type": "module",
+  "main": "./main.js"
 }

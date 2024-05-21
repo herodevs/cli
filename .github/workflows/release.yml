@@ -10,13 +10,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/workflows/composite/verify
-      - name: Set version from git tag
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: |
-          VERSION=$(echo ${GITHUB_REF#"refs/tags/v"})
-          echo "Setting version from tags to $VERSION"
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-      - run: npm version "$VERSION" --no-git-tag-version
-      - run: npm publish
+
+      - name: release-version
+        uses: actions/github-script@v7
+        id: release-version
+        env:
+          GIT_TAG: ${{ github.ref_name }}
+        with:
+          script: |
+            const releaseVersion = process.env.GIT_TAG.slice(1);
+            console.log(`Release version: ${releaseVersion}`);
+            return releaseVersion;
+          result-encoding: string
+
+      - name: set version in package.json and publish
+        working-directory: dist/apps/cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+        run: |
+          npm version "${{ steps.release-version.outputs.result }}" --no-git-tag-version
+          npm publish
