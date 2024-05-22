@@ -19,7 +19,7 @@
         "outputPath": "dist/apps/cli",
         "main": "apps/cli/src/main.ts",
         "tsConfig": "apps/cli/tsconfig.lib.json",
-        "format": ["esm"],
+        "format": ["cjs"],
         "generatePackageJson": true
       }
     },

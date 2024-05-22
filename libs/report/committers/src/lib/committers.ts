@@ -11,6 +11,7 @@ interface Options {
   startDate: string;
   endDate: string;
   exclude: string[];
+  json: boolean;
   // monthly: boolean;
 }
 
@@ -36,6 +37,12 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
       array: true,
       describe: 'Path Exclusions (eg -x="./src/bin" -x="./dist")',
       required: false,
+    },
+    json: {
+      describe: 'Output to JSON format',
+      required: false,
+      default: false,
+      boolean: true,
     },
     // monthly: {
     //   alias: 'm',
@@ -71,9 +78,12 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
     return;
   }
   const entries = parseGitLogEntries(rawEntries);
-  console.error(`entries: ${JSON.stringify(entries, null, 2)}`);
   const committerCounts = getCommitterCounts(entries);
-  outputCommitters(committerCounts);
+  if (args.json) {
+    outputCommittersJson(committerCounts);
+  } else {
+    outputCommitters(committerCounts);
+  }
 }
 
 function outputCommitters(committerCounts: CommitterCount[]) {
@@ -99,4 +109,8 @@ function outputCommitters(committerCounts: CommitterCount[]) {
       })
       .join('\n')
   );
+}
+
+function outputCommittersJson(committerCounts: CommitterCount[]) {
+  console.log(JSON.stringify(committerCounts, null, 2));
 }
