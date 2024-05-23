@@ -17,10 +17,17 @@
       "executor": "@nx/esbuild:esbuild",
       "options": {
         "outputPath": "dist/apps/cli",
-        "main": "apps/cli/src/main.ts",
+        "main": "apps/cli/src/lib/cli.ts",
         "tsConfig": "apps/cli/tsconfig.lib.json",
         "format": ["cjs"],
-        "generatePackageJson": true
+        "generatePackageJson": true,
+        "assets": [
+          {
+            "input": "apps/cli/src/",
+            "glob": "hd-cli.js",
+            "output": "/"
+          }
+        ]
       }
     },
     "nx-release-publish": {
