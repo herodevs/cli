@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "hd": "npm run build && node ./dist/apps/cli/src/main.js",
+    "hd": "npm run build && node ./dist/apps/cli/hd-cli.js",
     "build": "nx run-many --target=build --all",
     "test": "nx run-many --target=test --all",
     "x": "nx affected:test --watch",

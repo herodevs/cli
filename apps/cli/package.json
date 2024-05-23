@@ -1,10 +1,10 @@
 {
   "name": "@herodevs/cli",
   "version": "0.0.0",
-  "bin": "./main.cjs",
+  "bin": "./hd-cli.js",
   "dependencies": {
     "tslib": "^2.3.0"
   },
   "type": "commonjs",
-  "main": "./main.cjs"
+  "main": "./hd-cli.js"
 }
