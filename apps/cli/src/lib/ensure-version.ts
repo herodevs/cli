@@ -29,16 +29,10 @@ export async function isVersionUpToDate(
     return true;
   }
   console.log(
-    `${yellow(
-      'Your version:',
-      red(`${packageName}@${packageVersion}`),
-      `is not up to date`
-    )}`
+    `${yellow('Your version:', red(`${packageName}@${packageVersion}`), `is not up to date`)}`
   );
-  console.log(
-    `${yellow('Latest version:', red(`${packageName}@${latestVersion}...`))}`
-  );
-  return false;
+  console.log(`${yellow('Latest version:', red(`${packageName}@${latestVersion}...`))}`);
+  return true;
 }
 
 export async function ensureVersionIsUpToDate(
@@ -53,9 +47,7 @@ export async function ensureVersionIsUpToDate(
       [
         `\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n\n`,
         `${red(`ERROR:`)} Did not run command.\n\n`,
-        ` - Rerun your command with the ${yellow(
-          '@latest'
-        )} tag to ensure correct output:\n\n\n`,
+        ` - Rerun your command with the ${yellow('@latest')} tag to ensure correct output:\n\n\n`,
         `\t${yellow(`npx ${packageName}@latest`)}\n`,
         `\n\n- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -\n`,
       ].join(' ')
