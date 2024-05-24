@@ -10,7 +10,12 @@ runs:
         registry-url: 'https://registry.npmjs.org'
     - run: npm install --force
       shell: bash
+
+    - run: npm run lint:cli
+      shell: bash
+
     - run: npm run build
       shell: bash
+
     - run: npm run test
       shell: bash
