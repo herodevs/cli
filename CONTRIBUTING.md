@@ -18,3 +18,17 @@ npx nx generate @nx/js:library --name=libs/[topic]/[command] --projectNameAndRoo
 ```
 npx nx generate @nx/js:library --name=libs/[command] --projectNameAndRootFormat=as-provided --no-interactive
 ```
+
+## Adding a library
+
+When adding a library to the monorepo, remember to update the CLI's lint rules to ignore the new library.
+
+path to the cli lint rules: apps/cli/.eslintrc.json
+
+## Lint Failures
+
+To fix lint failures run:
+
+```
+npm run lint:cli:fix
+```
