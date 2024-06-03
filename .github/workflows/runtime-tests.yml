@@ -1,0 +1,35 @@
+name: Runtime Tests
+on:
+  workflow_call:
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  runtime-checks:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['10', '12', '14', '16', '18', '20']
+    name: node ${{ matrix.node }}
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: uncache the tarball
+        uses: actions/cache/restore@v4
+        with:
+          path: ./dist/apps/cli/herodevs-cli-0.0.0-local.tgz
+          key: hdcli-tarball-${{ github.run_id }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm install --force
+
+      - run: npm install ./dist/apps/cli/herodevs-cli-0.0.0-local.tgz
+
+      - run: npx @herodevs/cli --version
+
+      - run: npx @herodevs/cli report committers

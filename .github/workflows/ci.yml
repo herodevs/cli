@@ -10,3 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/workflows/composite/verify
+
+  verify-runtimes:
+    needs: build
+    uses: ./.github/workflows/runtime-tests.yml

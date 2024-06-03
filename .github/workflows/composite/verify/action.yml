@@ -4,10 +4,11 @@ description: 'Verifies the current branch'
 runs:
   using: 'composite'
   steps:
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
         node-version: '20.x'
         registry-url: 'https://registry.npmjs.org'
+
     - run: npm install --force
       shell: bash
 
@@ -19,3 +20,16 @@ runs:
 
     - run: npm run test
       shell: bash
+
+    - name: package for local testing
+      shell: bash
+      working-directory: ./dist/apps/cli
+      run: |
+        npm version 0.0.0-local --no-git-tag-version
+        npm pack
+
+    - name: cache the tarball
+      uses: actions/cache/save@v4
+      with:
+        path: ./dist/apps/cli/herodevs-cli-0.0.0-local.tgz
+        key: hdcli-tarball-${{ github.run_id }}
