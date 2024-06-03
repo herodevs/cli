@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "hd": "npm run build && node ./dist/apps/cli/hd-cli.js",
+    "hd": "npm run build && node ./dist/apps/cli/src/main.js",
     "build": "nx run-many --target=build --all",
     "test": "nx run-many --target=test --all",
     "x": "nx affected:test --watch",
@@ -17,8 +17,8 @@
     "@inquirer/prompts": "^5.0.2",
     "cli-spinners": "^3.0.0",
     "date-fns": "^3.6.0",
-    "get-json": "^1.0.1",
     "git-last-commit": "^1.0.1",
+    "graphql": "^16.8.1",
     "minimist": "^1.2.8",
     "ora": "5.3.0",
     "sloc": "^0.3.2",

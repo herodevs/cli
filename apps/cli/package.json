@@ -3,15 +3,15 @@
   "version": "0.0.0",
   "bin": "./src/main.js",
   "dependencies": {
-    "tslib": "^2.3.0",
-    "yargs": "^17.7.2",
-    "get-json": "^1.0.1",
-    "date-fns": "^3.6.0",
-    "@inquirer/prompts": "^5.0.2",
-    "git-last-commit": "^1.0.1",
-    "sloc": "^0.3.2",
     "@apollo/client": "^3.10.1",
-    "ora": "5.3.0"
+    "@inquirer/prompts": "^5.0.2",
+    "date-fns": "^3.6.0",
+    "git-last-commit": "^1.0.1",
+    "graphql": "^16.8.1",
+    "ora": "5.3.0",
+    "sloc": "^0.3.2",
+    "tslib": "^2.3.0",
+    "yargs": "^17.7.2"
   },
   "type": "commonjs",
   "main": "./src/main.js",

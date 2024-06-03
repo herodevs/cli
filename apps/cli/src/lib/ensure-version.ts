@@ -1,16 +1,43 @@
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import * as getJson from 'get-json';
+import * as https from 'https';
 import { Color, color } from './log-colors';
 
 const red = color(Color.FgRed);
 const yellow = color(Color.FgYellow);
 
 async function getLatestVersion(pkgName: string) {
-  return getJson(`https://registry.npmjs.org/${pkgName}`).then(
-    (packageData: { 'dist-tags': { latest: string } }) => {
-      return packageData['dist-tags'].latest;
-    }
-  );
+  const url = `https://registry.npmjs.org/${pkgName}`;
+  return new Promise((resolve, reject) => {
+    const options = {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    };
+    const request = https.get(url, options, (response) => {
+      const chunks: string[] = [];
+
+      response.on('data', (chunk) => chunks.push(chunk));
+
+      response.on('error', reject);
+
+      response.on('end', () => {
+        const validResponse = response.statusCode
+          ? response.statusCode >= 200 && response.statusCode <= 299
+          : true;
+        const body = chunks.join('');
+
+        if (validResponse) {
+          resolve(JSON.parse(body)['dist-tags'].latest);
+        } else
+          reject(
+            new Error(`Request failed. status: ${response.statusCode || 'N/A'}, body: ${body}`)
+          );
+      });
+    });
+
+    request.on('error', (err) => {
+      reject(err);
+    });
+  });
 }
 
 export async function isVersionUpToDate(
@@ -18,7 +45,7 @@ export async function isVersionUpToDate(
   packageVersion: string,
   quietIfSuccessful = false
 ): Promise<boolean> {
-  if (packageVersion === '0.0.0') {
+  if (packageVersion.startsWith('0.0.0')) {
     return true;
   }
   const latestVersion = await getLatestVersion(packageName);

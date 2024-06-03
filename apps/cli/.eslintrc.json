@@ -24,6 +24,7 @@
             "includeTransitiveDependencies": true,
             "useLocalPathsForWorkspaceDependencies": true,
             "ignoredDependencies": [
+              "graphql",
               "@herodevs/report-committers",
               "@herodevs/report-diagnostics",
               "@herodevs/tracker-init",
