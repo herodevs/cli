@@ -20,7 +20,15 @@
         "outputPath": "dist/apps/cli",
         "main": "apps/cli/src/main.ts",
         "tsConfig": "apps/cli/tsconfig.lib.json",
-        "assets": ["apps/cli/*.md"],
+        "assets": [
+          "apps/cli/*.md",
+          {
+            "glob": "sea-config.json",
+            "input": "apps/cli",
+            "output": "/",
+            "ignore": []
+          }
+        ],
         "external": "none"
       }
     },

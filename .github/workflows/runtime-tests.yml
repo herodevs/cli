@@ -1,0 +1,79 @@
+name: Runtime Tests
+on:
+  workflow_call:
+env:
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  via-npx:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['14', '16', '18', '20', '22']
+    name: node ${{ matrix.node }}
+
+    steps:
+      - name: uncache the tarball
+        uses: actions/cache/restore@v4
+        with:
+          path: ./dist/apps/cli/herodevs-cli-0.0.0-local.tgz
+          key: hdcli-tarball-${{ github.run_id }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm init -y
+
+      - name: setup local git repo
+        run: |
+          git config --global user.email "test@herodevs.com"
+          git config --global user.name "Github CI"
+          git init
+          echo "test" > test.txt
+          git add .
+          git commit -m "test commit"
+          echo "test 2" > test.txt
+          git add .
+          git commit -m "test commit 2"
+
+      - run: npm install ./dist/apps/cli/herodevs-cli-0.0.0-local.tgz
+
+      - run: npx @herodevs/cli --version
+
+      - run: npx @herodevs/cli report committers
+
+  via-sea:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['10', '12']
+    name: node ${{ matrix.node }}
+
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: uncache build output
+        uses: actions/cache/restore@v4
+        with:
+          path: ./dist/apps/cli/hdcli
+          key: hdcli-sea-${{ github.run_id }}
+
+      - name: setup local git repo
+        run: |
+          git config --global user.email "test@herodevs.com"
+          git config --global user.name "Github CI"
+          git init
+          echo "test" > test.txt
+          git add .
+          git commit -m "test commit"
+          echo "test 2" > test.txt
+          git add .
+          git commit -m "test commit 2"
+
+      - name: run the cli
+        run: ./dist/apps/cli/hdcli report committers

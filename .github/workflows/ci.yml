@@ -9,4 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/workflows/composite/verify
+      - uses: ./.github/workflows/composite/build
+
+  verify:
+    needs: build
+    uses: ./.github/workflows/runtime-tests.yml
