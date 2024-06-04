@@ -10,7 +10,6 @@
     "@inquirer/prompts": "^5.0.2",
     "git-last-commit": "^1.0.1",
     "sloc": "^0.3.2",
-    "@apollo/client": "^3.10.1",
     "ora": "5.3.0"
   },
   "type": "commonjs",
