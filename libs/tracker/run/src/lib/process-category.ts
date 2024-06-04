@@ -123,18 +123,16 @@ function findIncludedFiles(
   return allFiles
     .filter((file) => {
       const ext = getFileExt(file);
-      let shouldBeIncluded = !!category.fileTypes.find(
-        (fileType) => fileType === ext
-      );
-      if (shouldBeIncluded) {
-        ignorePatterns?.forEach((ignorePattern) => {
+      let shouldBeIncluded = !!category.fileTypes.find((fileType) => fileType === ext);
+      if (shouldBeIncluded && ignorePatterns) {
+        ignorePatterns.forEach((ignorePattern) => {
           if (file.indexOf(ignorePattern) !== -1) {
             shouldBeIncluded = false;
           }
         });
       }
-      if (shouldBeIncluded) {
-        category.excludes?.forEach((exclude) => {
+      if (shouldBeIncluded && category.excludes) {
+        category.excludes.forEach((exclude) => {
           if (file.indexOf(exclude) !== -1) {
             shouldBeIncluded = false;
           }
@@ -161,8 +159,7 @@ function findIncludedFiles(
       const parts = file.split('.');
       parts[parts.length - 1] = counterpartExt;
 
-      const counterpartExists =
-        files.filter((f) => f === parts.join('.')).length !== 0;
+      const counterpartExists = files.filter((f) => f === parts.join('.')).length !== 0;
 
       if (counterpartExists) {
         return false;

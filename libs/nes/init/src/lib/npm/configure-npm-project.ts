@@ -13,16 +13,22 @@ function updatePackageJson(packages: Entry[]) {
   const packageJson = JSON.parse(packageJsonContents);
 
   const pkgUpdates = packages
-    .map((p) => ({
-      key: p.packageVersion.origination?.name || p.packageVersion.name,
-      value: p.packageVersion.fqns,
-    }))
+    .map((p) => {
+      let key = p.packageVersion.name;
+      if (p.packageVersion.origination) {
+        key = p.packageVersion.origination.name;
+      }
+      return {
+        key: key,
+        value: p.packageVersion.fqns,
+      };
+    })
     .reduce(
       (acc, cur) => {
         // Update the appropriate section of the package.json (dependencies if not dev or peer)
-        if (packageJson.devDependencies?.[cur.key]) {
+        if (packageJson.devDependencies && packageJson.devDependencies[cur.key]) {
           acc.devDeps[cur.key] = `npm:${cur.value}`;
-        } else if (packageJson.peerDependencies?.[cur.key]) {
+        } else if (packageJson.peerDependencies && packageJson.peerDependencies[cur.key]) {
           acc.peerDeps[cur.key] = `npm:${cur.value}`;
         } else {
           acc.deps[cur.key] = `npm:${cur.value}`;

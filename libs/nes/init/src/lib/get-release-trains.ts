@@ -52,7 +52,7 @@ export async function getReleaseTrains(
   //     variables: { input: { tenantId: 1000, byToken: accessToken } },
   //   });
 
-  //   const results = queryResult.data?.licensing?.releaseTrains?.results;
+  //   const results = queryResult.data.licensing.releaseTrains.results;
   //   if (!results) {
   //     throw new Error(`Error getting release trains`);
   //   }
