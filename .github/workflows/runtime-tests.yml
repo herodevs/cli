@@ -61,7 +61,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ./dist/apps/cli/hdcli
-          key: hdcli-sea-${{ github.run_id }}
+          key: hdcli-sea-ubuntu-latest-${{ github.run_id }}
 
       - name: setup local git repo
         run: |
@@ -77,3 +77,49 @@ jobs:
 
       - name: run the cli
         run: ./dist/apps/cli/hdcli report committers
+
+  os:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-latest', 'macos-latest', 'windows-latest']
+    name: node ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: set the executable name
+        id: set-executable-name
+        uses: actions/github-script@v7
+        env:
+          MATRIX_OS: ${{ matrix.os }}
+        with:
+          script: |
+            const os = process.env.MATRIX_OS;
+            let executableName = 'hdcli';
+            if (os === 'windows-latest') {
+              executableName = 'hdcli.exe';
+            }
+            return executableName;
+          result-encoding: string
+
+      - name: uncache build output
+        uses: actions/cache/restore@v4
+        with:
+          path: ./dist/apps/cli/${{ steps.set-executable-name.outputs.result }}
+          key: hdcli-sea-${{ matrix.os }}-${{ github.run_id }}
+          enableCrossOsArchive: true
+
+      - name: setup local git repo
+        run: |
+          git config --global user.email "test@herodevs.com"
+          git config --global user.name "Github CI"
+          git init
+          echo "test" > test.txt
+          git add .
+          git commit -m "test commit"
+          echo "test 2" > test.txt
+          git add .
+          git commit -m "test commit 2"
+
+      - name: run the cli
+        run: ./dist/apps/cli/${{ steps.set-executable-name.outputs.result }} report committers

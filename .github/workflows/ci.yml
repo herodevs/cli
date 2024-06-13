@@ -11,6 +11,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ./.github/workflows/composite/build
 
-  verify:
+  build-seas:
     needs: build
+    uses: ./.github/workflows/build-seas.yml
+
+  verify:
+    needs: build-seas
     uses: ./.github/workflows/runtime-tests.yml
