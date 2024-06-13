@@ -12,13 +12,19 @@ jobs:
 
       - uses: ./.github/workflows/composite/build
 
-  verify:
+  build-seas:
     needs: build
+    uses: ./.github/workflows/build-seas.yml
+
+  verify:
+    needs: build-seas
     uses: ./.github/workflows/runtime-tests.yml
 
   release:
     runs-on: ubuntu-latest
     needs: verify
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -47,3 +53,65 @@ jobs:
         run: |
           npm version "${{ steps.release-version.outputs.result }}" --no-git-tag-version
           npm publish
+
+      - name: restore the linux zip from cache
+        uses: actions/cache/save@v4
+        with:
+          key: hdcli-sea-linux-latest-zip-${{ github.run_id }}
+          path: ./dist/apps/cli/hdcli-linux.zip
+          enableCrossOsArchive: true
+
+      - name: restore the macos zip from cache
+        uses: actions/cache/save@v4
+        with:
+          key: hdcli-sea-macos-zip-${{ github.run_id }}
+          path: ./dist/apps/cli/hdcli-macos.zip
+          enableCrossOsArchive: true
+
+      - name: restore the windows zip from cache
+        uses: actions/cache/save@v4
+        with:
+          key: hdcli-sea-windows-zip-${{ github.run_id }}
+          path: ./dist/apps/cli/hdcli.exe-windows.zip
+          enableCrossOsArchive: true
+
+      - name: create release
+        id: create-release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+
+      - name: upload linux zip asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./dist/apps/cli/hdcli-linux.zip
+          asset_name: hdcli-linux.zip
+          asset_content_type: application/zip
+
+      - name: upload macos zip asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./dist/apps/cli/hdcli-macos.zip
+          asset_name: hdcli-macos.zip
+          asset_content_type: application/zip
+
+      - name: upload windows zip asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create-release.outputs.upload_url }}
+          asset_path: ./dist/apps/cli/hdcli-windows.zip
+          asset_name: hdcli-windows.zip
+          asset_content_type: application/zip

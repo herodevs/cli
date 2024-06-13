@@ -55,18 +55,9 @@ runs:
       working-directory: ./dist/apps/cli
       shell: bash
 
-    - name: copy node to use to create sea
-      run: cp $(command -v node) hdcli
-      working-directory: ./dist/apps/cli
-      shell: bash
-
-    - name: inject the CLI sea into the copied node
-      run: npx postject hdcli NODE_SEA_BLOB sea-prep.blob --sentinel-fuse NODE_SEA_FUSE_fce680ab2cc467b6e072b8b5df1996b2
-      working-directory: ./dist/apps/cli
-      shell: bash
-
-    - name: cache the sea
+    - name: cache the sea blob
       uses: actions/cache/save@v4
       with:
-        path: ./dist/apps/cli/hdcli
-        key: hdcli-sea-${{ github.run_id }}
+        path: ./dist/apps/cli/sea-prep.blob
+        key: hdcli-sea-blob-${{ github.run_id }}
+        enableCrossOsArchive: true
