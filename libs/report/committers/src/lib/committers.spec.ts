@@ -1,4 +1,4 @@
-import { format, subMonths } from 'date-fns';
+import { addHours, addMinutes, addSeconds, format, formatISO, subMonths } from 'date-fns';
 import { reportCommittersCommand } from './committers';
 import { runCommand } from '@herodevs/utility';
 import { dateFormat } from './constants';
@@ -77,8 +77,10 @@ describe('reportCommittersCommand', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       reportCommittersCommand.handler(args as any);
 
+      const startDateEndOfDay = formatISO(addHours(addMinutes(addSeconds(startDate, 59), 59), 23));
+
       expect(runCommandMock).toHaveBeenCalledWith(
-        `git log --since "${endDate}" --until "${startDate}" --pretty=format:"%hΓΓΓΓ%anΓΓΓΓ%ad" `
+        `git log --since "${endDate}" --until "${startDateEndOfDay}" --pretty=format:"%hΓΓΓΓ%anΓΓΓΓ%ad" `
       );
     });
 

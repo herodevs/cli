@@ -1,4 +1,4 @@
-import { format, subMonths } from 'date-fns';
+import { addHours, addMinutes, addSeconds, format, formatISO, subMonths } from 'date-fns';
 import { runCommand } from '@herodevs/utility';
 import { parseDateFlags } from './parse-date-flags';
 import { dateFormat, gitOutputFormat, monthsToSubtract } from './constants';
@@ -57,8 +57,12 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
 
 async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
   const { startDate, endDate } = parseDateFlags(dateFormat, args.startDate, args.endDate);
+  const startDateEndOfDay = formatISO(addHours(addMinutes(addSeconds(startDate, 59), 59), 23));
+
   const ignores = args.exclude && args.exclude.length ? `-- . "!(${args.exclude.join('|')})"` : '';
-  const gitCommand = `git log --since "${endDate}" --until "${startDate}" --pretty=format:${gitOutputFormat} ${ignores}`;
+
+  const gitCommand = `git log --since "${endDate}" --until "${startDateEndOfDay}" --pretty=format:${gitOutputFormat} ${ignores}`;
+
   const result = await runCommand(gitCommand);
 
   const rawEntries = (result as string).split('\n');
