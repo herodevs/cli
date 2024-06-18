@@ -62,21 +62,21 @@ jobs:
           npm publish
 
       - name: restore the linux zip from cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/restore@v4
         with:
           key: hdcli-sea-linux-latest-zip-${{ github.run_id }}
           path: ./dist/apps/cli/hdcli-linux.zip
           enableCrossOsArchive: true
 
       - name: restore the macos zip from cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/restore@v4
         with:
           key: hdcli-sea-macos-zip-${{ github.run_id }}
           path: ./dist/apps/cli/hdcli-macos.zip
           enableCrossOsArchive: true
 
       - name: restore the windows zip from cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/restore@v4
         with:
           key: hdcli-sea-windows-zip-${{ github.run_id }}
           path: ./dist/apps/cli/hdcli.exe-windows.zip
