@@ -1,4 +1,5 @@
 name: Release
+run-name: Release ${{ github.ref_name }}
 on:
   push:
     tags:
@@ -64,7 +65,7 @@ jobs:
       - name: restore the linux zip from cache
         uses: actions/cache/restore@v4
         with:
-          key: hdcli-sea-linux-latest-zip-${{ github.run_id }}
+          key: hdcli-sea-linux-zip-${{ github.run_id }}
           path: ./dist/apps/cli/hdcli-linux.zip
           enableCrossOsArchive: true
 
@@ -79,7 +80,7 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           key: hdcli-sea-windows-zip-${{ github.run_id }}
-          path: ./dist/apps/cli/hdcli.exe-windows.zip
+          path: ./dist/apps/cli/hdcli-windows.zip
           enableCrossOsArchive: true
 
       - name: create release
