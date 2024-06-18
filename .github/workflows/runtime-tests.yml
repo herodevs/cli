@@ -40,9 +40,9 @@ jobs:
 
       - run: npm install ./dist/apps/cli/herodevs-cli-0.0.0-local.tgz
 
-      - run: npx @herodevs/cli --version
+      - run: npx hd --version
 
-      - run: npx @herodevs/cli report committers
+      - run: npx hd report committers
 
   via-sea:
     runs-on: ubuntu-latest

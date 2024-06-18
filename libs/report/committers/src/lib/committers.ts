@@ -18,7 +18,7 @@ interface Options {
 export const reportCommittersCommand: CommandModule<object, Options> = {
   command: 'committers',
   describe: 'show git committers',
-  aliases: [],
+  aliases: ['git'],
   builder: {
     startDate: {
       alias: 's',

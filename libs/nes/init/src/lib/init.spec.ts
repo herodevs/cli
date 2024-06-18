@@ -5,6 +5,7 @@ import { getPackageChoices } from './get-package-choices';
 import { checkbox, confirm, password, select } from '@inquirer/prompts';
 import { configureProject } from './configure-project';
 import { Choice, ReleaseTrain } from './models';
+import { sortByName } from '@herodevs/utility';
 
 jest.mock('./verify-project-type');
 jest.mock('@inquirer/prompts');
@@ -32,7 +33,7 @@ describe('nesInitCommand', () => {
     let getProductChoicesMock: jest.Mock;
     let getPackageChoicesMock: jest.Mock;
     let mockReleaseTrains: ReleaseTrain[] = [];
-    let mockReleaseTrainChoices: Choice<ReleaseTrain>[] = [];
+    let mockReleaseTrainChoices: Choice<ReleaseTrain[]>[] = [];
     let configureProjectMock: jest.Mock;
 
     beforeEach(() => {
@@ -74,8 +75,52 @@ describe('nesInitCommand', () => {
             },
           ],
         },
+        {
+          id: 3,
+          key: 'release-train-3',
+          name: 'release train 3',
+          products: [
+            {
+              id: 333,
+              key: 'vue_essentials',
+              name: 'Vue 3 Essentials',
+            },
+          ],
+          entries: [
+            {
+              packageVersion: {
+                id: 444,
+                name: '4.5.6',
+                fqns: '@neverendingsupport/vue2@4.5.6',
+                origination: {
+                  name: 'vue',
+                  type: 'npm',
+                  version: '4.5.6',
+                },
+              },
+            },
+          ],
+        },
       ];
-      mockReleaseTrainChoices = mockReleaseTrains.map((rt) => ({ name: rt.name, value: rt }));
+      const products = mockReleaseTrains.reduce((acc, rt) => {
+        rt.products.forEach((product) => {
+          if (acc[product.name]) {
+            acc[product.name].push(rt);
+          } else {
+            acc[product.name] = [rt];
+          }
+        });
+
+        return acc;
+      }, {} as { [key: string]: ReleaseTrain[] });
+
+      mockReleaseTrainChoices = Object.entries(products)
+        .map(([key, value]) => ({
+          name: key,
+          value,
+        }))
+        .sort(sortByName);
+
       const packageChoices = mockReleaseTrains[0].entries.map((e) => ({
         name: e.packageVersion,
         value: e,
@@ -87,7 +132,7 @@ describe('nesInitCommand', () => {
       });
       confirmMock.mockReturnValue(Promise.resolve(true));
       passwordMock.mockReturnValue(Promise.resolve('abc123'));
-      selectMock.mockReturnValue(Promise.resolve(mockReleaseTrains[0]));
+      selectMock.mockReturnValue(Promise.resolve(mockReleaseTrainChoices[0].value));
       checkboxMock.mockReturnValue(Promise.resolve(packageChoices.map((c) => c.value)));
       getProductChoicesMock.mockReturnValue(Promise.resolve(mockReleaseTrainChoices));
       getPackageChoicesMock.mockReturnValue(packageChoices);
@@ -150,6 +195,7 @@ describe('nesInitCommand', () => {
         message: 'select a product',
         choices: mockReleaseTrainChoices,
         pageSize: mockReleaseTrainChoices.length,
+        loop: false,
       });
     });
 

@@ -1,35 +1,56 @@
-# HeroDevs CLI -- `@herodevs/cli`
+# HeroDevs CLI - `@herodevs/cli`
 
-## Installation
+## Node Setup & Installation
+
+Node versions 14+
+
+No installation:
+
+```
+npx @herodevs/cli ...
+```
+
+Global installation:
 
 ```
 npm install -g @herodevs/cli
+hd ...
+# or
+hdcli ...
 ```
 
-## Usage
+## Non-Node or Node < 14 Setup & Installation
 
-after global installation
+Navigate [here](https://github.com/herodevs/cli/releases) to download the version for your operating system from the most recent release.
 
-```
-@herodevs/cli ____
-```
+## Available Commands
 
-or
-
-```
-hd ____
+```bash
+# Initializes your project to use NES libraries
+hdcli nes init
 ```
 
-without installation:
-
+```bash
+# Shows a list of committers in git repository
+hdcli report committers
 ```
-npx @herodevs/cli ____
+
+```bash
+# Shows diagnostic information about your project
+hdcli report diagnostics
 ```
 
-## Commands
-
-Get a list of committers within a git repository
-
+```bash
+# Initializes the project for the lines-of-code tracker
+hdcli tracker init
 ```
-hd report committers
+
+```bash
+# Runs a lines-of-code tracker to gather project
+hdcli tracker run
 ```
+
+## Tutorials
+
+- [Configure your project to consume a Never-Ending Support package](docs/nes-init.md)
+- [Get an audit of the users who have committed to a project](docs/git-audit.md)
