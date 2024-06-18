@@ -6,13 +6,25 @@ import { getReleaseTrains } from './get-release-trains';
 export async function getProductChoices(
   accessToken: string,
   types: ProjectType[]
-): Promise<Choice<ReleaseTrain>[]> {
+): Promise<Choice<ReleaseTrain[]>[]> {
   const releaseTrains = await getReleaseTrains(accessToken, types);
 
-  return releaseTrains
-    .map((rt) => ({
-      name: rt.name,
-      value: rt,
+  const products = releaseTrains.reduce((acc, rt) => {
+    rt.products.forEach((product) => {
+      if (acc[product.name]) {
+        acc[product.name].push(rt);
+      } else {
+        acc[product.name] = [rt];
+      }
+    });
+
+    return acc;
+  }, {} as { [key: string]: ReleaseTrain[] });
+
+  return Object.entries(products)
+    .map(([key, value]) => ({
+      name: key,
+      value,
     }))
     .sort(sortByName);
 }

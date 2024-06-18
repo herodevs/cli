@@ -45,25 +45,46 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
   const productList = await getProductChoices(accessToken, projectType.types);
   spinner.stop();
 
-  const releaseTrain = await select({
-    message: 'select a product',
-    choices: productList,
-    pageSize: productList.length, // no scrolling
-  });
+  const releaseTrains =
+    productList.length === 1
+      ? productList[0].value
+      : await select({
+          message: 'select a product',
+          choices: productList,
+          pageSize: productList.length, // no scrolling
+          loop: false,
+        });
+
+  const releaseTrain =
+    releaseTrains.length === 1
+      ? releaseTrains[0]
+      : await select({
+          message: 'select a release',
+          choices: releaseTrains.map((rt) => ({
+            name: rt.name,
+            value: rt,
+          })),
+          pageSize: releaseTrains.length, // no scrolling
+          loop: false,
+        });
 
   const packageList = getPackageChoices(releaseTrain).map((p) => ({
     ...p,
     checked: true,
   }));
 
-  const packages = await checkbox({
-    message: `select the package(s)`,
-    choices: packageList,
-    loop: false,
-    pageSize: packageList.length, // no scrolling
-  });
+  const packages =
+    packageList.length === 1
+      ? [packageList[0].value]
+      : await checkbox({
+          message: `select the package(s)`,
+          choices: packageList,
+          pageSize: packageList.length, // no scrolling
+          loop: false,
+        });
 
   console.log('configuring your project...');
+
   configureProject(accessToken, projectType.types, packages);
 
   console.log('Your project is now configured to access your NES product');

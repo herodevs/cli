@@ -42,17 +42,13 @@ async function getLatestVersion(pkgName: string) {
 
 export async function isVersionUpToDate(
   packageName: string,
-  packageVersion: string,
-  quietIfSuccessful = false
+  packageVersion: string
 ): Promise<boolean> {
   if (packageVersion.startsWith('0.0.0')) {
     return true;
   }
   const latestVersion = await getLatestVersion(packageName);
   if (latestVersion === packageVersion) {
-    if (!quietIfSuccessful) {
-      console.log(`${packageName}@${latestVersion} is up to date`);
-    }
     return true;
   }
   console.log(

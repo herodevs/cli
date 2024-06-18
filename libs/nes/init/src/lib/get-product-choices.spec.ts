@@ -18,8 +18,12 @@ describe('getProductChoices', () => {
     const mockTrains: any[] = [
       {
         name: 'b',
+        products: [{ name: 'b' }],
       },
-      { name: 'a' },
+      {
+        name: 'a',
+        products: [{ name: 'a' }],
+      },
     ];
 
     getReleaseTrainsMock.mockResolvedValue(mockTrains);

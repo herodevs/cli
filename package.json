@@ -4,6 +4,7 @@
   "license": "MIT",
   "scripts": {
     "hd": "npm run build && node ./dist/apps/cli/src/main.js",
+    "hd:no-build": "node ./dist/apps/cli/src/main.js",
     "build": "nx run-many --target=build --all",
     "test": "nx run-many --target=test --all",
     "x": "nx affected:test --watch",

@@ -29,7 +29,7 @@ describe('reportCommittersCommand', () => {
     });
 
     it('should set alias(es)', () => {
-      expect(reportCommittersCommand.aliases).toEqual([]);
+      expect(reportCommittersCommand.aliases).toEqual(['git']);
     });
   });
 

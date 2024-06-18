@@ -12,9 +12,10 @@ export function cli(): void {
   const packageVersion = pkg.version;
 
   yargs
-    .scriptName(packageName)
+    .scriptName('hdcli')
     .usage('Usage: $0 <command> [options]')
     .middleware(() => ensureVersionIsUpToDate(packageName, packageVersion))
     .command(commands)
+    .showHelpOnFail(false)
     .parse(hideBin(process.argv));
 }

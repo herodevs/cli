@@ -1,7 +1,10 @@
 {
   "name": "@herodevs/cli",
   "version": "0.0.0",
-  "bin": "./src/main.js",
+  "bin": {
+    "hd": "./src/main.js",
+    "hdcli": "./src/main.js"
+  },
   "dependencies": {
     "@apollo/client": "^3.10.1",
     "@inquirer/prompts": "^5.0.2",
