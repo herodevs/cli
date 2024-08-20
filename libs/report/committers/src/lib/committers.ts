@@ -8,8 +8,8 @@ import { ArgumentsCamelCase, CommandBuilder, CommandModule } from 'yargs';
 import { CommitterCount } from './types';
 
 interface Options {
-  startDate: string;
-  endDate: string;
+  beforeDate: string;
+  afterDate: string;
   exclude: string[];
   json: boolean;
   // monthly: boolean;
@@ -20,13 +20,13 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
   describe: 'show git committers',
   aliases: ['git'],
   builder: {
-    startDate: {
+    beforeDate: {
       alias: 's',
       default: format(new Date(), dateFormat),
       describe: `Start Date (format: ${dateFormat})`,
       string: true,
     },
-    endDate: {
+    afterDate: {
       alias: 'e',
       describe: `End Date (format: ${dateFormat})`,
       required: false,
@@ -56,29 +56,20 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
 };
 
 async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
-  const { startDate, endDate } = parseDateFlags(dateFormat, args.startDate, args.endDate);
-  const startDateEndOfDay = formatISO(addHours(addMinutes(addSeconds(startDate, 59), 59), 23));
+  const { beforeDate, afterDate } = parseDateFlags(dateFormat, args.beforeDate, args.afterDate);
+  const beforeDateEndOfDay = formatISO(addHours(addMinutes(addSeconds(beforeDate, 59), 59), 23));
 
   const ignores = args.exclude && args.exclude.length ? `-- . "!(${args.exclude.join('|')})"` : '';
 
-  const gitCommand = `git log --since "${endDate}" --until "${startDateEndOfDay}" --pretty=format:${gitOutputFormat} ${ignores}`;
+  const gitCommand = `git log --since "${afterDate}" --until "${beforeDateEndOfDay}" --pretty=format:${gitOutputFormat} ${ignores}`;
 
   const result = await runCommand(gitCommand);
 
   const rawEntries = (result as string).split('\n');
-
-  // const { committers, monthly } = collapseAndSortCommitterInfo(startDate, endDate, rawEntries);
-  // if( args.monthly ){
-  //   printMonthly(monthly);
-  //   return;
-  // }else{
-  //   printCommitters(committers);
-  //   return;
-  // }
   if (rawEntries.length === 1 && rawEntries[0] === '') {
-    const startDateStr = format(startDate, 'yyyy-MM-dd');
-    const endDateStr = format(endDate, 'yyyy-MM-dd');
-    console.log(`No commits found between ${endDateStr} and ${startDateStr}`);
+    const beforeDateStr = format(beforeDate, 'yyyy-MM-dd');
+    const afterDateStr = format(afterDate, 'yyyy-MM-dd');
+    console.log(`No commits found between ${afterDateStr} and ${beforeDateStr}`);
     return;
   }
   const entries = parseGitLogEntries(rawEntries);
