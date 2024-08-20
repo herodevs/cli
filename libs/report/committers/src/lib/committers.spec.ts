@@ -11,12 +11,12 @@ jest.mock('./parse-git-log-entries');
 jest.mock('./get-committer-counts');
 
 describe('reportCommittersCommand', () => {
-  let defaultStartDate: string;
-  let defaultEndDate: string;
+  let defaultBeforeDate: string;
+  let defaultAfterDate: string;
 
   beforeEach(() => {
-    defaultStartDate = format(new Date(), 'yyyy-MM-dd');
-    defaultEndDate = format(subMonths(new Date(), 12), 'yyyy-MM-dd');
+    defaultBeforeDate = format(new Date(), 'yyyy-MM-dd');
+    defaultAfterDate = format(subMonths(new Date(), 12), 'yyyy-MM-dd');
   });
 
   describe('metadata', () => {
@@ -37,13 +37,13 @@ describe('reportCommittersCommand', () => {
     it('should set start date as today', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const builder = reportCommittersCommand.builder as any;
-      expect(builder.startDate.default).toEqual(defaultStartDate);
+      expect(builder.beforeDate.default).toEqual(defaultBeforeDate);
     });
 
     it('should set end date as 1 year ago', () => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const builder = reportCommittersCommand.builder as any;
-      expect(builder.endDate.default).toEqual(defaultEndDate);
+      expect(builder.afterDate.default).toEqual(defaultAfterDate);
     });
 
     it('should not have a default value for exclude', () => {
@@ -66,28 +66,34 @@ describe('reportCommittersCommand', () => {
 
     it('should run the correct git command', () => {
       const args = {
-        startDate: defaultStartDate,
-        endDate: defaultEndDate,
+        beforeDate: defaultBeforeDate,
+        afterDate: defaultAfterDate,
       };
 
       runCommandMock.mockResolvedValue('');
 
-      const { startDate, endDate } = parseDateFlags(dateFormat, defaultStartDate, defaultEndDate);
+      const { beforeDate, afterDate } = parseDateFlags(
+        dateFormat,
+        defaultBeforeDate,
+        defaultAfterDate
+      );
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       reportCommittersCommand.handler(args as any);
 
-      const startDateEndOfDay = formatISO(addHours(addMinutes(addSeconds(startDate, 59), 59), 23));
+      const beforeDateEndOfDay = formatISO(
+        addHours(addMinutes(addSeconds(beforeDate, 59), 59), 23)
+      );
 
       expect(runCommandMock).toHaveBeenCalledWith(
-        `git log --since "${endDate}" --until "${startDateEndOfDay}" --pretty=format:"%hΓΓΓΓ%anΓΓΓΓ%ad" `
+        `git log --since "${afterDate}" --until "${beforeDateEndOfDay}" --pretty=format:"%hΓΓΓΓ%anΓΓΓΓ%ad" `
       );
     });
 
     it('should parse and organize the git committers', async () => {
       const args = {
-        startDate: defaultStartDate,
-        endDate: defaultEndDate,
+        beforeDate: defaultBeforeDate,
+        afterDate: defaultAfterDate,
       };
 
       runCommandMock.mockResolvedValue('a\nb');
@@ -95,7 +101,7 @@ describe('reportCommittersCommand', () => {
         {
           commitHash: 'hash',
           committer: 'testy',
-          date: defaultStartDate,
+          date: defaultBeforeDate,
         },
       ]);
       getCommitterCountsMock.mockReturnValue([
@@ -115,7 +121,7 @@ describe('reportCommittersCommand', () => {
         {
           commitHash: 'hash',
           committer: 'testy',
-          date: defaultStartDate,
+          date: defaultBeforeDate,
         },
       ]);
 

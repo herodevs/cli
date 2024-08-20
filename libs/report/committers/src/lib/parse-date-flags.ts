@@ -1,12 +1,8 @@
 import { parse } from 'date-fns';
 
-export function parseDateFlags(
-  dateFormat: string,
-  startDate: string,
-  endDate: string
-) {
+export function parseDateFlags(dateFormat: string, beforeDate: string, afterDate: string) {
   return {
-    endDate: parse(endDate, dateFormat, new Date()),
-    startDate: parse(startDate, dateFormat, new Date()),
+    afterDate: parse(afterDate, dateFormat, new Date()),
+    beforeDate: parse(beforeDate, dateFormat, new Date()),
   };
 }
