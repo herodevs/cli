@@ -7,7 +7,7 @@ export async function getProductChoices(
   accessToken: string,
   types: ProjectType[]
 ): Promise<Choice<ReleaseTrain[]>[]> {
-  const releaseTrains = await getReleaseTrains(accessToken, types);
+  const releaseTrains = await getReleaseTrains(accessToken);
 
   const products = releaseTrains.reduce((acc, rt) => {
     rt.products.forEach((product) => {

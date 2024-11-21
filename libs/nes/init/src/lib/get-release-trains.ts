@@ -1,18 +1,9 @@
 import { ApolloClient, gql, InMemoryCache } from '@apollo/client/core';
-import { ProjectType } from '@herodevs/core-types';
-// import { mockTrains } from './mock-trains';
 import { ReleaseTrain } from './models';
 
 export async function getReleaseTrains(
-  accessToken: string,
-  types: ProjectType[]
+  accessToken: string
 ): Promise<ReleaseTrain[]> {
-  // return new Promise((resolve) => {
-  //   setTimeout(() => {
-  //     resolve(mockTrains as unknown as ReleaseTrain[]);
-  //   }, 250);
-  // });
-
   const client = new ApolloClient({
     cache: new InMemoryCache(),
     uri: 'https://api.nes.herodevs.com/graphql',

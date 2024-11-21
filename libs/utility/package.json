@@ -2,6 +2,7 @@
   "name": "@herodevs/utility",
   "version": "0.0.1",
   "dependencies": {
+    "@herodevs/core-types": "^0.0.1",
     "tslib": "^2.3.0"
   },
   "type": "commonjs",
