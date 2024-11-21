@@ -82,28 +82,7 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
 }
 
 function outputCommitters(committerCounts: CommitterCount[]) {
-  const longestNameLength = committerCounts.reduce((acc, c) => {
-    return c.name.length > acc ? c.name.length : acc;
-  }, 'Committer'.length);
-
-  const header = `Committer${' '.repeat(longestNameLength - 9)} | Commits`;
-  console.log(header);
-  console.log(
-    header
-      .split('')
-      .map((c) => (c === '|' ? '|' : '-'))
-      .join('')
-  );
-
-  console.log(
-    committerCounts
-      .map((c) => {
-        const committer = `${c.name}${' '.repeat(longestNameLength - c.name.length)}`;
-        const count = ' '.repeat(7 - c.count.toString().length) + c.count;
-        return `${committer} | ${count}`;
-      })
-      .join('\n')
-  );
+  console.table(committerCounts.map((c) => ({ Committer: c.name, Commits: c.count, 'Last Commit': c.lastCommit })));
 }
 
 function outputCommittersJson(committerCounts: CommitterCount[]) {
