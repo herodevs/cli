@@ -1,9 +1,7 @@
 import { ApolloClient, gql, InMemoryCache } from '@apollo/client/core';
 import { ReleaseTrain } from './models';
 
-export async function getReleaseTrains(
-  accessToken: string
-): Promise<ReleaseTrain[]> {
+export async function getReleaseTrains(accessToken: string): Promise<ReleaseTrain[]> {
   const client = new ApolloClient({
     cache: new InMemoryCache(),
     uri: 'https://api.nes.herodevs.com/graphql',

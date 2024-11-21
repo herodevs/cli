@@ -42,7 +42,7 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
   });
 
   spinner.start('loading your products');
-  const productList = await getProductChoices(accessToken, projectType.types);
+  const productList = await getProductChoices(accessToken);
   spinner.stop();
 
   const releaseTrains =

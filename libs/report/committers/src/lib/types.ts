@@ -5,7 +5,7 @@ export type CommitterCommits = { name: string; commits: string[] };
 export type CommitterCount = {
   name: string;
   count: number;
-  lastCommit: string;
+  lastCommitDate: string;
 };
 
 export type MonthlyData = {

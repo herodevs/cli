@@ -111,7 +111,7 @@ describe('reportCommittersCommand', () => {
       ]);
 
       // eslint-disable-next-line @typescript-eslint/no-empty-function
-      const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+      const consoleTableSpy = jest.spyOn(console, 'table').mockImplementation(() => {});
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await reportCommittersCommand.handler(args as any);
@@ -125,8 +125,7 @@ describe('reportCommittersCommand', () => {
         },
       ]);
 
-      // Since we use console.table console is only called once
-      expect(consoleLogSpy).toHaveBeenCalledTimes(1);
+      expect(consoleTableSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

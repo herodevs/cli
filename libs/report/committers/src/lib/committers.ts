@@ -82,7 +82,13 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
 }
 
 function outputCommitters(committerCounts: CommitterCount[]) {
-  console.table(committerCounts.map((c) => ({ Committer: c.name, Commits: c.count, 'Last Commit': c.lastCommit })));
+  console.table(
+    committerCounts.map((c) => ({
+      Committer: c.name,
+      Commits: c.count,
+      'Last Commit Date': c.lastCommitDate,
+    }))
+  );
 }
 
 function outputCommittersJson(committerCounts: CommitterCount[]) {
