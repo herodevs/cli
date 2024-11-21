@@ -2,31 +2,31 @@ import { type Commit, type CommitterCount, type CommitterLastCommitDate } from '
 
 export function getCommitterCounts(entries: Commit[]): CommitterCount[] {
   const lastCommits = getLastCommitDatePerUser(entries);
-  return entries
-    .reduce((acc, entry) => {
-      let committerCount = acc.find((c) => c.name === entry.committer);
-      if (!committerCount) {
-        committerCount = { name: entry.committer, count: 0, lastCommit: lastCommits[entry.committer] ?? ''};
-        acc.push(committerCount);
-      }
-      committerCount.count++;
-      return acc;
-    }, [] as CommitterCount[])
-    .sort((a, b) => b.count - a.count);
+  const counts = new Map<string, CommitterCount>();
+
+  for (const { committer } of entries) {
+    if (!counts.has(committer)) {
+      counts.set(committer, {
+        name: committer,
+        count: 0,
+        lastCommitDate: lastCommits[committer] ?? '',
+      });
+    }
+    counts.get(committer)!.count++;
+  }
+
+  return Array.from(counts.values()).sort((a, b) => b.count - a.count);
 }
 
 export function getLastCommitDatePerUser(entries: Commit[]): CommitterLastCommitDate {
   const lastCommitDates: CommitterLastCommitDate = {};
 
-  for (let i = 0; i < entries.length; i++) {
-    const entry = entries[i];
-    const { committer, date } = entry;
-
+  for (const { committer, date } of entries) {
     if (Number.isNaN(date.getTime())) continue;
 
     const currentTimestamp = date.getTime();
 
-    if (!lastCommitDates[committer] || currentTimestamp > new Date(lastCommitDates[committer]).getTime()) {
+    if (!lastCommitDates[committer] || currentTimestamp > Date.parse(lastCommitDates[committer])) {
       lastCommitDates[committer] = date.toLocaleString('en-US', { timeZone: 'UTC' });
     }
   }

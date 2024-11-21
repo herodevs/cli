@@ -28,7 +28,7 @@ describe('getProductChoices', () => {
 
     getReleaseTrainsMock.mockResolvedValue(mockTrains);
 
-    const result = await getProductChoices(accessToken, types);
+    const result = await getProductChoices(accessToken);
     expect(result[0].name).toEqual('a');
     expect(result[1].name).toEqual('b');
   });
