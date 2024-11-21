@@ -2,7 +2,10 @@
   "name": "@herodevs/report-committers",
   "version": "0.0.1",
   "dependencies": {
-    "tslib": "^2.3.0"
+    "@herodevs/utility": "^0.0.1",
+    "date-fns": "^3.6.0",
+    "tslib": "^2.3.0",
+    "yargs": "^17.2.1"
   },
   "type": "commonjs",
   "main": "./src/index.js",

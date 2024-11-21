@@ -6,13 +6,13 @@ Node versions 14+
 
 No installation:
 
-```
+```bash
 npx @herodevs/cli ...
 ```
 
 Global installation:
 
-```
+```bash
 npm install -g @herodevs/cli
 hd ...
 # or
