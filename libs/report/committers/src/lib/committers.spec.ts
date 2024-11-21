@@ -125,8 +125,8 @@ describe('reportCommittersCommand', () => {
         },
       ]);
 
-      // 3 = header, separator and committer list
-      expect(consoleLogSpy).toHaveBeenCalledTimes(3);
+      // Since we use console.table console is only called once
+      expect(consoleLogSpy).toHaveBeenCalledTimes(1);
     });
   });
 });

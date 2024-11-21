@@ -5,6 +5,7 @@ export type CommitterCommits = { name: string; commits: string[] };
 export type CommitterCount = {
   name: string;
   count: number;
+  lastCommit: string;
 };
 
 export type MonthlyData = {
@@ -18,3 +19,7 @@ export type SortedCommitterInfo = {
   committers: CommitterCommits[];
   monthly: MonthlyData[];
 };
+
+export interface CommitterLastCommitDate {
+  [committer: string]: string;
+}
