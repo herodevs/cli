@@ -2,8 +2,8 @@
   "name": "@herodevs/report-diagnostics",
   "version": "0.0.1",
   "dependencies": {
-    "@inquirer/prompts": "^5.0.2",
     "@herodevs/utility": "^0.0.1",
+    "@inquirer/prompts": "^5.0.2",
     "tslib": "^2.3.0",
     "yargs": "^17.2.1"
   },
