@@ -52,7 +52,14 @@ hdcli tracker run
 
 ```bash
 # Send information about your project manifest files
-hdcli report ingestion
+hdcli report generate
+```
+
+It is possible to change the server to which the report is sent by setting the `NES_REPORT_URL` environment variable.
+
+```bash
+# Send information about your project manifest files
+NES_REPORT_URL="https://example.com/graphql" hdcli report generate
 ```
 
 ## Tutorials

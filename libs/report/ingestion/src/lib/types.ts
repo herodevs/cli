@@ -7,6 +7,5 @@ export type JSONValue =
   | JSONValue[];
 
 export type Options = {
-  all: boolean;
   consent: boolean;
 };

@@ -19,7 +19,7 @@ export async function askConsent(args: ArgumentsCamelCase<Options>): Promise<boo
 
 export async function promptClientName() {
   const name = await input({
-    message: 'Please enter your name:',
+    message: "Please enter your company's name:",
     validate: (value) => (value.trim() === '' ? 'Name cannot be empty!' : true),
   });
   return name;

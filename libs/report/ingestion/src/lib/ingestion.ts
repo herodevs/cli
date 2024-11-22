@@ -4,12 +4,12 @@ import { findManifestFile, getClientToken, sendManifest } from './send-manifest'
 import { type Options } from './types';
 
 export const reportIngestionCommand: CommandModule<object, Options> = {
-  command: 'ingestion',
+  command: 'generate',
   describe: 'send manifest files information',
-  aliases: ['ingest', 'i'],
+  aliases: ['gen', 'g'],
   builder: {
     consent: {
-      describe: 'Agree to understanding that sensitive data may be outputted',
+      describe: 'Agree to understanding that sensitive data may be sent to the server',
       required: false,
       default: false,
       boolean: true,
@@ -35,5 +35,5 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
   }
 
   await sendManifest(oid, manifest, { clientName });
-  console.log('Manifest sent correctly!');
+  console.log('Manifest sent successfully!');
 }

@@ -54,7 +54,7 @@ describe('promptClientName', () => {
     const result = await promptClientName();
 
     expect(input).toHaveBeenCalledWith({
-      message: 'Please enter your name:',
+      message: "Please enter your company's name:",
       validate: expect.any(Function),
     });
     expect(result).toBe(mockName);
