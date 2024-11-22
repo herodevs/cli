@@ -21,6 +21,7 @@
       "@herodevs/nes-init": ["libs/nes/init/src/index.ts"],
       "@herodevs/report-committers": ["libs/report/committers/src/index.ts"],
       "@herodevs/report-diagnostics": ["libs/report/diagnostics/src/index.ts"],
+      "@herodevs/report-ingestion": ["libs/report/ingestion/src/index.ts"],
       "@herodevs/tracker-init": ["libs/tracker/init/src/index.ts"],
       "@herodevs/tracker-run": ["libs/tracker/run/src/index.ts"],
       "@herodevs/tracker-shared": ["libs/tracker/shared/src/index.ts"],

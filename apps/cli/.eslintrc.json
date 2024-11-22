@@ -27,6 +27,7 @@
               "graphql",
               "@herodevs/report-committers",
               "@herodevs/report-diagnostics",
+              "@herodevs/report-ingestion",
               "@herodevs/tracker-init",
               "@herodevs/tracker-run",
               "@herodevs/nes-init",

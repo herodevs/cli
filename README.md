@@ -50,6 +50,11 @@ hdcli tracker init
 hdcli tracker run
 ```
 
+```bash
+# Send information about your project manifest files
+hdcli report ingestion
+```
+
 ## Tutorials
 
 - [Configure your project to consume a Never-Ending Support package](docs/nes-init.md)
