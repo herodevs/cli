@@ -2,6 +2,7 @@ import * as yargs from 'yargs';
 import { CommandModule } from 'yargs';
 import { reportCommittersCommand } from '@herodevs/report-committers';
 import { reportDiagnosticsCommand } from '@herodevs/report-diagnostics';
+import { reportIngestionCommand } from '@herodevs/report-ingestion';
 import { trackerInitCommand } from '@herodevs/tracker-init';
 import { trackerRunCommand } from '@herodevs/tracker-run';
 import { createGroupCommand } from './create-group-command';
@@ -25,7 +26,7 @@ export function getCommands(): CommandModule<any, any>[] {
     'type',
     'type of report',
     'r',
-    [reportCommittersCommand, reportDiagnosticsCommand],
+    [reportCommittersCommand, reportDiagnosticsCommand, reportIngestionCommand],
     'Invalid report type'
   );
 
