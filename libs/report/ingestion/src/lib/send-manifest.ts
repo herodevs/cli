@@ -96,7 +96,7 @@ async function readManifestFile(fileName: string) {
 
   // Empty file
   if (file.size === 0) {
-    console.warn(`[WARN] Ignoring file ${fileName}, because is empty`);
+    console.warn(`[WARN] Ignoring file ${fileName}, because it is empty`);
     return;
   }
 
