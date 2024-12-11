@@ -38,7 +38,7 @@ jobs:
           git add .
           git commit -m "test commit 2"
 
-      - run: npm ci ./dist/apps/cli/herodevs-cli-0.0.0-local.tgz
+      - run: npm install ./dist/apps/cli/herodevs-cli-0.0.0-local.tgz
 
       - run: npx hd --version
 
