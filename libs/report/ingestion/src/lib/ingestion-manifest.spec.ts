@@ -1,4 +1,4 @@
-import { readFileSync, statSync, existsSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
 import { promptToProceedUploadFile } from './prompts';
 import { findManifestFile } from './send-manifest';
 
