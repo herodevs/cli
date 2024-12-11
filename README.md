@@ -55,10 +55,10 @@ hdcli tracker run
 hdcli report generate
 ```
 
-It is possible to change the server to which the report is sent by setting the `NES_REPORT_URL` environment variable.
+For local debugging and development, it is possible configure the server to which reports are sent by setting the `NES_REPORT_URL` environment variable:
 
 ```bash
-# Send information about your project manifest files
+# Send information about your project manifest files to a custom graphql endpoint
 NES_REPORT_URL="https://example.com/graphql" hdcli report generate
 ```
 
