@@ -3,7 +3,7 @@ import { ArgumentsCamelCase } from 'yargs';
 import { type Options } from './types';
 
 export async function askConsent(args: ArgumentsCamelCase<Options>): Promise<boolean> {
-  const consentPrompt = 'Data may contain sensitive data, please review before sharing it.';
+  const consentPrompt = 'Data may contain sensitive information, please review before sharing it.';
   if (!args.consent) {
     const answer = await confirm({
       message: `${consentPrompt} Continue?`,
