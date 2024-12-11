@@ -1,5 +1,5 @@
 import { type ArgumentsCamelCase, type CommandModule } from 'yargs';
-import { askConsent, promptClientName, promptToProceedUploadFile } from './prompts';
+import { askConsent, promptClientName } from './prompts';
 import { findManifestFile, getClientToken, sendManifest } from './send-manifest';
 import { type Options } from './types';
 
