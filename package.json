@@ -21,6 +21,7 @@
     "date-fns": "^3.6.0",
     "git-last-commit": "^1.0.1",
     "graphql": "^16.8.1",
+    "isomorphic-fetch": "^3.0.0",
     "minimist": "^1.2.8",
     "ora": "5.3.0",
     "sloc": "^0.3.2",

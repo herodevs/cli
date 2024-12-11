@@ -3,6 +3,7 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { promptToProceedUploadFile } from './prompts';
 import { TELEMETRY_INITIALIZE_MUTATION, TELEMETRY_REPORT_MUTATION } from './queries';
 import { type JSONValue } from './types';
+import 'isomorphic-fetch';
 
 const NES_REPORT_URL = process.env['NES_REPORT_URL'] || 'https://api.nes.herodevs.com/graphql';
 
