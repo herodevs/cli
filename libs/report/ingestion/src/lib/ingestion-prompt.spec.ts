@@ -14,7 +14,7 @@ describe('askConsent', () => {
     const result = await askConsent(args);
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Data may contain sensitive data, please review before sharing it.'
+      'Data may contain sensitive information, please review before sharing it.'
     );
     expect(result).toBe(true);
 
@@ -28,7 +28,7 @@ describe('askConsent', () => {
     const result = await askConsent(args);
 
     expect(confirm).toHaveBeenCalledWith({
-      message: 'Data may contain sensitive data, please review before sharing it. Continue?',
+      message: 'Data may contain sensitive information, please review before sharing it. Continue?',
     });
     expect(result).toBe(true);
   });
@@ -40,13 +40,14 @@ describe('askConsent', () => {
     const result = await askConsent(args);
 
     expect(confirm).toHaveBeenCalledWith({
-      message: 'Data may contain sensitive data, please review before sharing it. Continue?',
+      message: 'Data may contain sensitive information, please review before sharing it. Continue?',
     });
     expect(result).toBe(false);
   });
 });
 
 describe('promptClientName', () => {
+  afterEach(() => jest.resetAllMocks());
   it('should return the entered name if valid', async () => {
     const mockName = 'John Doe';
     (input as jest.Mock).mockResolvedValue(mockName);
@@ -61,6 +62,7 @@ describe('promptClientName', () => {
   });
 
   it('should validate the input and reject empty names', async () => {
+    await promptClientName();
     const validateFn = (input as jest.Mock).mock.calls[0][0].validate;
     expect(validateFn('')).toBe('Name cannot be empty!');
     expect(validateFn('   ')).toBe('Name cannot be empty!');
