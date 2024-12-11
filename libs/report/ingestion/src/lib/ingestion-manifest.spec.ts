@@ -28,7 +28,7 @@ describe('Telemetry Functions', () => {
     expect(promptToProceedUploadFile).toHaveBeenCalledWith(mockFileName);
   });
 
-  it('manifest files does not exist', async () => {
+  it('should warn if manifest files do not exist', async () => {
     (existsSync as jest.Mock).mockReturnValue(false);
     (promptToProceedUploadFile as jest.Mock).mockResolvedValue(true);
     const consoleWarnSpy = jest.spyOn(console, 'log').mockImplementation();
