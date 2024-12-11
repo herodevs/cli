@@ -12,7 +12,7 @@ interface Options {
   afterDate: string;
   exclude: string[];
   json: boolean;
-  // monthly: boolean;
+  directory: string;
 }
 
 export const reportCommittersCommand: CommandModule<object, Options> = {
@@ -44,13 +44,12 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
       default: false,
       boolean: true,
     },
-    // monthly: {
-    //   alias: 'm',
-    //   describe:
-    //     'Break down by calendar month, rather than by committer.  (eg -m)',
-    //   required: false,
-    //   default: false,
-    // },
+    directory: {
+      alias: 'd',
+      describe: 'Directory to search',
+      required: false,
+      string: true,
+    },
   } as CommandBuilder<unknown, Options>,
   handler: run,
 };
@@ -61,7 +60,15 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
 
   const ignores = args.exclude && args.exclude.length ? `-- . "!(${args.exclude.join('|')})"` : '';
 
-  const gitCommand = `git log --since "${afterDate}" --until "${beforeDateEndOfDay}" --pretty=format:${gitOutputFormat} ${ignores}`;
+  let gitCommand = `git log --since "${afterDate}" --until "${beforeDateEndOfDay}" --pretty=format:${gitOutputFormat} ${ignores}`;
+
+  const cwd = args.directory;
+
+  if (cwd) {
+    // According to git documentation, the -- is used to separate the options from the pathspecs
+    // https://git-scm.com/docs/git-log#Documentation/git-log.txt---ltpathgt82308203
+    gitCommand = `${gitCommand} -- ${cwd}`;
+  }
 
   const result = await runCommand(gitCommand);
 
