@@ -9,10 +9,10 @@ export type CommitterCount = {
 };
 
 export type MonthlyData = {
-  name: string;
+  month: string;
   start: Date;
   end: Date;
-  committers: Record<string, { hash: string; date: string }[]>;
+  committers: Record<string, number>;
 };
 
 export type SortedCommitterInfo = {

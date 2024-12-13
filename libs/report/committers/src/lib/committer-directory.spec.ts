@@ -20,6 +20,7 @@ describe('reportCommittersCommand directory', () => {
       json: false,
       directory: 'src',
       $0: 'test',
+      monthly: false,
       _: [],
     };
 
