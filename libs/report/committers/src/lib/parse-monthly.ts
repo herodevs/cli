@@ -9,7 +9,11 @@ export function parseMonthly(startDate: Date, endDate: Date, entries: Commit[]) 
   });
 
   for (let idx = 0; idx < range.length - 1; idx++) {
-    const [start, end] = [range[idx], range[idx + 1]];
+    // `convertToUTC` is an awful hack to convert the date to UTC
+    // This is needed because the date-fns eachMonthOfInterval function
+    // is not timezone aware and will return the date in the local timezone
+    // Refs: https://github.com/date-fns/date-fns/issues/3097
+    const [start, end] = [convertToUTC(range[idx]), convertToUTC(range[idx + 1])];
     const month: MonthlyData = {
       month: format(start, 'LLLL yyyy'),
       start,
@@ -28,6 +32,11 @@ export function parseMonthly(startDate: Date, endDate: Date, entries: Commit[]) 
     }
   }
   return monthly;
+}
+
+function convertToUTC(date: Date): Date {
+  const timezoneOffset = date.getTimezoneOffset() * -1;
+  return new Date(date.getTime() + timezoneOffset * 60000);
 }
 
 function monthlyDataHumanReadable(data: MonthlyData) {
