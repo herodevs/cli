@@ -23,12 +23,12 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
     beforeDate: {
       alias: 's',
       default: format(new Date(), dateFormat),
-      describe: `Start Date (format: ${dateFormat})`,
+      describe: `End Date (format: ${dateFormat})`,
       string: true,
     },
     afterDate: {
       alias: 'e',
-      describe: `End Date (format: ${dateFormat})`,
+      describe: `Start Date (format: ${dateFormat})`,
       required: false,
       default: format(subMonths(new Date(), monthsToSubtract), dateFormat),
     },
