@@ -31,10 +31,12 @@ export function parseMonthly(startDate: Date, endDate: Date, entries: Commit[]) 
 }
 
 function monthlyDataHumanReadable(data: MonthlyData) {
+  const totalCommits = Object.values(data.committers).reduce((sum, count) => sum + count, 0);
   return {
-    ...data,
+    month: data.month,
     start: format(data.start, 'yyyy-MM-dd'),
     end: format(data.end, 'yyyy-MM-dd'),
+    totalCommits,
   };
 }
 

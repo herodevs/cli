@@ -1,4 +1,6 @@
-import { parseMonthly } from './parse-monthly';
+import { format } from 'date-fns';
+import { outputMonthlyCommitters, parseMonthly } from './parse-monthly';
+import { MonthlyData } from './types';
 
 describe('parseMonthly', () => {
   const sampleCommits = [
@@ -90,5 +92,58 @@ describe('parseMonthly', () => {
       sampleCommits
     );
     expect(result).toEqual([]);
+  });
+});
+
+describe('outputMonthlyCommitters', () => {
+  const consoleTableSpy = jest.spyOn(console, 'table').mockImplementation();
+
+  afterEach(() => {
+    consoleTableSpy.mockClear();
+  });
+
+  afterAll(() => {
+    consoleTableSpy.mockRestore();
+  });
+
+  it('should format and display the monthly commit data correctly', () => {
+    const exampleCommits = [
+      {
+        month: 'January 2024',
+        start: new Date('2024-01-01'),
+        end: new Date('2024-01-31'),
+        committers: {
+          Marco: 5,
+          George: 3,
+        },
+      },
+      {
+        month: 'February 2024',
+        start: new Date('2024-02-01'),
+        end: new Date('2024-02-28'),
+        committers: {
+          Greg: 7,
+        },
+      },
+    ] as MonthlyData[];
+
+    const expectedOutput = [
+      {
+        month: 'January 2024',
+        start: format(new Date('2024-01-01'), 'yyyy-MM-dd'),
+        end: format(new Date('2024-01-31'), 'yyyy-MM-dd'),
+        totalCommits: 8,
+      },
+      {
+        month: 'February 2024',
+        start: format(new Date('2024-02-01'), 'yyyy-MM-dd'),
+        end: format(new Date('2024-02-28'), 'yyyy-MM-dd'),
+        totalCommits: 7,
+      },
+    ];
+
+    outputMonthlyCommitters(exampleCommits);
+    expect(consoleTableSpy).toHaveBeenCalledTimes(1);
+    expect(consoleTableSpy).toHaveBeenCalledWith(expectedOutput);
   });
 });
