@@ -32,16 +32,16 @@ describe('parseMonthly', () => {
     expect(result).toEqual([
       {
         month: 'January 2023',
-        start,
-        end,
+        start: new Date('2022-12-31T23:00:00.000Z'), // Start of January
+        end: new Date('2023-01-31T23:00:00.000Z'), // End of January
         committers: {
           Marco: 2,
         },
       },
       {
         month: 'February 2023',
-        start,
-        end,
+        start: new Date('2023-01-31T23:00:00.000Z'), // Start of February
+        end: new Date('2023-02-28T23:00:00.000Z'), // End of February
         committers: {
           George: 1,
           Marco: 1,
@@ -74,8 +74,8 @@ describe('parseMonthly', () => {
     expect(result).toEqual([
       {
         month: 'March 2023',
-        start,
-        end,
+        start: new Date('2023-02-28T23:00:00.000Z'), // Start of March
+        end: new Date('2023-03-31T22:00:00.000Z'), // End of March
         committers: {
           Greg: 1,
         },

@@ -12,8 +12,8 @@ export function parseMonthly(startDate: Date, endDate: Date, entries: Commit[]) 
     const [start, end] = [range[idx], range[idx + 1]];
     const month: MonthlyData = {
       month: format(start, 'LLLL yyyy'),
-      start: startDate,
-      end: endDate,
+      start,
+      end,
       committers: {},
     };
 
