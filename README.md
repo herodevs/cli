@@ -50,6 +50,18 @@ hdcli tracker init
 hdcli tracker run
 ```
 
+```bash
+# Send information about your project manifest files
+hdcli report generate
+```
+
+For local debugging and development, it is possible configure the server to which reports are sent by setting the `NES_REPORT_URL` environment variable:
+
+```bash
+# Send information about your project manifest files to a custom graphql endpoint
+NES_REPORT_URL="https://example.com/graphql" hdcli report generate
+```
+
 ## Tutorials
 
 - [Configure your project to consume a Never-Ending Support package](docs/nes-init.md)
