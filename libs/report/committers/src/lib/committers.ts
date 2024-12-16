@@ -59,7 +59,7 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
     monthly: {
       alias: 'm',
       boolean: true,
-      describe: 'Break down by calendar month, rather than by committer.',
+      describe: 'Break down by calendar month.',
       required: false,
       default: false,
     },
