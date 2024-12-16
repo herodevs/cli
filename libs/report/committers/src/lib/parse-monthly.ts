@@ -40,7 +40,7 @@ function convertToUTC(date: Date): Date {
 }
 
 function monthlyDataHumanReadable(data: MonthlyData) {
-  const totalCommits = Object.values(data.committers).reduce((sum, count) => sum + count, 0);
+  const totalCommits = Object.values(data.committers).reduce((sum, count) => sum + count);
   return {
     month: data.month,
     start: format(data.start, 'yyyy-MM-dd'),
