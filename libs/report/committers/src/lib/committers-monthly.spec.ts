@@ -1,49 +1,54 @@
-import { format } from 'date-fns';
+import { format, parse } from 'date-fns';
+import { dateFormat } from './constants';
 import { outputMonthlyCommitters, parseMonthly } from './parse-monthly';
 import { MonthlyData } from './types';
 
 describe('parseMonthly', () => {
+  // Helper to create date objects that represent the date of the provided date string in the
+  // current user's timezone.
+  const newDate = (dateStr: string) => parse(dateStr, dateFormat, new Date());
+
   const sampleCommits = [
     {
-      date: new Date('2023-01-15T12:00:00Z'),
+      date: newDate('2023-01-15'),
       committer: 'Marco',
       commitHash: 'abc123',
     },
     {
-      date: new Date('2023-01-20T12:00:00Z'),
+      date: newDate('2023-01-20'),
       committer: 'Marco',
       commitHash: 'def456',
     },
     {
-      date: new Date('2023-02-10T12:00:00Z'),
+      date: newDate('2023-02-10'),
       committer: 'George',
       commitHash: 'ghi789',
     },
     {
-      date: new Date('2023-02-15T12:00:00Z'),
+      date: newDate('2023-02-15'),
       committer: 'Marco',
       commitHash: 'jkl012',
     },
   ];
 
   it('should group commits by month and count them per committer', () => {
-    const start = new Date('2023-01-01T00:00:00Z');
-    const end = new Date('2023-03-01T00:00:00Z');
+    const start = newDate('2023-01-01');
+    const end = newDate('2023-03-01');
     const result = parseMonthly(start, end, sampleCommits);
 
     expect(result).toEqual([
       {
         month: 'January 2023',
-        start: new Date('2023-01-01T00:00:00.000Z'),
-        end: new Date('2023-02-01T00:00:00.000Z'),
+        start: newDate('2023-01-01'),
+        end: newDate('2023-02-01'),
         committers: {
           Marco: 2,
         },
       },
       {
         month: 'February 2023',
-        start: new Date('2023-02-01T00:00:00.000Z'),
-        end: new Date('2023-03-01T00:00:00.000Z'),
+        start: newDate('2023-02-01'),
+        end: newDate('2023-03-01'),
         committers: {
           George: 1,
           Marco: 1,
@@ -54,8 +59,8 @@ describe('parseMonthly', () => {
 
   it('should return an empty array if there are no commits', () => {
     const result = parseMonthly(
-      new Date('2023-01-01T00:00:00Z'),
-      new Date('2023-03-01T00:00:00Z'),
+      newDate('2023-01-01'),
+      newDate('2023-03-01'),
       []
     );
     expect(result).toEqual([]);
@@ -64,20 +69,20 @@ describe('parseMonthly', () => {
   it('should handle date ranges with no commits in certain months', () => {
     const commits = [
       {
-        date: new Date('2023-03-10T12:00:00Z'),
+        date: newDate('2023-03-10'),
         committer: 'Greg',
         commitHash: 'mno345',
       },
     ];
-    const start = new Date('2023-01-01T00:00:00Z');
-    const end = new Date('2023-04-01T00:00:00Z');
+    const start = newDate('2023-01-01');
+    const end = newDate('2023-04-01');
     const result = parseMonthly(start, end, commits);
 
     expect(result).toEqual([
       {
         month: 'March 2023',
-        start: new Date('2023-03-01T00:00:00.000Z'),
-        end: new Date('2023-04-01T00:00:00.000Z'),
+        start: newDate('2023-03-01'),
+        end: newDate('2023-04-01'),
         committers: {
           Greg: 1,
         },
@@ -87,8 +92,8 @@ describe('parseMonthly', () => {
 
   it('should handle an empty date range', () => {
     const result = parseMonthly(
-      new Date('2023-01-01T00:00:00Z'),
-      new Date('2023-01-01T00:00:00Z'),
+      newDate('2023-01-01'),
+      newDate('2023-01-01'),
       sampleCommits
     );
     expect(result).toEqual([]);

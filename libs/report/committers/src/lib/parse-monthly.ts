@@ -13,7 +13,7 @@ export function parseMonthly(startDate: Date, endDate: Date, entries: Commit[]) 
     // This is needed because the date-fns eachMonthOfInterval function
     // is not timezone aware and will return the date in the local timezone
     // Refs: https://github.com/date-fns/date-fns/issues/3097
-    const [start, end] = [convertToUTC(range[idx]), convertToUTC(range[idx + 1])];
+    const [start, end] = [range[idx], range[idx + 1]];
     const month: MonthlyData = {
       month: format(start, 'LLLL yyyy'),
       start: max([start, startDate]),
