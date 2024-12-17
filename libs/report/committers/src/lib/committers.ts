@@ -1,10 +1,15 @@
-import { addHours, addMinutes, addSeconds, format, formatISO, subMonths } from 'date-fns';
 import { runCommand } from '@herodevs/utility';
-import { parseDateFlags } from './parse-date-flags';
-import { dateFormat, gitOutputFormat, monthsToSubtract } from './constants';
-import { parseGitLogEntries } from './parse-git-log-entries';
-import { getCommitterCounts } from './get-committer-counts';
+import { addHours, addMinutes, addSeconds, format, formatISO, subMonths } from 'date-fns';
 import { ArgumentsCamelCase, CommandBuilder, CommandModule } from 'yargs';
+import { dateFormat, gitOutputFormat, monthsToSubtract } from './constants';
+import { getCommitterCounts } from './get-committer-counts';
+import { parseDateFlags } from './parse-date-flags';
+import { parseGitLogEntries } from './parse-git-log-entries';
+import {
+  outputMonthlyCommitters,
+  outputMonthlyCommittersJson,
+  parseMonthly,
+} from './parse-monthly';
 import { CommitterCount } from './types';
 
 interface Options {
@@ -13,6 +18,7 @@ interface Options {
   exclude: string[];
   json: boolean;
   directory: string;
+  monthly: boolean;
 }
 
 export const reportCommittersCommand: CommandModule<object, Options> = {
@@ -50,6 +56,13 @@ export const reportCommittersCommand: CommandModule<object, Options> = {
       required: false,
       string: true,
     },
+    monthly: {
+      alias: 'm',
+      boolean: true,
+      describe: 'Break down by calendar month.',
+      required: false,
+      default: false,
+    },
   } as CommandBuilder<unknown, Options>,
   handler: run,
 };
@@ -80,6 +93,17 @@ async function run(args: ArgumentsCamelCase<Options>): Promise<void> {
     return;
   }
   const entries = parseGitLogEntries(rawEntries);
+
+  if (args.monthly) {
+    const monthly = parseMonthly(afterDate, beforeDate, entries);
+    if (args.json) {
+      outputMonthlyCommittersJson(monthly);
+      return;
+    }
+    outputMonthlyCommitters(monthly);
+    return;
+  }
+
   const committerCounts = getCommitterCounts(entries);
   if (args.json) {
     outputCommittersJson(committerCounts);
