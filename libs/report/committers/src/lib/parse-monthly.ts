@@ -1,4 +1,4 @@
-import { eachMonthOfInterval, format, isWithinInterval } from 'date-fns';
+import { eachMonthOfInterval, format, isWithinInterval, max, min } from 'date-fns';
 import { Commit, MonthlyData } from './types';
 
 export function parseMonthly(startDate: Date, endDate: Date, entries: Commit[]) {
@@ -16,8 +16,8 @@ export function parseMonthly(startDate: Date, endDate: Date, entries: Commit[]) 
     const [start, end] = [convertToUTC(range[idx]), convertToUTC(range[idx + 1])];
     const month: MonthlyData = {
       month: format(start, 'LLLL yyyy'),
-      start,
-      end,
+      start: max([start, startDate]),
+      end: min([end, endDate]),
       committers: {},
     };
 
