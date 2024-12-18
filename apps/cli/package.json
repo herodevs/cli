@@ -1,6 +1,6 @@
 {
   "name": "@herodevs/cli",
-  "version": "0.3.0",
+  "version": "0.0.0",
   "bin": {
     "hd": "./src/main.js",
     "hdcli": "./src/main.js"
