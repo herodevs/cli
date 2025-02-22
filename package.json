@@ -15,7 +15,7 @@
   },
   "private": true,
   "dependencies": {
-    "@apollo/client": "^3.10.1",
+    "@apollo/client": "^3.13.1",
     "@inquirer/prompts": "^5.0.2",
     "cli-spinners": "^3.0.0",
     "date-fns": "^3.6.0",
