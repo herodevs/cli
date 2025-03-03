@@ -1,6 +1,6 @@
 import * as sloc from 'sloc';
 
-import { lstatSync, readdirSync, readFileSync } from 'fs';
+import { existsSync, lstatSync, readdirSync, readFileSync } from 'fs';
 import { join, extname } from 'path';
 import {
   AggregateResult,
@@ -17,6 +17,7 @@ export function processCategory(
 ): CategoryResult {
   console.log(`Processing "${category.name}"...`);
   const allFiles = category.includes.reduce((acc, include) => {
+    console.log(`     Searching for files in ${include}...`);
     return [...acc, ...findAllFilesInDirectory(join(rootDirectory, include))];
   }, [] as string[]);
 
@@ -173,18 +174,26 @@ function findIncludedFiles(
 }
 
 function findAllFilesInDirectory(directory: string): string[] {
-  const results = readdirSync(directory);
-  const subfiles = results
-    .filter((result) => lstatSync(join(directory, result)).isDirectory())
-    .reduce((acc, subdir) => {
-      const files = findAllFilesInDirectory(join(directory, subdir));
-      return [...acc, ...files];
-    }, [] as string[]);
+  if (!existsSync(directory)) {
+    return [];
+  }
+  const entries = readdirSync(directory);
 
-  const files = results
-    .filter((result) => lstatSync(join(directory, result)).isFile())
-    .map((fileName) => join(directory, fileName));
-  return [...files, ...subfiles];
+  const files: string[] = [];
+  const directories: string[] = [];
+
+  for (const entry of entries) {
+    const fullPath = join(directory, entry);
+    const stat = lstatSync(fullPath);
+
+    if (stat.isFile()) {
+      files.push(fullPath);
+    } else if (stat.isDirectory()) {
+      directories.push(fullPath);
+    }
+  }
+
+  return files.concat(...directories.map(findAllFilesInDirectory));
 }
 
 function getFileExt(file: string): string {
