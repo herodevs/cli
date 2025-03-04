@@ -1,5 +1,0 @@
-{
-  "main": "sea.cjs",
-  "output": "sea-prep.blob",
-  "disableExperimentalSEAWarning": true
-}
