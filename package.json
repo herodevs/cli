@@ -40,7 +40,7 @@
     "@swc/helpers": "0.5.12",
     "@types/jest": "29.5.12",
     "@types/minimist": "^1.2.5",
-    "@types/node": "18.19.68",
+    "@types/node": "18.19.80",
     "@types/sloc": "^0.2.3",
     "@typescript-eslint/eslint-plugin": "7.18.0",
     "@typescript-eslint/parser": "7.18.0",
