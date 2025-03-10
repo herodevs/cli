@@ -1,0 +1,161 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:c82634ad-0f4c-4bd7-b06c-e253f7f34fda",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-03-11T04:01:04Z",
+    "tools": {
+      "components": [
+        {
+          "group": "@cyclonedx",
+          "name": "cdxgen",
+          "version": "11.2.0",
+          "purl": "pkg:npm/%40cyclonedx/cdxgen@11.2.0",
+          "type": "application",
+          "bom-ref": "pkg:npm/@cyclonedx/cdxgen@11.2.0",
+          "publisher": "OWASP Foundation",
+          "authors": [
+            {
+              "name": "OWASP Foundation"
+            }
+          ]
+        }
+      ]
+    },
+    "authors": [
+      {
+        "name": "OWASP Foundation"
+      }
+    ],
+    "lifecycles": [
+      {
+        "phase": "pre-build"
+      }
+    ],
+    "component": {
+      "name": "simple",
+      "group": "",
+      "version": "1.0.0",
+      "description": "",
+      "purl": "pkg:npm/simple@1.0.0",
+      "bom-ref": "pkg:npm/simple@1.0.0",
+      "author": "",
+      "type": "application",
+      "licenses": [
+        {
+          "license": {
+            "id": "ISC",
+            "url": "https://opensource.org/licenses/ISC"
+          }
+        }
+      ]
+    },
+    "properties": [
+      {
+        "name": "cdx:bom:componentTypes",
+        "value": "npm"
+      },
+      {
+        "name": "cdx:bom:componentSrcFiles",
+        "value": "test/fixtures/npm/simple/package-lock.json"
+      }
+    ]
+  },
+  "components": [
+    {
+      "group": "",
+      "name": "bootstrap",
+      "version": "3.1.1",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "4c0cea4bc13f212a551cfdbd818872fb535257e149c00a435508437e02d8b08b940c98aa2731f60df391379b62bbe21eda204baf3106df8b7845fe3ae5c8a0aa"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/bootstrap@3.1.1",
+      "type": "library",
+      "bom-ref": "pkg:npm/bootstrap@3.1.1",
+      "properties": [
+        {
+          "name": "SrcFile",
+          "value": "test/fixtures/npm/simple/package-lock.json"
+        },
+        {
+          "name": "ResolvedUrl",
+          "value": "https://registry.npmjs.org/bootstrap/-/bootstrap-3.1.1.tgz"
+        },
+        {
+          "name": "LocalNodeModulesPath",
+          "value": "node_modules/bootstrap"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "purl",
+            "confidence": 1,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 1,
+                "value": "/Users/welch/Code/herodevs/cli/test/fixtures/npm/simple/package-lock.json"
+              }
+            ],
+            "concludedValue": "/Users/welch/Code/herodevs/cli/test/fixtures/npm/simple/package-lock.json"
+          }
+        ]
+      },
+      "tags": [
+        "registry"
+      ]
+    }
+  ],
+  "services": [ ],
+  "dependencies": [
+    {
+      "ref": "pkg:npm/bootstrap@3.1.1",
+      "dependsOn": [ ]
+    },
+    {
+      "ref": "pkg:npm/simple@1.0.0",
+      "dependsOn": [
+        "pkg:npm/bootstrap@3.1.1"
+      ]
+    }
+  ],
+  "annotations": [
+    {
+      "bom-ref": "metadata-annotations",
+      "subjects": [
+        "pkg:npm/simple@1.0.0"
+      ],
+      "annotator": {
+        "component": {
+          "group": "@cyclonedx",
+          "name": "cdxgen",
+          "version": "11.2.0",
+          "purl": "pkg:npm/%40cyclonedx/cdxgen@11.2.0",
+          "type": "application",
+          "bom-ref": "pkg:npm/@cyclonedx/cdxgen@11.2.0",
+          "publisher": "OWASP Foundation",
+          "authors": [
+            {
+              "name": "OWASP Foundation"
+            }
+          ]
+        }
+      },
+      "timestamp": "2025-03-11T04:01:04Z",
+      "text": "This Software Bill-of-Materials (SBOM) document was created on Monday, March 10, 2025 with cdxgen. The data was captured during the pre-build lifecycle phase without building the application. The document describes an application named 'simple' with version '1.0.0'. There are 1 components."
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "debug:current",
+      "skipFiles": [ "<node_internals>/**" ],
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/mocha",
+      "args": [
+        "--forbid-only",
+        "--watch", "--watch-files", "src/**/*",
+        "--watch", "--watch-files", "test/**/*.ts",
+        "--reporter", "./test/helpers/reporter.js",
+        "${file}"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "debug:all",
+      "skipFiles": [ "<node_internals>/**" ],
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/mocha",
+      "args": [
+        "--forbid-only",
+        "--watch", "--watch-files", "src/**/*",
+        "--watch", "--watch-files", "test/**/*",
+        "--reporter", "./test/helpers/reporter.js",
+        "test/**/*.test.ts"
+      ],
+      "console": "integratedTerminal"
+    }
+  ]
+}
