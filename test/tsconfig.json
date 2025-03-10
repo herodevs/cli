@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig",
+  "compilerOptions": {
+    "noEmit": true,
+    "module": "ESNext"
+  },
+  "references": [
+    { "path": ".." }
+  ]
+}
