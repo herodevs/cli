@@ -90,6 +90,9 @@
       "prerun": "./dist/hooks/prerun/CommandContextHook"
     }
   },
-  "repository": "@herodevs/cli",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/herodevs/cli.git"
+  },
   "types": "dist/index.d.ts"
 }
