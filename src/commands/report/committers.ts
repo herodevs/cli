@@ -1,10 +1,10 @@
 import {Args, Command, Flags} from '@oclif/core'
 
-export default class Report extends Command {
+export default class Committers extends Command {
   static override args = {
     file: Args.string({description: 'file to read'}),
   }
-  static override description = 'describe the command here'
+  static override description = 'Generate report of committers to a git repository'
   static override examples = [
     '<%= config.bin %> <%= command.id %>',
   ]
@@ -16,10 +16,10 @@ export default class Report extends Command {
   }
 
   public async run(): Promise<void> {
-    const {args, flags} = await this.parse(Report)
+    const {args, flags} = await this.parse(Committers)
 
     const name = flags.name ?? 'world'
-    this.log(`hello ${name} from /Users/edward/code/herodevs/cli/src/commands/report.ts`)
+    this.log(`hello ${name} from /Users/edward/code/herodevs/cli/src/commands/committers.ts`)
     if (args.file && flags.force) {
       this.log(`you input --force and --file: ${args.file}`)
     }
