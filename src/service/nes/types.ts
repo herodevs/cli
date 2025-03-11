@@ -1,10 +1,10 @@
 export type JSONValue =
-  | string
-  | number
   | boolean
+  | JSONValue[]
   | null
-  | { [key: string]: JSONValue }
-  | JSONValue[];
+  | number
+  | string
+  | { [key: string]: JSONValue };
 
 export type Options = {
   consent: boolean;
