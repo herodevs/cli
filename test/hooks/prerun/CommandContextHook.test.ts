@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/filename-case */
 import {runHook} from '@oclif/test'
 import {expect} from 'chai'
 

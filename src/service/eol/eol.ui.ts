@@ -2,12 +2,16 @@
 import { ux } from '@oclif/core'
 import inquirer from 'inquirer'
 
+import { ScanResultComponent } from '../nes/modules/sbom';
 
 interface Line {
   daysEol?: number
-  purl: string
-  info?: any
-  status: string
+  purl: ScanResultComponent['purl']
+  info?: {
+    eolAt?: Date,
+    isEol: boolean
+  }
+  status: ScanResultComponent['status']
 }
 
 function daysBetween(date1: Date, date2: Date) {
@@ -68,7 +72,6 @@ export function promptComponentDetails(lines: Line[]) {
   const context = {
     longest: lines
       .map(l => l.purl.length)
-      // eslint-disable-next-line unicorn/no-array-reduce
       .reduce((a, l) => Math.max(a, l), 0),
     total: lines.length
   }

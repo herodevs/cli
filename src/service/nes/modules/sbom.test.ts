@@ -27,7 +27,7 @@ describe('SBOM Scanner', () => {
     expect(result).has.property('components')
 
     // make sure the scan has the components from above
-    for (const key of mock.components.map(c => c.purl)) {
+    for (const key of Object.keys(mock.components)) {
       expect(result.components).to.have.property(key)
     }
   });
@@ -54,10 +54,10 @@ const mocked = {
     insights: {
       scan: {
         eol: {
-          components: [
-            { info: STATUS_OK, purl: 'pkg:npm/camelcase@6.3.0', 'status': 'OK' },
-            { info: STATUS_EOL(), purl: 'pkg:npm/bootstrap@3.3.0', 'status': 'EOL' }
-          ],
+          components: {
+            'pkg:npm/bootstrap@3.3.0': { info: STATUS_EOL(), purl: 'pkg:npm/bootstrap@3.3.0', 'status': 'EOL' },
+            'pkg:npm/camelcase@6.3.0': { info: STATUS_OK, purl: 'pkg:npm/camelcase@6.3.0', 'status': 'OK' }
+          },
           diagnostics: {
             __mock: true
           },

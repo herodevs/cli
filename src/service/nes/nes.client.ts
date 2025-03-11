@@ -10,25 +10,19 @@ import {
 import 'isomorphic-fetch';
 import { default as fetch } from 'node-fetch'
 
-import { SbomScanner as sbomScanner, ScanResult } from './modules/sbom';
-
+import { SbomMap } from '../eol/eol.types';
+import { SbomScanner as sbomScanner, ScanResult } from '../nes/modules/sbom';
 
 type Fetch = typeof fetch
 type Params = Parameters<Fetch>
-
 
 export const fetcher = {
   fetch: ((...args: Params) => fetch(...args)) as Fetch
 }
 
-
-interface SbomScan {
-  <SB>(sbom: SB): Promise<ScanResult>
-}
-
 export interface NesClient {
   scan: {
-    sbom: SbomScan
+    sbom: (sbom: SbomMap) => Promise<ScanResult>
   }
 }
 

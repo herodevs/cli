@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare module "@cyclonedx/cdxgen" {
   /**
    * For all modules in the specified package, creates a list of
@@ -60,6 +61,7 @@ declare module "@cyclonedx/cdxgen" {
   export function mergeDependencies(
     dependencies: any,
     newDependencies: any,
+    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
     parentComponent?: {}
   ): ({ dependsOn: any[]; provides: any[]; ref: string; } | { dependsOn: any[]; provides?: undefined; ref: string; })[];
 
