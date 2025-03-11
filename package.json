@@ -8,6 +8,7 @@
   },
   "type": "commonjs",
   "scripts": {
+    "dev": "npm run build && ./bin/dev.js \"$@\"",
     "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint",
     "postpack": "shx rm -f oclif.manifest.json",
