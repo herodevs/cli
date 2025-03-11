@@ -3,6 +3,7 @@ import path from 'node:path'
 
 import { prepareRows, scanForEol } from '../../service/eol/eol.svc'
 import { promptComponentDetails } from '../../service/eol/eol.ui'
+import { ScanResult } from '../../service/nes/modules/sbom'
 
 export default class ScanEol extends Command {
   static override args = {
@@ -24,7 +25,7 @@ export default class ScanEol extends Command {
   }
 
 
-  public async run(): Promise<any> {
+  public async run(): Promise<ScanResult | { components: [] }> {
     const { flags } = await this.parse(ScanEol)
 
     const dir = path.resolve(flags.dir)

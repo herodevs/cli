@@ -42,7 +42,7 @@ export async function extractComponents(sbom: Sbom): Promise<SbomModel> {
 /**
  * Uses the purls from the model to run the scan.
  */
-export async function submitScan(model: SbomModel) {
+export async function submitScan(model: SbomModel): Promise<ScanResult> {
   // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
   const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com'
   const path = process.env.GRAPHQL_PATH || '/graphql'
@@ -59,11 +59,11 @@ export async function submitScan(model: SbomModel) {
  * The idea being that each row can easily be used for 
  * processing and/or rendering.
  */
-export async function prepareRows({ components, purls }: SbomModel, scan: ScanResult) {
+export async function prepareRows({ components, purls }: SbomModel, scan: ScanResult): Promise<ScanResultComponent[]> {
   let lines = purls.map(purl => {
     const { evidence } = components[purl];
     const occ = evidence?.occurrences?.map(o => o.location).join('\n\t - ');
-    const occurrances = SHOW_OCCURRENCES && Boolean(occ) ? '\t - ' + occ + '\n' : ''
+    const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? '\t - ' + occ + '\n' : ''
 
     const details = scan?.components[purl]
     const info: ScanResultComponent['info']
@@ -73,7 +73,7 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
     info.eolAt = (typeof info.eolAt === 'string' && info.eolAt) ? new Date(info.eolAt) : info.eolAt
 
     const daysEol = info.eolAt ? daysBetween(new Date(), info.eolAt) : undefined
-    let status = 'OK'
+    let status: 'EOL' | 'LTS' | 'OK' = 'OK'
 
     if (daysEol === undefined) {
       status = info.isEol ? 'EOL' : status
@@ -85,7 +85,7 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
 
     return {
       daysEol,
-      evidence: occurrances,
+      evidence: occurrences,
       info,
       purl,
       status
