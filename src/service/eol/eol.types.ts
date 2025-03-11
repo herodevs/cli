@@ -11,6 +11,9 @@ export interface ScanOptions {
   cdxgen?: CdxGenOptions
 }
 export interface CdxCreator {
-  // eslint-disable-next-line no-unused-vars
   (dir: string, opts: CdxGenOptions): Promise<{ bomJson: Sbom }>
+}
+
+export interface SbomScan<T> {
+  <SB>(sbom: SB): Promise<T>
 }
