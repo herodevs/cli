@@ -40,7 +40,7 @@ USAGE
 * [`hd plugins uninstall [PLUGIN]`](#hd-plugins-uninstall-plugin)
 * [`hd plugins unlink [PLUGIN]`](#hd-plugins-unlink-plugin)
 * [`hd plugins update`](#hd-plugins-update)
-* [`hd report report [FILE]`](#hd-report-report-file)
+* [`hd report committers [FILE]`](#hd-report-committers-file)
 * [`hd scan eol [DIR]`](#hd-scan-eol-dir)
 
 ## `hd help [COMMAND]`
@@ -353,13 +353,13 @@ DESCRIPTION
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/update.ts)_
 
-## `hd report report [FILE]`
+## `hd report committers [FILE]`
 
 describe the command here
 
 ```
 USAGE
-  $ hd report report [FILE] [-f] [-n <value>]
+  $ hd report committers [FILE] [-f] [-n <value>]
 
 ARGUMENTS
   FILE  file to read
@@ -372,10 +372,10 @@ DESCRIPTION
   describe the command here
 
 EXAMPLES
-  $ hd report report
+  $ hd report committers
 ```
 
-_See code: [src/commands/report/report.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/report.ts)_
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/committers.ts)_
 
 ## `hd scan eol [DIR]`
 
