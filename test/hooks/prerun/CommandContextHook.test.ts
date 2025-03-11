@@ -4,7 +4,8 @@ import {expect} from 'chai'
 
 describe('hooks', () => {
   it('shows a message', async () => {
-    const {stdout} = await runHook('init', {id: 'mycommand'})
-    expect(stdout).to.contain('example hook running mycommand')
+    const { result } = await runHook('prerun', {id: 'report committers'})
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect((result as any).successes).to.exist
   })
 })
