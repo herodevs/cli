@@ -24,43 +24,30 @@
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-plugins": "^5",
-    "chalk": "^5.4.1",
     "cli-table3": "^0.6.5",
-    "inquirer": "^12.4.2",
-    "isomorphic-fetch": "^3.0.0",
-    "node-fetch": "^3.3.2"
-  },
-  "overrides": {
-    "isomorphic-fetch": {
-      "node-fetch": "^3.3.2"
-    }
+    "inquirer": "^12.4.2"
   },
   "devDependencies": {
     "@eslint/compat": "^1",
     "@oclif/prettier-config": "^0.2.1",
     "@oclif/test": "^4",
-    "@types/chai": "^4",
     "@types/inquirer": "^9.0.7",
     "@types/mocha": "^10",
-    "@types/node": "^18",
-    "@types/node-fetch": "^2.6.12",
+    "@types/node": "^22",
     "@types/sinon": "^17.0.4",
-    "chai": "^4",
     "eslint": "^9",
     "eslint-config-oclif": "^6",
     "eslint-config-prettier": "^10",
     "mocha": "^10",
     "mocha-clearscreen-reporter": "^1.0.1",
-    "nock": "^14.0.1",
     "oclif": "^4",
     "shx": "^0.3.3",
     "sinon": "^19.0.2",
-    "ts-node": "^10",
     "tsx": "^4.19.3",
     "typescript": "^5"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "files": [
     "./bin",

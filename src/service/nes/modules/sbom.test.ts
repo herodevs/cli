@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { ok } from 'node:assert';
 
 import { ApolloHelper } from '../nes.client';
 import { SbomScanner as sbomScanner, ScanResult } from './sbom';
@@ -24,11 +24,11 @@ describe('SBOM Scanner', () => {
 
     const scan = sbomScanner(helper);
     const result = await scan(sbom);
-    expect(result).has.property('components')
+    ok('components' in result)
 
     // make sure the scan has the components from above
     for (const key of Object.keys(mock.components)) {
-      expect(result.components).to.have.property(key)
+      ok(key in result.components)
     }
   });
 });
