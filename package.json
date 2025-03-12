@@ -8,6 +8,7 @@
   },
   "type": "commonjs",
   "scripts": {
+    "dev": "npm run build && ./bin/dev.js \"$@\"",
     "build": "shx rm -rf dist && tsc -b",
     "lint": "eslint",
     "postpack": "shx rm -f oclif.manifest.json",
@@ -90,6 +91,9 @@
       "prerun": "./dist/hooks/prerun/CommandContextHook"
     }
   },
-  "repository": "@herodevs/cli",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/herodevs/cli.git"
+  },
   "types": "dist/index.d.ts"
 }
