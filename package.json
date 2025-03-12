@@ -39,7 +39,6 @@
     "eslint-config-oclif": "^6",
     "eslint-config-prettier": "^10",
     "mocha": "^10",
-    "mocha-clearscreen-reporter": "^1.0.1",
     "oclif": "^4",
     "shx": "^0.3.3",
     "sinon": "^19.0.2",
@@ -79,8 +78,8 @@
     }
   },
   "repository": {
-      "type": "git",
-      "url": "https://github.com/herodevs/cli.git"
+    "type": "git",
+    "url": "https://github.com/herodevs/cli.git"
   },
   "types": "dist/index.d.ts"
 }
