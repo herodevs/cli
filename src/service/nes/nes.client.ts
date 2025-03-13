@@ -1,74 +1,71 @@
 // TODO move this to another lib altogether!
 
-
-
-import {
-  ApolloClient, ApolloLink, ApolloQueryResult,
-  DocumentNode, FetchResult, HttpLink, InMemoryCache,
-  NormalizedCacheObject, OperationVariables
-} from '@apollo/client/core';
-
-import { SbomMap } from '../eol/eol.types';
-import { SbomScanner as sbomScanner, ScanResult } from '../nes/modules/sbom';
+import * as apollo from '@apollo/client/core/index.js';
+import type { SbomMap } from '../eol/eol.types.ts';
+import { type ScanResult, SbomScanner as sbomScanner } from '../nes/modules/sbom.ts';
 
 export interface NesClient {
   scan: {
-    sbom: (sbom: SbomMap) => Promise<ScanResult>
-  }
+    sbom: (sbom: SbomMap) => Promise<ScanResult>;
+  };
 }
 
 export interface ApolloHelper {
-  mutate<T, V extends OperationVariables>(mutation: DocumentNode, variables?: V): Promise<FetchResult<T>>
-  query<T, V extends OperationVariables | undefined = undefined>(query: DocumentNode, variables?: V): Promise<ApolloQueryResult<T>>
-};
-
-export const createApollo = (url: string) => new ApolloClient({
-  cache: new InMemoryCache({
-    addTypename: false,
-  }),
-  headers: {
-    "User-Agent": `hdcli/${process.env.npm_package_version ?? 'unknown'}`
-  },
-  link: ApolloLink.from([
-    new HttpLink({
-      uri: url
-    })
-  ])
-});
-
-
-export class NesApolloError extends Error {
-  constructor(message: string, public cause?: Error) {
-    super(message)
-  }
+  mutate<T, V extends apollo.OperationVariables>(
+    mutation: apollo.DocumentNode,
+    variables?: V,
+  ): Promise<apollo.FetchResult<T>>;
+  query<T, V extends apollo.OperationVariables | undefined = undefined>(
+    query: apollo.DocumentNode,
+    variables?: V,
+  ): Promise<apollo.ApolloQueryResult<T>>;
 }
+
+export const createApollo = (url: string) =>
+  new apollo.ApolloClient({
+    cache: new apollo.InMemoryCache({
+      addTypename: false,
+    }),
+    headers: {
+      'User-Agent': `hdcli/${process.env.npm_package_version ?? 'unknown'}`,
+    },
+    link: apollo.ApolloLink.from([
+      new apollo.HttpLink({
+        uri: url,
+      }),
+    ]),
+  });
+
+export class NesApolloError extends Error {}
 export class NesApolloClient implements ApolloHelper, NesClient {
-
   scan = {
-    sbom: sbomScanner(this)
-  }
-  #apollo: ApolloClient<NormalizedCacheObject>;
+    sbom: sbomScanner(this),
+  };
+  #apollo: apollo.ApolloClient<apollo.NormalizedCacheObject>;
 
-  constructor(public url: string) {
-    this.#apollo = createApollo(url)
-  }
-
-
-  mutate<T, V extends OperationVariables>(mutation: DocumentNode, variables?: V) {
-    return this.#apollo.mutate<T, V>({
-      mutation,
-      variables
-    }).catch(error => {
-      throw new NesApolloError('Failed GQL Mutation', error)
-    });
+  constructor(url: string) {
+    this.#apollo = createApollo(url);
   }
 
-  query<T, V extends OperationVariables | undefined>(query: DocumentNode, variables?: V) {
-    return this.#apollo.query<T>({
-      query,
-      variables
-    }).catch(error => {
-      throw new NesApolloError('Failed GQL Query', error)
-    });
+  mutate<T, V extends apollo.OperationVariables>(mutation: apollo.DocumentNode, variables?: V) {
+    return this.#apollo
+      .mutate<T, V>({
+        mutation,
+        variables,
+      })
+      .catch((error) => {
+        throw new NesApolloError('Failed GQL Mutation', error);
+      });
+  }
+
+  query<T, V extends apollo.OperationVariables | undefined>(query: apollo.DocumentNode, variables?: V) {
+    return this.#apollo
+      .query<T>({
+        query,
+        variables,
+      })
+      .catch((error) => {
+        throw new NesApolloError('Failed GQL Query', error);
+      });
   }
 }

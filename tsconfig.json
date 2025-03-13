@@ -1,19 +1,22 @@
 {
   "compilerOptions": {
     "declaration": true,
-    "module": "commonjs",
+    "module": "NodeNext",
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
-    "target": "es2022",
+    "target": "ESNext",
     "allowJs": true,
     "checkJs": true,
     "esModuleInterop": true,
-    "typeRoots": [
-      "node_modules/@types",
-      "types"
-    ]
+    "erasableSyntaxOnly": true,
+    "rewriteRelativeImportExtensions": true,
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["node_modules/@types", "types"]
   },
-  "include": [ "src/**/*", "types/**/*.d.ts" ],
-  "exclude": [ "src/**/*.test.ts", "src/**/*.spec.ts", "test/**/*" ]
+  "include": ["src/**/*", "types/**/*.d.ts"],
+  "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "test/**/*"]
 }

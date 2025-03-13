@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-declare module "@cyclonedx/cdxgen" {
+declare module '@cyclonedx/cdxgen' {
   /**
    * For all modules in the specified package, creates a list of
    * component objects from each one.
@@ -13,8 +12,14 @@ declare module "@cyclonedx/cdxgen" {
 
   /** BOM creation functions for specific technologies */
   export function createJarBom(path: string, options: any): any;
-  export function createAndroidBom(path: string, options: any): { bomJson: any; dependencies: any; parentComponent: any };
-  export function createBinaryBom(path: string, options: any): { bomJson: any; dependencies: any; parentComponent: any };
+  export function createAndroidBom(
+    path: string,
+    options: any,
+  ): { bomJson: any; dependencies: any; parentComponent: any };
+  export function createBinaryBom(
+    path: string,
+    options: any,
+  ): { bomJson: any; dependencies: any; parentComponent: any };
   export function createJavaBom(path: string, options: any): Promise<any>;
   export function createNodejsBom(path: string, options: any): Promise<any>;
   export function createPixiBom(path: string, options: any): any;
@@ -38,10 +43,13 @@ declare module "@cyclonedx/cdxgen" {
   export function createCsharpBom(path: string, options: any): Promise<any>;
 
   /** Function to create BOM for cryptographic certificates */
-  export function createCryptoCertsBom(path: string, options: any): Promise<{
+  export function createCryptoCertsBom(
+    path: string,
+    options: any,
+  ): Promise<{
     bomJson: {
       components: {
-        "bom-ref": string;
+        'bom-ref': string;
         cryptoProperties: {
           algorithmProperties: {
             executionEnvironment: string;
@@ -61,16 +69,12 @@ declare module "@cyclonedx/cdxgen" {
   export function mergeDependencies(
     dependencies: any,
     newDependencies: any,
-    // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-    parentComponent?: {}
-  ): ({ dependsOn: any[]; provides: any[]; ref: string; } | { dependsOn: any[]; provides?: undefined; ref: string; })[];
+    parentComponent?: {},
+  ): ({ dependsOn: any[]; provides: any[]; ref: string } | { dependsOn: any[]; provides?: undefined; ref: string })[];
 
   export function trimComponents(components: any[]): any[];
   export function dedupeBom(options: any, components: any[], parentComponent: any, dependencies: any[]): any;
 
   /** Method to submit the generated BOM to a server */
-  export function submitBom(
-    args: any,
-    bomContents: any
-  ): Promise<undefined | { errors: string[] } | { token: string }>;
+  export function submitBom(args: any, bomContents: any): Promise<undefined | { errors: string[] } | { token: string }>;
 }

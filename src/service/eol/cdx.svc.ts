@@ -1,14 +1,13 @@
-import { log } from '../../utils/log.util';
-import { CdxCreator, CdxGenOptions } from './eol.types';
+import { log } from '../../utils/log.util.ts';
+import type { CdxCreator, CdxGenOptions } from './eol.types.ts';
 
 /**
  * Lazy loads cdxgen (for ESM purposes), scans
  * `directory`, and returns the `bomJson` property.
  */
 export async function createBomFromDir(directory: string, opts: CdxGenOptions = {}) {
-
   const options = {
-    '$0': 'cdxgen',
+    $0: 'cdxgen',
     _: [],
     'auto-compositions': true,
     autoCompositions: true,
@@ -42,7 +41,7 @@ export async function createBomFromDir(directory: string, opts: CdxGenOptions = 
     noBanner: false,
     o: 'bom.json',
     output: 'bom.json',
-    outputFormat: "json", // or "xml"
+    outputFormat: 'json', // or "xml"
     // author: ['OWASP Foundation'],
     profile: 'generic',
     project: undefined,
@@ -64,32 +63,31 @@ export async function createBomFromDir(directory: string, opts: CdxGenOptions = 
     'usages-slices-file': 'usages.slices.json',
     usagesSlicesFile: 'usages.slices.json',
     validate: true,
-    ...opts
-  }
+    ...opts,
+  };
 
-  const { createBom } = await getCdxGen()
-  const sbom = await createBom!(directory, options);
-  log.info('Successfully generated SBOM')
-  return sbom.bomJson
+  const { createBom } = await getCdxGen();
+  const sbom = await createBom?.(directory, options);
+  log.info('Successfully generated SBOM');
+  return sbom?.bomJson;
 }
 
 // use a value holder, for easier mocking
 export const cdxgen: {
-  createBom: CdxCreator | undefined
-} = { createBom: undefined }
+  createBom: CdxCreator | undefined;
+} = { createBom: undefined };
 export async function getCdxGen() {
   if (cdxgen.createBom) {
-    return cdxgen
+    return cdxgen;
   }
 
-  const ogEnv = process.env.NODE_ENV
-  delete process.env.NODE_ENV
+  const ogEnv = process.env.NODE_ENV;
+  process.env.NODE_ENV = undefined;
   try {
-    cdxgen.createBom = (await import('@cyclonedx/cdxgen')).createBom
+    cdxgen.createBom = (await import('@cyclonedx/cdxgen')).createBom;
   } finally {
-    process.env.NODE_ENV = ogEnv
+    process.env.NODE_ENV = ogEnv;
   }
 
-  return cdxgen
+  return cdxgen;
 }
-

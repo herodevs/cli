@@ -1,79 +1,72 @@
-
-import { runCommand } from '@oclif/test'
-import { afterEach, beforeEach } from 'mocha';
-import { ok, strictEqual } from 'node:assert'
-import fs from 'node:fs/promises'
+import { fail, ok, strictEqual } from 'node:assert';
+import fs from 'node:fs/promises';
 import path from 'node:path';
+import { afterEach, beforeEach, describe, it } from 'node:test';
+import { runCommand } from '@oclif/test';
 import * as sinon from 'sinon';
 
-import { default as EolScan } from '../../../src/commands/scan/eol'
-import { cdxgen, extractComponents, prepareRows, Sbom, } from '../../../src/service/eol/eol.svc';
-import { CdxCreator } from '../../../src/service/eol/eol.types';
-import { buildScanResult, type ScanResponseReport } from '../../../src/service/nes/modules/sbom'
-import { FetchMock } from '../../utils/mocks/fetch.mock';
-import { InquirerMock } from '../../utils/mocks/ui.mock';
+import { default as EolScan } from '../../../src/commands/scan/eol.ts';
+import { type Sbom, cdxgen, extractComponents, prepareRows } from '../../../src/service/eol/eol.svc.ts';
+import type { CdxCreator } from '../../../src/service/eol/eol.types.ts';
+import { type ScanResponseReport, buildScanResult } from '../../../src/service/nes/modules/sbom.ts';
+import { FetchMock } from '../../utils/mocks/fetch.mock.ts';
+import { InquirerMock } from '../../utils/mocks/ui.mock.ts';
 
 // Toggle off if you want to try against an actual server
-const MOCK_GQL = true
+const MOCK_GQL = true;
 
 describe('scan:eol', () => {
-
-
-  let bomJson: Sbom | undefined
+  let bomJson: Sbom | undefined;
 
   beforeEach(async () => {
     // if it ever does make a request, hit localhost
-    process.env.GRAPHQL_HOST = "http://localhost:3000"
+    process.env.GRAPHQL_HOST = 'http://localhost:3000';
 
     // mock cdxgen because it's slow AF
-    const example = path.resolve(__dirname, 'bom.json')
-    bomJson = JSON.parse(await fs.readFile(example, 'utf8'))
-    cdxgen.createBom = (() => Promise.resolve({ bomJson })) as CdxCreator
-  })
+    const example = path.resolve(import.meta.dirname, 'bom.json');
+    bomJson = JSON.parse(await fs.readFile(example, 'utf8'));
+    cdxgen.createBom = (() => Promise.resolve({ bomJson })) as CdxCreator;
+  });
 
   it('runs against simple npm fixture', async () => {
     // Mock the scanOptions to force projectType to use npm (otherwise it'll try yarn and such)
-    sinon
-      .stub(EolScan.prototype, 'getScanOptions')
-      .returns({ cdxgen: { projectType: ["npm"] } })
+    sinon.stub(EolScan.prototype, 'getScanOptions').returns({ cdxgen: { projectType: ['npm'] } });
 
+    if (!bomJson) fail('No bomJson');
     // TODO: rework this to not require all teh methods for testing
     // dev note: pretending to process the output of our mock, so it matches
-    const lines = await prepareRows(
-      await extractComponents(bomJson!),
-      buildScanResult(mocked.simple)
-    )
+    const lines = await prepareRows(await extractComponents(bomJson), buildScanResult(mocked.simple));
 
     // now that we've got the mocked options for the UI, we can pretend one is selected
     new InquirerMock().push({
-      selected: [
-        lines[0]
-      ]
-    })
+      selected: [lines[0]],
+    });
 
     if (MOCK_GQL) {
-      new FetchMock().addGraphQL({ insights: { scan: { eol: mocked.simple } } })
+      new FetchMock().addGraphQL({
+        insights: { scan: { eol: mocked.simple } },
+      });
     }
 
     // finally run the command
-    const cmd = 'scan eol --dir test/fixtures/npm/simple/'
-    const output = await runCommand(cmd)
+    const cmd = 'scan eol --dir test/fixtures/npm/simple/';
+    const output = await runCommand(cmd);
 
     // print some helpful info if we fail
     if (output.error) {
-      console.warn(output.error)
-      strictEqual(output.error, undefined)
+      console.warn(output.error);
+      strictEqual(output.error, undefined);
     }
 
     // TODO: actually check the deeper result?
-    ok('components' in output.result)
+    ok('components' in output.result);
     // console.log(stdout)
-  })
+  });
 
   afterEach(() => {
     sinon.restore();
   });
-})
+});
 
 /**
  * Mocked responses from the server
@@ -86,13 +79,13 @@ const mocked = {
         info: {
           eolAt: new Date(2019, 7, 24, 0, 0, 0, 0),
           isEol: true,
-          isUnsafe: false
+          isUnsafe: false,
         },
         purl: 'pkg:npm/bootstrap@3.1.1',
-      }
+      },
     ],
     message: 'Mocked simple',
-    success: true
+    success: true,
   } as ScanResponseReport,
-  // TODO: add more responses 
-}
+  // TODO: add more responses
+};
