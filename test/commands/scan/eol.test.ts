@@ -1,17 +1,17 @@
 
 import { runCommand } from '@oclif/test'
-import { afterEach, beforeEach } from 'mocha';
+import { afterEach, beforeEach, describe, it } from 'node:test'
 import { ok, strictEqual } from 'node:assert'
 import fs from 'node:fs/promises'
 import path from 'node:path';
-import * as sinon from 'sinon';
+import * as sinon from 'sinon'; 
 
-import { default as EolScan } from '../../../src/commands/scan/eol'
-import { cdxgen, extractComponents, prepareRows, Sbom, } from '../../../src/service/eol/eol.svc';
-import { CdxCreator } from '../../../src/service/eol/eol.types';
-import { buildScanResult, type ScanResponseReport } from '../../../src/service/nes/modules/sbom'
-import { FetchMock } from '../../utils/mocks/fetch.mock';
-import { InquirerMock } from '../../utils/mocks/ui.mock';
+import { default as EolScan } from '../../../src/commands/scan/eol.ts'
+import { cdxgen, extractComponents, prepareRows, type Sbom, } from '../../../src/service/eol/eol.svc.ts';
+import type { CdxCreator } from '../../../src/service/eol/eol.types.ts';
+import { buildScanResult, type ScanResponseReport } from '../../../src/service/nes/modules/sbom.ts'
+import { FetchMock } from '../../utils/mocks/fetch.mock.ts';
+import { InquirerMock } from '../../utils/mocks/ui.mock.ts';
 
 // Toggle off if you want to try against an actual server
 const MOCK_GQL = true
@@ -26,7 +26,7 @@ describe('scan:eol', () => {
     process.env.GRAPHQL_HOST = "http://localhost:3000"
 
     // mock cdxgen because it's slow AF
-    const example = path.resolve(__dirname, 'bom.json')
+    const example = path.resolve(import.meta.dirname, 'bom.json')
     bomJson = JSON.parse(await fs.readFile(example, 'utf8'))
     cdxgen.createBom = (() => Promise.resolve({ bomJson })) as CdxCreator
   })

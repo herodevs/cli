@@ -1,8 +1,8 @@
-import { gql } from "@apollo/client/core"
+import { gql } from "@apollo/client/core/core.cjs";
 
-import { log } from '../../../utils/log.util';
-import { SbomMap } from '../../eol/eol.types';
-import { ApolloHelper } from "../nes.client"
+import { log } from '../../../utils/log.util.ts';
+import { type SbomMap } from '../../eol/eol.types.ts';
+import { type ApolloHelper } from "../nes.client.ts"
 
 export const buildScanResult =
   (scan: ScanResponseReport): ScanResult => ({

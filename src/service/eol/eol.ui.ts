@@ -1,8 +1,9 @@
 /* eslint-disable perfectionist/sort-interfaces */
 import { ux } from '@oclif/core'
 import inquirer from 'inquirer'
+import { type Answers } from 'inquirer';
 
-import { ScanResultComponent } from '../nes/modules/sbom';
+import { type ScanResultComponent } from '../nes/modules/sbom.ts';
 
 interface Line {
   daysEol?: number
@@ -64,7 +65,7 @@ function formatLine(l: Line, idx: number, ctx: { longest: number; total: number,
   }
 }
 
-export function promptComponentDetails(lines: Line[]) {
+export function promptComponentDetails(lines: Line[]): Promise<Answers> {
 
   const context = {
     longest: lines

@@ -1,8 +1,8 @@
 /* eslint-disable unicorn/filename-case */
 
-import { Hook } from '@oclif/core'
+import type { Hook } from '@oclif/core'
 
-import { initOclifLog, log } from '../../utils/log.util'
+import { initOclifLog, log } from '../../utils/log.util.ts'
 
 const hook: Hook<'prerun'> = async function (opts) {
   initOclifLog(opts.context.log, opts.context.log)

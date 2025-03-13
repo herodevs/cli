@@ -1,5 +1,5 @@
-import { log } from '../../utils/log.util';
-import { CdxCreator, CdxGenOptions } from './eol.types';
+import { log } from '../../utils/log.util.ts';
+import type { CdxCreator, CdxGenOptions } from './eol.types.ts';
 
 /**
  * Lazy loads cdxgen (for ESM purposes), scans

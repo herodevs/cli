@@ -1,9 +1,9 @@
 import { Args, Command, Flags, ux } from '@oclif/core'
 import path from 'node:path'
 
-import { prepareRows, scanForEol } from '../../service/eol/eol.svc'
-import { promptComponentDetails } from '../../service/eol/eol.ui'
-import { ScanResult } from '../../service/nes/modules/sbom'
+import { prepareRows, scanForEol } from '../../service/eol/eol.svc.ts'
+import { promptComponentDetails } from '../../service/eol/eol.ui.ts'
+import type { ScanResult } from '../../service/nes/modules/sbom.ts'
 
 export default class ScanEol extends Command {
   static override args = {

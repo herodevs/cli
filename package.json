@@ -6,7 +6,7 @@
   "bin": {
     "hd": "./bin/run.js"
   },
-  "type": "commonjs",
+  "type": "module",
   "scripts": {
     "dev": "npm run build && ./bin/dev.js \"$@\"",
     "build": "shx rm -rf dist && tsc -b",
@@ -14,7 +14,7 @@
     "postpack": "shx rm -f oclif.manifest.json",
     "posttest": "npm run lint",
     "prepack": "oclif manifest && oclif readme",
-    "test": "mocha --forbid-only \"test/**/*.test.ts\"",
+    "test": "node --disable-warning=Experimental --experimental-strip-types --test \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md"
   },
   "bugs": "https://github.com/@herodevs/cli/issues",
@@ -38,12 +38,9 @@
     "eslint": "^9",
     "eslint-config-oclif": "^6",
     "eslint-config-prettier": "^10",
-    "mocha": "^10",
-    "mocha-clearscreen-reporter": "^1.0.1",
     "oclif": "^4",
     "shx": "^0.3.3",
     "sinon": "^19.0.2",
-    "tsx": "^4.19.3",
     "typescript": "^5.8.0"
   },
   "engines": {

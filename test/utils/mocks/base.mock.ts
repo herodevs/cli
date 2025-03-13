@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { default as sinon } from "sinon";
 
 /**
@@ -7,16 +5,16 @@ import { default as sinon } from "sinon";
  * from a FIFO
  */
 export class BaseStackMock {
-  protected stack: any[] = []
+  stack: any[] = []
 
-  protected constructor(
-    protected target: any,
-    protected prop: string
+  constructor(
+    target: any,
+    prop: string
   ) {
     sinon.stub(target, prop).callsFake(() => this.next())
   }
 
-  protected next() {
+  next() {
     // fair to say it's always a promise?
     return Promise.resolve(this.stack.shift())
   }

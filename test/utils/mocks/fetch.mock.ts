@@ -1,12 +1,13 @@
-import { BaseStackMock } from "./base.mock"
+import { BaseStackMock } from "./base.mock.ts"
 
 /**
  * Simple stack mock for `fetch` (ultimately)
  * what Apollo uses to make GraphQL calls.
  */
 export class FetchMock extends BaseStackMock {
-  public constructor(protected stack: any[] = []) {
+  constructor(stack: any[] = []) {
     super(globalThis, 'fetch')
+    this.stack = stack
   }
 
   addGraphQL<D>(data?: D, errors: any[] = []) {

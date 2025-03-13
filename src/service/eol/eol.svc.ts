@@ -1,9 +1,9 @@
-import { log } from '../../utils/log.util';
-import { daysBetween } from '../../utils/misc';
-import { ScanResult, ScanResultComponent } from '../nes/modules/sbom';
-import { NesApolloClient } from '../nes/nes.client';
-import { createBomFromDir } from './cdx.svc';
-import { Sbom, SbomEntry, SbomMap as SbomModel, ScanOptions } from './eol.types';
+import { log } from '../../utils/log.util.ts';
+import { daysBetween } from '../../utils/misc.ts';
+import type { ScanResult, ScanResultComponent } from '../nes/modules/sbom.ts';
+import { NesApolloClient } from '../nes/nes.client.ts';
+import { createBomFromDir } from './cdx.svc.ts';
+import type { Sbom, SbomEntry, SbomMap as SbomModel, ScanOptions } from './eol.types.ts';
 
 
 const SHOW_OCCURRENCES = (process.env.SHOW_OCCURRENCES || 'false') === 'true';
@@ -99,5 +99,5 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
   return lines
 }
 
-export { cdxgen } from './cdx.svc';
-export { Sbom } from './eol.types';
+export { cdxgen } from './cdx.svc.ts';
+export { type Sbom } from './eol.types.ts';
