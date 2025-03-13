@@ -1,4 +1,4 @@
 {
-  "cSpell.words": ["mycommand", "prerun"],
+  "cSpell.words": ["mycommand", "prerun", "XEOL"],
   "typescript.tsdk": "node_modules/typescript/lib"
 }

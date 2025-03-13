@@ -1,14 +1,14 @@
 import { ux } from '@oclif/core';
-import type { ScanResultComponent } from './nes/modules/sbom.ts';
+import type { ScanResultComponent, ComponentStatus } from './nes/modules/sbom.ts';
 
 export interface Line {
-  daysEol?: number;
+  daysEol: number | undefined;
   purl: ScanResultComponent['purl'];
-  info?: {
-    eolAt?: Date;
+  info: {
+    eolAt: Date | null;
     isEol: boolean;
   };
-  status: ScanResultComponent['status'];
+  status: ComponentStatus;
 }
 
 export function daysBetween(date1: Date, date2: Date) {
@@ -16,7 +16,7 @@ export function daysBetween(date1: Date, date2: Date) {
   return Math.round((date2.getTime() - date1.getTime()) / msPerDay);
 }
 
-export function getMessageAndStatus(status: string, eolAt?: Date) {
+export function getMessageAndStatus(status: string, eolAt: Date | null) {
   let msg = '';
   let stat = '';
 
@@ -48,8 +48,6 @@ export function getMessageAndStatus(status: string, eolAt?: Date) {
 
 export function formatLine(l: Line, idx: number, ctx: { longest: number; total: number }) {
   let { info, purl, status } = l;
-
-  info = info || { eolAt: new Date(), isEol: false };
 
   if (info.isEol && status !== 'EOL') {
     throw new Error(`isEol is true but status is not EOL: ${purl}`);
