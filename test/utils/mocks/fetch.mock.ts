@@ -1,4 +1,4 @@
-import { BaseStackMock } from "./base.mock.ts"
+import { BaseStackMock } from './base.mock.ts';
 
 /**
  * Simple stack mock for `fetch` (ultimately)
@@ -6,23 +6,23 @@ import { BaseStackMock } from "./base.mock.ts"
  */
 export class FetchMock extends BaseStackMock {
   constructor(stack: any[] = []) {
-    super(globalThis, 'fetch')
-    this.stack = stack
+    super(globalThis, 'fetch');
+    this.stack = stack;
   }
 
   addGraphQL<D>(data?: D, errors: any[] = []) {
     this.stack.push({
       headers: {
-        get: () => 'application/json; charset=utf-8'
+        get: () => 'application/json; charset=utf-8',
       },
       status: 200,
       async text() {
         return JSON.stringify({
           data,
-          errors
-        })
+          errors,
+        });
       },
-    } as unknown as Response)
-    return this
+    } as unknown as Response);
+    return this;
   }
 }

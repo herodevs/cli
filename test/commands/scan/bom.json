@@ -114,30 +114,24 @@
           }
         ]
       },
-      "tags": [
-        "registry"
-      ]
+      "tags": ["registry"]
     }
   ],
-  "services": [ ],
+  "services": [],
   "dependencies": [
     {
       "ref": "pkg:npm/bootstrap@3.1.1",
-      "dependsOn": [ ]
+      "dependsOn": []
     },
     {
       "ref": "pkg:npm/simple@1.0.0",
-      "dependsOn": [
-        "pkg:npm/bootstrap@3.1.1"
-      ]
+      "dependsOn": ["pkg:npm/bootstrap@3.1.1"]
     }
   ],
   "annotations": [
     {
       "bom-ref": "metadata-annotations",
-      "subjects": [
-        "pkg:npm/simple@1.0.0"
-      ],
+      "subjects": ["pkg:npm/simple@1.0.0"],
       "annotator": {
         "component": {
           "group": "@cyclonedx",

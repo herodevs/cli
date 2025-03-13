@@ -10,11 +10,15 @@
   "scripts": {
     "dev": "npm run build && ./bin/dev.js \"$@\"",
     "build": "shx rm -rf dist && tsc -b",
-    "lint": "eslint",
+    "lint": "biome lint --write",
+    "format": "biome format --write",
+    "ci": "biome ci",
+    "ci:fix": "biome check --write",
     "postpack": "shx rm -f oclif.manifest.json",
-    "posttest": "npm run lint",
+    "typecheck": "tsc --noEmit",
+    "pretest": "npm run lint && npm run typecheck",
     "prepack": "oclif manifest && oclif readme",
-    "test": "node --disable-warning=Experimental --experimental-strip-types --test \"test/**/*.test.ts\"",
+    "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test \"test/**/*.test.ts\"",
     "version": "oclif readme && git add README.md"
   },
   "bugs": "https://github.com/@herodevs/cli/issues",
@@ -28,16 +32,11 @@
     "inquirer": "^12.4.2"
   },
   "devDependencies": {
-    "@eslint/compat": "^1",
-    "@oclif/prettier-config": "^0.2.1",
+    "@biomejs/biome": "^1.8.3",
     "@oclif/test": "^4",
     "@types/inquirer": "^9.0.7",
-    "@types/mocha": "^10",
     "@types/node": "^22",
     "@types/sinon": "^17.0.4",
-    "eslint": "^9",
-    "eslint-config-oclif": "^6",
-    "eslint-config-prettier": "^10",
     "oclif": "^4",
     "shx": "^0.3.3",
     "sinon": "^19.0.2",
@@ -76,8 +75,8 @@
     }
   },
   "repository": {
-      "type": "git",
-      "url": "https://github.com/herodevs/cli.git"
+    "type": "git",
+    "url": "https://github.com/herodevs/cli.git"
   },
   "types": "dist/index.d.ts"
 }
