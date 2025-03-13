@@ -38,9 +38,6 @@ export const createApollo = (url: string) => new ApolloClient({
 
 
 export class NesApolloError extends Error {
-  constructor(message: string, public cause?: Error) {
-    super(message)
-  }
 }
 export class NesApolloClient implements ApolloHelper, NesClient {
 
@@ -49,7 +46,7 @@ export class NesApolloClient implements ApolloHelper, NesClient {
   }
   #apollo: ApolloClient<NormalizedCacheObject>;
 
-  constructor(public url: string) {
+  constructor(url: string) {
     this.#apollo = createApollo(url)
   }
 

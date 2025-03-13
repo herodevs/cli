@@ -9,6 +9,7 @@
     "allowJs": true,
     "checkJs": true,
     "esModuleInterop": true,
+    "erasableSyntaxOnly": true,
     "typeRoots": [
       "node_modules/@types",
       "types"
