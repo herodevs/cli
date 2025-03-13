@@ -1,5 +1,6 @@
 import { log } from '../../utils/log.util.ts';
 import { daysBetween } from '../../utils/misc.ts';
+import type { Line } from '../line.ts';
 import type { ScanResult, ScanResultComponent } from '../nes/modules/sbom.ts';
 import { NesApolloClient } from '../nes/nes.client.ts';
 import { createBomFromDir } from './cdx.svc.ts';
@@ -60,7 +61,7 @@ export async function submitScan(model: SbomModel): Promise<ScanResult> {
  * The idea being that each row can easily be used for
  * processing and/or rendering.
  */
-export async function prepareRows({ components, purls }: SbomModel, scan: ScanResult): Promise<ScanResultComponent[]> {
+export async function prepareRows({ components, purls }: SbomModel, scan: ScanResult): Promise<Line[]> {
   let lines = purls.map((purl) => {
     const { evidence } = components[purl];
     const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
@@ -78,6 +79,7 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
     const daysEol = info.eolAt ? daysBetween(new Date(), info.eolAt) : undefined;
     let status: 'EOL' | 'LTS' | 'OK' = 'OK';
 
+    // TODO: extract this logic into the Line.ts file somehow, so that there is a unified Line model
     if (daysEol === undefined) {
       status = info.isEol ? 'EOL' : status;
     } else if (daysEol < 0) {
