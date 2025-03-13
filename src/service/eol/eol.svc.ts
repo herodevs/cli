@@ -71,7 +71,7 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
 
     if (!details) {
       // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
-      log.warn(`Unknown status: ${purl}.`);
+      log.debug(`Unknown status: ${purl}.`);
     }
 
     const info = details
