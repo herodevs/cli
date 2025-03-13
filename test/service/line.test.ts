@@ -41,18 +41,11 @@ describe('line', () => {
 
     it('should handle missing eolAt date', () => {
       const { msg } = getMessageAndStatus('EOL', null);
-      assert(
-        msg.includes("EOL'd") &&
-          msg.includes('unknown') &&
-          msg.includes('days ago')
-      );
+      assert(msg.includes("EOL'd") && msg.includes('unknown') && msg.includes('days ago'));
     });
 
     it('should throw on unknown status', () => {
-      assert.throws(
-        () => getMessageAndStatus('INVALID', null),
-        /Unknown status: INVALID/
-      );
+      assert.throws(() => getMessageAndStatus('INVALID', null), /Unknown status: INVALID/);
     });
   });
 
@@ -80,10 +73,7 @@ describe('line', () => {
         daysEol: undefined,
         info: { isEol: true, eolAt: null },
       };
-      assert.throws(
-        () => formatLine(line, 0, context),
-        /isEol is true but status is not EOL/
-      );
+      assert.throws(() => formatLine(line, 0, context), /isEol is true but status is not EOL/);
     });
 
     it('should handle missing info', () => {
