@@ -1,5 +1,5 @@
 import { ux } from '@oclif/core';
-import type { ScanResultComponent, ComponentStatus } from './nes/modules/sbom.ts';
+import type { ComponentStatus, ScanResultComponent } from './nes/modules/sbom.ts';
 
 export interface Line {
   daysEol: number | undefined;
@@ -47,7 +47,7 @@ export function getMessageAndStatus(status: string, eolAt: Date | null) {
 }
 
 export function formatLine(l: Line, idx: number, ctx: { longest: number; total: number }) {
-  let { info, purl, status } = l;
+  const { info, purl, status } = l;
 
   if (info.isEol && status !== 'EOL') {
     throw new Error(`isEol is true but status is not EOL: ${purl}`);

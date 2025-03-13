@@ -5,15 +5,15 @@ import type { SbomMap } from '../../eol/eol.types.ts';
 import type { ApolloHelper } from '../nes.client.ts';
 
 export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
-  const components = new Map<string, ScanResultComponent>()
+  const components = new Map<string, ScanResultComponent>();
   for (const c of scan.components) {
-    components.set(c.purl, c)
+    components.set(c.purl, c);
   }
   return {
     components,
     message: scan.message,
     success: true,
-  }
+  };
 };
 
 export const SbomScanner =
@@ -58,7 +58,7 @@ export interface ScanResult {
   success: boolean;
 }
 
-export type ComponentStatus = 'EOL' | 'LTS' | 'OK'
+export type ComponentStatus = 'EOL' | 'LTS' | 'OK';
 
 export interface ScanResultComponent {
   info: {

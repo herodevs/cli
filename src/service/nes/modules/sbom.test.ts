@@ -44,12 +44,12 @@ components.set('pkg:npm/bootstrap@3.3.0', {
   info: STATUS_EOL(),
   purl: 'pkg:npm/bootstrap@3.3.0',
   status: 'EOL',
-})
+});
 components.set('pkg:npm/camelcase@6.3.0', {
   info: STATUS_OK,
   purl: 'pkg:npm/camelcase@6.3.0',
   status: 'OK',
-})
+});
 const mocked = {
   success: {
     insights: {

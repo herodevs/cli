@@ -1,6 +1,6 @@
 import { log } from '../../utils/log.util.ts';
 import { daysBetween } from '../line.ts';
-import type { Line,  } from '../line.ts';
+import type { Line } from '../line.ts';
 import type { ComponentStatus, ScanResult } from '../nes/modules/sbom.ts';
 import { NesApolloClient } from '../nes/nes.client.ts';
 import { createBomFromDir } from './cdx.svc.ts';
@@ -74,11 +74,13 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
       log.warn(`Unknown status: ${purl}.`);
     }
 
-    const info = details ? details.info : {
-      eolAt: null,
-      isEol: false,
-      isUnsafe: false
-    }
+    const info = details
+      ? details.info
+      : {
+          eolAt: null,
+          isEol: false,
+          isUnsafe: false,
+        };
 
     info.eolAt = typeof info.eolAt === 'string' && info.eolAt ? new Date(info.eolAt) : info.eolAt;
 
