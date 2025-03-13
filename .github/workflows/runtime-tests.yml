@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: ['14', '16', '18', '20', '22']
+        node: ['22', '23']
     name: node ${{ matrix.node }}
 
     steps:

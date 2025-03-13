@@ -1,7 +1,7 @@
 
 import { runCommand } from '@oclif/test'
-import { expect } from 'chai';
 import { afterEach, beforeEach } from 'mocha';
+import { ok, strictEqual } from 'node:assert'
 import fs from 'node:fs/promises'
 import path from 'node:path';
 import * as sinon from 'sinon';
@@ -62,11 +62,11 @@ describe('scan:eol', () => {
     // print some helpful info if we fail
     if (output.error) {
       console.warn(output.error)
-      expect(output.error).to.be.undefined
+      strictEqual(output.error, undefined)
     }
 
     // TODO: actually check the deeper result?
-    expect(output.result).has.property('components')
+    ok('components' in output.result)
     // console.log(stdout)
   })
 

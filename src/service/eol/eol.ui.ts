@@ -40,14 +40,12 @@ function formatLine(l: Line, idx: number, ctx: { longest: number; total: number,
     case 'EOL': {
       stat = ux.colorize('red', 'EOL')
       msg = `EOL'd ${ux.colorize('red', Math.abs(daysEol!).toString())} days ago.`
-      // + `\nEOL Date: ${chalk.bgYellow(info.eolAt.toDateString())} `
       break
     }
 
     case 'LTS': {
       stat = ux.colorize('yellow', 'LTS')
       msg = `Will go EOL in ${ux.colorize('yellow', Math.abs(daysEol!).toString())} days.`
-      // + `\nEOL Date: ${chalk.yellow(info.eolAt.toDateString())} `
       break
     }
 
@@ -59,7 +57,6 @@ function formatLine(l: Line, idx: number, ctx: { longest: number; total: number,
 
   const padlen = ctx.total.toString().length
   const rownum = `${idx + 1}`.padStart(padlen, ' ')
-  // const name = chalk.whiteBright(purl.padEnd(ctx.longest, ' '))
   const name = purl.padEnd(ctx.longest, ' ')
   return {
     name: `${rownum}. [${stat}] ${name} | ${msg}`,
@@ -86,14 +83,4 @@ export function promptComponentDetails(lines: Line[]) {
         type: 'checkbox'
       }
     ])
-  // .then((answers) => {
-  //   // Use user feedback for... whatever!!
-  // })
-  // .catch((error) => {
-  //   if (error.isTtyError) {
-  //     // Prompt couldn't be rendered in the current environment
-  //   } else {
-  //     // Something else went wrong
-  //   }
-  // });
 }

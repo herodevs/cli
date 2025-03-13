@@ -7,18 +7,9 @@ import {
   DocumentNode, FetchResult, HttpLink, InMemoryCache,
   NormalizedCacheObject, OperationVariables
 } from '@apollo/client/core';
-import 'isomorphic-fetch';
-import { default as fetch } from 'node-fetch'
 
 import { SbomMap } from '../eol/eol.types';
 import { SbomScanner as sbomScanner, ScanResult } from '../nes/modules/sbom';
-
-type Fetch = typeof fetch
-type Params = Parameters<Fetch>
-
-export const fetcher = {
-  fetch: ((...args: Params) => fetch(...args)) as Fetch
-}
 
 export interface NesClient {
   scan: {
@@ -40,8 +31,6 @@ export const createApollo = (url: string) => new ApolloClient({
   },
   link: ApolloLink.from([
     new HttpLink({
-      // @ts-expect-error type is ok; mockable for tests
-      fetch: fetcher.fetch,
       uri: url
     })
   ])
