@@ -1,5 +1,5 @@
-import type { ScanResultComponent } from './nes/modules/sbom.ts';
 import { ux } from '@oclif/core';
+import type { ScanResultComponent } from './nes/modules/sbom.ts';
 
 export interface Line {
   daysEol?: number;

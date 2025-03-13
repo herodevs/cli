@@ -1,6 +1,6 @@
 import inquirer from 'inquirer';
 import type { Answers } from 'inquirer';
-import { formatLine, type Line } from '../line.ts';
+import { type Line, formatLine } from '../line.ts';
 
 export function promptComponentDetails(lines: Line[]): Promise<Answers> {
   const context = {

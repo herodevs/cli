@@ -1,6 +1,6 @@
-import { describe, it } from 'node:test';
 import assert from 'node:assert';
-import { daysBetween, getMessageAndStatus, formatLine } from '../../src/service/line.ts';
+import { describe, it } from 'node:test';
+import { daysBetween, formatLine, getMessageAndStatus } from '../../src/service/line.ts';
 import type { Line } from '../../src/service/line.ts';
 
 describe('line', () => {

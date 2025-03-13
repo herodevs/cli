@@ -5,9 +5,9 @@ import { default as sinon } from 'sinon';
  * from a FIFO
  */
 export class BaseStackMock {
-  stack: any[] = [];
+  stack: unknown[] = [];
 
-  constructor(target: any, prop: string) {
+  constructor(target: Record<string, unknown>, prop: string) {
     sinon.stub(target, prop).callsFake(() => this.next());
   }
 
@@ -16,7 +16,7 @@ export class BaseStackMock {
     return Promise.resolve(this.stack.shift());
   }
 
-  public push(value: any) {
+  public push(value: unknown) {
     this.stack.push(value);
     return this;
   }

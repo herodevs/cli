@@ -3,17 +3,17 @@
  * don't have the command instance handy
  */
 export const log = {
-  info: (_message?: any, ...args: any[]) => {
+  info: (_message?: unknown, ...args: unknown[]) => {
     console.log('[default_log]', ...args);
   },
-  warn: (_message?: any, ...args: any[]) => {
+  warn: (_message?: unknown, ...args: unknown[]) => {
     console.warn('[default_warn]', ...args);
   },
 };
 
 export const initOclifLog = (
-  info: (message?: any, ...args: any[]) => void,
-  warn: (message?: any, ...args: any[]) => void,
+  info: (message?: unknown, ...args: unknown[]) => void,
+  warn: (message?: unknown, ...args: unknown[]) => void,
 ) => {
   log.info = info;
   log.warn = warn;
