@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client/core';
+import { gql } from '@apollo/client/core/core.cjs';
 
 export const TELEMETRY_INITIALIZE_MUTATION = gql`
   mutation Telemetry($clientName: String!) {
