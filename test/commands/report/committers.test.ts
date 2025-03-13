@@ -1,14 +1,14 @@
-import {runCommand} from '@oclif/test'
-import {expect} from 'chai'
+import { runCommand } from '@oclif/test'
+import { match } from 'node:assert'
 
 describe('committers', () => {
   it('runs committers cmd', async () => {
-    const {stdout} = await runCommand('report committers')
-    expect(stdout).to.contain('hello world')
+    const { stdout } = await runCommand('report committers')
+    match(stdout, /hello world/)
   })
 
   it('runs committers --name oclif', async () => {
-    const {stdout} = await runCommand('report committers --name oclif')
-    expect(stdout).to.contain('hello oclif')
+    const { stdout } = await runCommand('report committers --name oclif')
+    match(stdout, /hello oclif/)
   })
 })

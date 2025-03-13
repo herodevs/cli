@@ -3,11 +3,9 @@
 
 The HeroDevs CLI
 
-
 [![oclif](https://img.shields.io/badge/cli-oclif-brightgreen.svg)](https://oclif.io)
 [![Version](https://img.shields.io/npm/v/@herodevs/cli.svg)](https://npmjs.org/package/@herodevs/cli)
 [![Downloads/week](https://img.shields.io/npm/dw/@herodevs/cli.svg)](https://npmjs.org/package/@herodevs/cli)
-
 
 <!-- toc -->
 * [Usage](#usage)
@@ -47,9 +45,51 @@ USAGE
 
 Display help for hd.
 
-```
+```text
 USAGE
-  $ hd help [COMMAND...] [-n]
+  $ mycli123 hello PERSON -f <value>
+
+ARGUMENTS
+  PERSON  Person to say hello to
+
+FLAGS
+  -f, --from=<value>  (required) Who is saying hello
+
+DESCRIPTION
+  Say hello
+
+EXAMPLES
+  $ mycli123 hello friend --from oclif
+  hello friend from oclif! (./src/commands/hello/index.ts)
+```
+
+_See code: [src/commands/hello/index.ts](https://github.com/mdonnalley/mycli123/blob/v0.0.0/src/commands/hello/index.ts)_
+
+## `mycli123 hello world`
+
+Say hello world
+
+```text
+USAGE
+  $ mycli123 hello world
+
+DESCRIPTION
+  Say hello world
+
+EXAMPLES
+  $ mycli123 hello world
+  hello world! (./src/commands/hello/world.ts)
+```
+
+_See code: [src/commands/hello/world.ts](https://github.com/mdonnalley/mycli123/blob/v0.0.0/src/commands/hello/world.ts)_
+
+## `mycli123 help [COMMAND]`
+
+Display help for mycli123.
+
+```text
+USAGE
+  $ mycli123 help [COMMAND...] [-n]
 
 ARGUMENTS
   COMMAND...  Command to show help for.
@@ -67,7 +107,7 @@ _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.2
 
 List installed plugins.
 
-```
+```text
 USAGE
   $ hd plugins [--json] [--core]
 
@@ -90,7 +130,7 @@ _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/
 
 Installs a plugin into hd.
 
-```
+```text
 USAGE
   $ hd plugins add PLUGIN... [--json] [-f] [-h] [-s | -v]
 
@@ -137,7 +177,7 @@ EXAMPLES
 
 Displays installation properties of a plugin.
 
-```
+```text
 USAGE
   $ hd plugins inspect PLUGIN...
 
@@ -164,7 +204,7 @@ _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/
 
 Installs a plugin into hd.
 
-```
+```text
 USAGE
   $ hd plugins install PLUGIN... [--json] [-f] [-h] [-s | -v]
 
@@ -244,7 +284,7 @@ _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/
 
 Removes a plugin from the CLI.
 
-```
+```text
 USAGE
   $ hd plugins remove [PLUGIN...] [-h] [-v]
 
@@ -270,7 +310,7 @@ EXAMPLES
 
 Remove all user-installed and linked plugins.
 
-```
+```text
 USAGE
   $ hd plugins reset [--hard] [--reinstall]
 
@@ -285,7 +325,7 @@ _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/
 
 Removes a plugin from the CLI.
 
-```
+```text
 USAGE
   $ hd plugins uninstall [PLUGIN...] [-h] [-v]
 
@@ -313,7 +353,7 @@ _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/
 
 Removes a plugin from the CLI.
 
-```
+```text
 USAGE
   $ hd plugins unlink [PLUGIN...] [-h] [-v]
 
@@ -339,7 +379,7 @@ EXAMPLES
 
 Update installed plugins.
 
-```
+```text
 USAGE
   $ hd plugins update [-h] [-v]
 

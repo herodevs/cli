@@ -1,7 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Response } from "node-fetch"
-
-import { fetcher } from "../../../src/service/nes/nes.client"
 import { BaseStackMock } from "./base.mock"
 
 /**
@@ -10,7 +6,7 @@ import { BaseStackMock } from "./base.mock"
  */
 export class FetchMock extends BaseStackMock {
   public constructor(protected stack: any[] = []) {
-    super(fetcher, 'fetch', stack)
+    super(globalThis, 'fetch')
   }
 
   addGraphQL<D>(data?: D, errors: any[] = []) {
