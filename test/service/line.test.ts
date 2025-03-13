@@ -34,18 +34,25 @@ describe('line', () => {
     });
 
     it('should format OK status', () => {
-      const { stat, msg } = getMessageAndStatus('OK');
+      const { stat, msg } = getMessageAndStatus('OK', null);
       assert(stat.includes('OK'));
       assert.equal(msg, '');
     });
 
     it('should handle missing eolAt date', () => {
-      const { msg } = getMessageAndStatus('EOL');
-      assert(msg.includes('unknown') && msg.includes('days ago'));
+      const { msg } = getMessageAndStatus('EOL', null);
+      assert(
+        msg.includes("EOL'd") &&
+          msg.includes('unknown') &&
+          msg.includes('days ago')
+      );
     });
 
     it('should throw on unknown status', () => {
-      assert.throws(() => getMessageAndStatus('INVALID'), /Unknown status: INVALID/);
+      assert.throws(
+        () => getMessageAndStatus('INVALID', null),
+        /Unknown status: INVALID/
+      );
     });
   });
 
@@ -56,6 +63,7 @@ describe('line', () => {
       const line: Line = {
         purl: 'pkg:npm/test@1.0.0',
         status: 'EOL',
+        daysEol: 30,
         info: { isEol: true, eolAt: new Date() },
       };
       const result = formatLine(line, 0, context);
@@ -69,15 +77,21 @@ describe('line', () => {
       const line: Line = {
         purl: 'pkg:npm/test@1.0.0',
         status: 'OK',
-        info: { isEol: true },
+        daysEol: undefined,
+        info: { isEol: true, eolAt: null },
       };
-      assert.throws(() => formatLine(line, 0, context), /isEol is true but status is not EOL/);
+      assert.throws(
+        () => formatLine(line, 0, context),
+        /isEol is true but status is not EOL/
+      );
     });
 
     it('should handle missing info', () => {
       const line: Line = {
         purl: 'pkg:npm/test@1.0.0',
         status: 'OK',
+        daysEol: undefined,
+        info: { isEol: false, eolAt: null },
       };
       const result = formatLine(line, 0, context);
       assert(result.name.includes('OK'));
