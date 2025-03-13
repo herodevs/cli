@@ -44,6 +44,7 @@ export default class ScanEol extends Command {
       throw new Error(`Scan failed to generate for dir: ${dir}`);
     }
 
+    // TODO: map scanResultComponents to Lines in a consolidated way
     const lines = await prepareRows(model, scan);
     if (lines?.length === 0) {
       this.log('No dependencies found');
