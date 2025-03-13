@@ -5,12 +5,12 @@ import { BaseStackMock } from './base.mock.ts';
  * what Apollo uses to make GraphQL calls.
  */
 export class FetchMock extends BaseStackMock {
-  constructor(stack: any[] = []) {
+  constructor(stack: unknown[] = []) {
     super(globalThis, 'fetch');
     this.stack = stack;
   }
 
-  addGraphQL<D>(data?: D, errors: any[] = []) {
+  addGraphQL<D>(data?: D, errors: unknown[] = []) {
     this.stack.push({
       headers: {
         get: () => 'application/json; charset=utf-8',
