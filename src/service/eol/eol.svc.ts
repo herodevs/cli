@@ -59,44 +59,45 @@ export async function submitScan(model: SbomModel): Promise<ScanResult> {
  * processing and/or rendering.
  */
 export async function prepareRows({ components, purls }: SbomModel, scan: ScanResult): Promise<Line[]> {
-  const lines = purls
-    .map((purl): Line | null => {
-      const details = scan.components.get(purl);
+  const lines: Line[] = [];
 
-      if (!details) {
-        // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
-        log.debug(`Unknown status: ${purl}.`);
-        return null;
-      }
+  for (const purl of purls) {
+    const details = scan.components.get(purl);
 
-      const { evidence } = components[purl];
-      const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
+    if (!details) {
+      // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
+      log.debug(`Unknown status: ${purl}.`);
+      continue;
+    }
 
-      const SHOW_OCCURRENCES = (process.env.SHOW_OCCURRENCES || 'false') === 'true';
-      const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? `\t - ${occ}\n` : '';
+    const { evidence } = components[purl];
+    const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
 
-      const { info } = details;
+    const SHOW_OCCURRENCES = (process.env.SHOW_OCCURRENCES || 'false') === 'true';
+    const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? `\t - ${occ}\n` : '';
 
-      // Handle date deserialization from GraphQL
-      info.eolAt = typeof info.eolAt === 'string' && info.eolAt ? new Date(info.eolAt) : info.eolAt;
+    const { info } = details;
 
-      const daysEol: number | null = getDaysEolFromEolAt(info.eolAt);
+    // Handle date deserialization from GraphQL
+    info.eolAt = typeof info.eolAt === 'string' && info.eolAt ? new Date(info.eolAt) : info.eolAt;
 
-      const status: ComponentStatus = getStatusFromComponent(details, daysEol);
+    const daysEol: number | null = getDaysEolFromEolAt(info.eolAt);
 
-      return {
-        daysEol,
-        evidence: occurrences,
-        info,
-        purl,
-        status,
-      };
-    })
-    .filter((item): item is Line => item !== null);
+    const status: ComponentStatus = getStatusFromComponent(details, daysEol);
 
-  const showOk = (process.env.SHOW_OK || 'false') === 'true';
-  if (!showOk) {
-    return lines.filter((l) => l.status !== 'OK');
+    const showOk = (process.env.SHOW_OK || 'false') === 'true';
+
+    if (!showOk && status === 'OK') {
+      continue;
+    }
+
+    lines.push({
+      daysEol,
+      evidence: occurrences,
+      info,
+      purl,
+      status,
+    });
   }
 
   return lines;
