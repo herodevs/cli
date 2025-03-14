@@ -24,5 +24,3 @@ export interface ScanOptions {
   cdxgen?: CdxGenOptions;
 }
 export type CdxCreator = (dir: string, opts: CdxGenOptions) => Promise<{ bomJson: Sbom }>;
-
-export type SbomScan<T> = <SB>(sbom: SB) => Promise<T>;
