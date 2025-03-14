@@ -6,9 +6,6 @@ import { NesApolloClient } from '../nes/nes.client.ts';
 import { createBomFromDir } from './cdx.svc.ts';
 import type { Sbom, SbomEntry, SbomMap as SbomModel, ScanOptions } from './eol.types.ts';
 
-const SHOW_OCCURRENCES = (process.env.SHOW_OCCURRENCES || 'false') === 'true';
-const SHOW_OK = (process.env.SHOW_OK || 'false') === 'true';
-
 /**
  * Main function to scan directory and collect SBOM data
  */
@@ -74,6 +71,8 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
 
       const { evidence } = components[purl];
       const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
+
+      const SHOW_OCCURRENCES = (process.env.SHOW_OCCURRENCES || 'false') === 'true';
       const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? `\t - ${occ}\n` : '';
 
       const { info } = details;
@@ -95,7 +94,8 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
     })
     .filter((item): item is Line => item !== null);
 
-  if (!SHOW_OK) {
+  const showOk = (process.env.SHOW_OK || 'false') === 'true';
+  if (!showOk) {
     return lines.filter((l) => l.status !== 'OK');
   }
 
