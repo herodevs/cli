@@ -23,19 +23,16 @@ export function getStatusFromComponent(component: ScanResultComponent, daysEol: 
   }
 
   // If API fails to set status, we derive it based on other properties
-  let status: ComponentStatus = 'OK';
-
   if (daysEol === null) {
-    status = info.isEol ? 'EOL' : status;
-  } else if (daysEol > 0) {
-    // daysEol is positive means we're past the EOL date
-    status = 'EOL';
-  } else {
-    // daysEol is zero or negative means we haven't reached EOL yet
-    status = 'LTS';
+    return info.isEol ? 'EOL' : 'OK';
   }
 
-  return status;
+  if (daysEol > 0) {
+    // daysEol is positive means we're past the EOL date
+    return 'EOL';
+  }
+  // daysEol is zero or negative means we haven't reached EOL yet
+  return 'LTS';
 }
 
 export function daysBetween(date1: Date, date2: Date) {
