@@ -8,7 +8,7 @@ import * as sinon from 'sinon';
 import { default as EolScan } from '../../../src/commands/scan/eol.ts';
 import { type Sbom, cdxgen, extractComponents, prepareRows } from '../../../src/service/eol/eol.svc.ts';
 import type { CdxCreator } from '../../../src/service/eol/eol.types.ts';
-import { type ScanResponseReport, buildScanResult } from '../../../src/service/nes/modules/sbom.ts';
+import { type ScanResponseReport, type ScanResult, buildScanResult } from '../../../src/service/nes/modules/sbom.ts';
 import { FetchMock } from '../../utils/mocks/fetch.mock.ts';
 import { InquirerMock } from '../../utils/mocks/ui.mock.ts';
 
@@ -58,8 +58,9 @@ describe('scan:eol', () => {
       strictEqual(output.error, undefined);
     }
 
-    // TODO: actually check the deeper result?
-    ok('components' in output.result);
+    const result = output.result as ScanResult;
+    ok('components' in result);
+    ok(result.components.size > 0);
     // console.log(stdout)
   });
 
@@ -77,7 +78,7 @@ const mocked = {
     components: [
       {
         info: {
-          eolAt: new Date(2019, 7, 24, 0, 0, 0, 0),
+          eolAt: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // 1 year ago
           isEol: true,
           isUnsafe: false,
         },
