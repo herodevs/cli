@@ -2,13 +2,40 @@ import { ux } from '@oclif/core';
 import type { ComponentStatus, ScanResultComponent } from './nes/modules/sbom.ts';
 
 export interface Line {
-  daysEol: number | undefined;
+  daysEol: number | null;
   purl: ScanResultComponent['purl'];
   info: {
     eolAt: Date | null;
     isEol: boolean;
   };
   status: ComponentStatus;
+  evidence: string;
+}
+
+export function getStatusFromComponent(component: ScanResultComponent, daysEol: number | null): ComponentStatus {
+  const { info } = component;
+
+  if (component.status) {
+    if (info.isEol && component.status !== 'EOL') {
+      throw new Error(`isEol is true but status is not EOL: ${component.purl}`);
+    }
+    return component.status;
+  }
+
+  // If API fails to set status, we derive it based on other properties
+  let status: ComponentStatus = 'OK';
+
+  if (daysEol === null) {
+    status = info.isEol ? 'EOL' : status;
+  } else if (daysEol > 0) {
+    // daysEol is positive means we're past the EOL date
+    status = 'EOL';
+  } else {
+    // daysEol is zero or negative means we haven't reached EOL yet
+    status = 'LTS';
+  }
+
+  return status;
 }
 
 export function daysBetween(date1: Date, date2: Date) {
@@ -16,11 +43,15 @@ export function daysBetween(date1: Date, date2: Date) {
   return Math.round((date2.getTime() - date1.getTime()) / msPerDay);
 }
 
-export function getMessageAndStatus(status: string, eolAt: Date | null) {
+export function getDaysEolFromEolAt(eolAt: Date | null): number | null {
+  return eolAt ? Math.abs(daysBetween(new Date(), eolAt)) : null;
+}
+
+export function getMessageAndStatus(status: string, daysEol: number | null) {
   let msg = '';
   let stat = '';
 
-  const stringifiedDaysEol = eolAt ? Math.abs(daysBetween(new Date(), eolAt)).toString() : 'unknown';
+  const stringifiedDaysEol = daysEol ? daysEol.toString() : 'unknown';
 
   switch (status) {
     case 'EOL': {
@@ -47,13 +78,9 @@ export function getMessageAndStatus(status: string, eolAt: Date | null) {
 }
 
 export function formatLine(l: Line, idx: number, ctx: { longest: number; total: number }) {
-  const { info, purl, status } = l;
+  const { daysEol, purl, status } = l;
 
-  if (info.isEol && status !== 'EOL') {
-    throw new Error(`isEol is true but status is not EOL: ${purl}`);
-  }
-
-  const { stat, msg } = getMessageAndStatus(status, info.eolAt);
+  const { stat, msg } = getMessageAndStatus(status, daysEol);
 
   const padlen = ctx.total.toString().length;
   const rownum = `${idx + 1}`.padStart(padlen, ' ');

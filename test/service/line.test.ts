@@ -1,7 +1,8 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { daysBetween, formatLine, getMessageAndStatus } from '../../src/service/line.ts';
+import { daysBetween, formatLine, getMessageAndStatus, getStatusFromComponent } from '../../src/service/line.ts';
 import type { Line } from '../../src/service/line.ts';
+import type { ScanResultComponent } from '../../src/service/nes/modules/sbom.ts';
 
 describe('line', () => {
   describe('daysBetween', () => {
@@ -19,18 +20,16 @@ describe('line', () => {
   });
 
   describe('getMessageAndStatus', () => {
-    it('should format EOL status', () => {
-      const eolAt = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days ago
-      const { stat, msg } = getMessageAndStatus('EOL', eolAt);
+    it('should format EOL status with days', () => {
+      const { stat, msg } = getMessageAndStatus('EOL', 30);
       assert(stat.includes('EOL'));
-      assert(msg.includes('days ago'));
+      assert(msg.includes('30') && msg.includes('days ago'));
     });
 
-    it('should format LTS status', () => {
-      const eolAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days from now
-      const { stat, msg } = getMessageAndStatus('LTS', eolAt);
+    it('should format LTS status with days', () => {
+      const { stat, msg } = getMessageAndStatus('LTS', 30);
       assert(stat.includes('LTS'));
-      assert(msg.includes('Will go EOL in'));
+      assert(msg.includes('30') && msg.includes('Will go EOL in'));
     });
 
     it('should format OK status', () => {
@@ -39,13 +38,64 @@ describe('line', () => {
       assert.equal(msg, '');
     });
 
-    it('should handle missing eolAt date', () => {
+    it('should handle null daysEol', () => {
       const { msg } = getMessageAndStatus('EOL', null);
       assert(msg.includes("EOL'd") && msg.includes('unknown') && msg.includes('days ago'));
     });
 
     it('should throw on unknown status', () => {
       assert.throws(() => getMessageAndStatus('INVALID', null), /Unknown status: INVALID/);
+    });
+  });
+
+  describe('getStatusFromComponent', () => {
+    const baseComponent: ScanResultComponent = {
+      purl: 'pkg:npm/test@1.0.0',
+      info: {
+        eolAt: null,
+        isEol: false,
+        isUnsafe: false,
+      },
+    };
+
+    it('should use component status if provided', () => {
+      const component = { ...baseComponent, status: 'LTS' as const };
+      assert.equal(getStatusFromComponent(component, -30), 'LTS');
+    });
+
+    it('should throw if isEol is true but status is not EOL', () => {
+      const component = {
+        ...baseComponent,
+        status: 'OK' as const,
+        info: { ...baseComponent.info, isEol: true },
+      };
+      assert.throws(() => getStatusFromComponent(component, null), /isEol is true but status is not EOL/);
+    });
+
+    describe('when status is not provided', () => {
+      it('should return EOL if daysEol is null and isEol is true', () => {
+        const component = {
+          ...baseComponent,
+          info: { ...baseComponent.info, isEol: true },
+        };
+        assert.equal(getStatusFromComponent(component, null), 'EOL');
+      });
+
+      it('should return OK if daysEol is null and isEol is false', () => {
+        const component = { ...baseComponent };
+        assert.equal(getStatusFromComponent(component, null), 'OK');
+      });
+
+      it('should return LTS if daysEol is zero or negative (future/today)', () => {
+        const component = { ...baseComponent };
+        assert.equal(getStatusFromComponent(component, 0), 'LTS');
+        assert.equal(getStatusFromComponent(component, -30), 'LTS');
+      });
+
+      it('should return EOL if daysEol is positive (past date)', () => {
+        const component = { ...baseComponent };
+        assert.equal(getStatusFromComponent(component, 30), 'EOL');
+      });
     });
   });
 
@@ -58,6 +108,7 @@ describe('line', () => {
         status: 'EOL',
         daysEol: 30,
         info: { isEol: true, eolAt: new Date() },
+        evidence: '',
       };
       const result = formatLine(line, 0, context);
       assert(result.name.includes('['));
@@ -66,25 +117,30 @@ describe('line', () => {
       assert.equal(result.value, line);
     });
 
-    it('should throw when isEol is true but status is not EOL', () => {
+    it('should format line with OK status', () => {
       const line: Line = {
         purl: 'pkg:npm/test@1.0.0',
         status: 'OK',
-        daysEol: undefined,
-        info: { isEol: true, eolAt: null },
-      };
-      assert.throws(() => formatLine(line, 0, context), /isEol is true but status is not EOL/);
-    });
-
-    it('should handle missing info', () => {
-      const line: Line = {
-        purl: 'pkg:npm/test@1.0.0',
-        status: 'OK',
-        daysEol: undefined,
+        daysEol: null,
         info: { isEol: false, eolAt: null },
+        evidence: '',
       };
       const result = formatLine(line, 0, context);
       assert(result.name.includes('OK'));
+      assert.equal(result.value, line);
+    });
+
+    it('should format line with LTS status', () => {
+      const line: Line = {
+        purl: 'pkg:npm/test@1.0.0',
+        status: 'LTS',
+        daysEol: 30,
+        info: { isEol: false, eolAt: new Date() },
+        evidence: '',
+      };
+      const result = formatLine(line, 0, context);
+      assert(result.name.includes('LTS'));
+      assert.equal(result.value, line);
     });
   });
 });

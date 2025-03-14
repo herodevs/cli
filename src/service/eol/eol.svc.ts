@@ -1,5 +1,5 @@
 import { log } from '../../utils/log.util.ts';
-import { daysBetween } from '../line.ts';
+import { getDaysEolFromEolAt, getStatusFromComponent } from '../line.ts';
 import type { Line } from '../line.ts';
 import type { ComponentStatus, ScanResult } from '../nes/modules/sbom.ts';
 import { NesApolloClient } from '../nes/nes.client.ts';
@@ -62,51 +62,41 @@ export async function submitScan(model: SbomModel): Promise<ScanResult> {
  * processing and/or rendering.
  */
 export async function prepareRows({ components, purls }: SbomModel, scan: ScanResult): Promise<Line[]> {
-  let lines: Line[] = purls.map((purl) => {
-    const { evidence } = components[purl];
-    const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
-    const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? `\t - ${occ}\n` : '';
+  const lines = purls
+    .map((purl): Line | null => {
+      const details = scan.components.get(purl);
 
-    const details = scan.components.get(purl);
+      if (!details) {
+        // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
+        log.debug(`Unknown status: ${purl}.`);
+        return null;
+      }
 
-    if (!details) {
-      // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
-      log.debug(`Unknown status: ${purl}.`);
-    }
+      const { evidence } = components[purl];
+      const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
+      const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? `\t - ${occ}\n` : '';
 
-    const info = details
-      ? details.info
-      : {
-          eolAt: null,
-          isEol: false,
-          isUnsafe: false,
-        };
+      const { info } = details;
 
-    info.eolAt = typeof info.eolAt === 'string' && info.eolAt ? new Date(info.eolAt) : info.eolAt;
+      // Handle date deserialization from GraphQL
+      info.eolAt = typeof info.eolAt === 'string' && info.eolAt ? new Date(info.eolAt) : info.eolAt;
 
-    const daysEol = info.eolAt ? daysBetween(new Date(), info.eolAt) : undefined;
-    let status: ComponentStatus = 'OK';
+      const daysEol: number | null = getDaysEolFromEolAt(info.eolAt);
 
-    // TODO: extract this logic into the Line.ts file somehow, so that there is a unified Line model
-    if (daysEol === undefined) {
-      status = info.isEol ? 'EOL' : status;
-    } else if (daysEol < 0) {
-      status = 'EOL';
-    } else if (daysEol > 0) {
-      status = 'LTS';
-    }
+      const status: ComponentStatus = getStatusFromComponent(details, daysEol);
 
-    return {
-      daysEol,
-      evidence: occurrences,
-      info,
-      purl,
-      status,
-    };
-  });
+      return {
+        daysEol,
+        evidence: occurrences,
+        info,
+        purl,
+        status,
+      };
+    })
+    .filter((item): item is Line => item !== null);
 
   if (!SHOW_OK) {
-    lines = lines.filter((l) => l.status !== 'OK');
+    return lines.filter((l) => l.status !== 'OK');
   }
 
   return lines;
