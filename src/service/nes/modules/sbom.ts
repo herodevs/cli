@@ -4,11 +4,17 @@ import { log } from '../../../utils/log.util.ts';
 import type { SbomMap } from '../../eol/eol.types.ts';
 import type { ApolloHelper } from '../nes.client.ts';
 
-export const buildScanResult = (scan: ScanResponseReport): ScanResult => ({
-  components: Object.fromEntries(scan.components.map((c) => [c.purl, c])),
-  message: scan.message,
-  success: true,
-});
+export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
+  const components = new Map<string, ScanResultComponent>();
+  for (const c of scan.components) {
+    components.set(c.purl, c);
+  }
+  return {
+    components,
+    message: scan.message,
+    success: true,
+  };
+};
 
 export const SbomScanner =
   (client: ApolloHelper) =>
@@ -25,11 +31,7 @@ export const SbomScanner =
     }
 
     const result = buildScanResult(scan);
-    // const result: ScanResult = {
-    //   components: Object.fromEntries(scan.components.map((c) => [c.purl, c])),
-    //   message: scan.message,
-    //   success: true
-    // }
+
     return result;
   };
 
@@ -50,19 +52,22 @@ export interface ScanResponseReport {
   success: boolean;
 }
 export interface ScanResult {
-  components: Record<string, ScanResultComponent>;
+  components: Map<string, ScanResultComponent>;
   diagnostics?: Record<string, unknown>;
   message: string;
   success: boolean;
 }
+
+export type ComponentStatus = 'EOL' | 'LTS' | 'OK';
+
 export interface ScanResultComponent {
-  info?: {
-    eolAt?: Date;
+  info: {
+    eolAt: Date | null;
     isEol: boolean;
     isUnsafe: boolean;
   };
   purl: string;
-  status: 'EOL' | 'LTS' | 'OK';
+  status?: ComponentStatus;
 }
 
 const M_SCAN = {
