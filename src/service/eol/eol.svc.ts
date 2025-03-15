@@ -6,16 +6,41 @@ import { NesApolloClient } from '../nes/nes.client.ts';
 import { createBomFromDir } from './cdx.svc.ts';
 import type { Sbom, ScanOptions } from './eol.types.ts';
 
-/**
- * Main function to scan directory and collect SBOM data
- */
-export async function scanForEol(directory = process.cwd(), opts: ScanOptions = {}) {
+export async function createSbom(directory: string, opts: ScanOptions = {}) {
   const sbom = await createBomFromDir(directory, opts.cdxgen || {});
   if (!sbom) throw new Error('SBOM not generated');
   log.info('SBOM generated');
+  return sbom;
+}
+
+export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
+  if (!sbom || typeof sbom !== 'object') {
+    throw new Error('SBOM must be an object');
+  }
+
+  const s = sbom as Record<string, unknown>;
+
+  // Basic CycloneDX validation
+  if (!('bomFormat' in s) || s.bomFormat !== 'CycloneDX') {
+    throw new Error('Invalid SBOM format: must be CycloneDX');
+  }
+
+  if (!('specVersion' in s) || typeof s.specVersion !== 'string') {
+    throw new Error('Invalid SBOM: missing specVersion');
+  }
+
+  if (!('components' in s) || !Array.isArray(s.components)) {
+    throw new Error('Invalid SBOM: missing or invalid components array');
+  }
+}
+
+/**
+ * Main function to scan directory and collect SBOM data
+ */
+export async function scanForEol(sbom: Sbom) {
   const purls = await extractPurls(sbom);
   const scan = await submitScan(purls);
-  return { purls, sbom, scan };
+  return { purls, scan };
 }
 
 /**
