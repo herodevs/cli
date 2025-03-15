@@ -15,7 +15,7 @@ export function getStatusFromComponent(component: ScanResultComponent, daysEol: 
   const { info } = component;
 
   if (component.status) {
-    if (info.isEol && component.status !== 'EOL') {
+    if (info.isEol && component.status && component.status !== 'EOL') {
       throw new Error(`isEol is true but status is not EOL: ${component.purl}`);
     }
     return component.status;
