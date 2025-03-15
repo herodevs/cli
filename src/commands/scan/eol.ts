@@ -34,7 +34,7 @@ export default class ScanEol extends Command {
     ux.action.start(`Scanning ${dir}`);
 
     const options = this.getScanOptions();
-    const { model, sbom, scan } = await scanForEol(dir, options);
+    const { purls, sbom, scan } = await scanForEol(dir, options);
     ux.action.stop('Scan completed');
     if (!sbom) {
       throw new Error(`SBOM failed to generate for dir: ${dir}`);
@@ -45,7 +45,7 @@ export default class ScanEol extends Command {
     }
 
     // TODO: map scanResultComponents to Lines in a consolidated way
-    const lines = await prepareRows(model, scan);
+    const lines = await prepareRows(purls, scan);
     if (lines?.length === 0) {
       this.log('No dependencies found');
       return { components: [] };

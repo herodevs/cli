@@ -15,23 +15,6 @@ export const createMockComponent = (
   status,
 });
 
-export const createMockModel = (purls: string[]): { components: Record<string, SbomEntry>; purls: string[] } => {
-  const components: Record<string, SbomEntry> = {};
-  for (const purl of purls) {
-    const [type, name, version] = purl.split('@');
-    components[purl] = {
-      evidence: {
-        occurrences: [],
-      },
-      group: type.split(':')[1],
-      name,
-      purl,
-      version,
-    };
-  }
-  return { components, purls };
-};
-
 export const createMockScan = (components: ScanResultComponent[]): ScanResult => ({
   components: new Map(components.map((c) => [c.purl, c])),
   message: 'Test scan',

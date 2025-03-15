@@ -1,7 +1,6 @@
 import { gql } from '@apollo/client/core/core.cjs';
 
 import { log } from '../../../utils/log.util.ts';
-import type { SbomMap } from '../../eol/eol.types.ts';
 import type { ApolloHelper } from '../nes.client.ts';
 
 export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
@@ -18,8 +17,8 @@ export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
 
 export const SbomScanner =
   (client: ApolloHelper) =>
-  async (sbom: SbomMap): Promise<ScanResult> => {
-    const input: ScanInput = { components: sbom.purls, type: 'SBOM' };
+  async (purls: string[]): Promise<ScanResult> => {
+    const input: ScanInput = { components: purls, type: 'SBOM' };
     const res = await client.mutate<ScanResponse, { input: ScanInput }>(M_SCAN.gql, { input });
 
     const scan = res.data?.insights?.scan?.eol;

@@ -4,7 +4,7 @@ import type { Line } from '../line.ts';
 import type { ComponentStatus, ScanResult } from '../nes/modules/sbom.ts';
 import { NesApolloClient } from '../nes/nes.client.ts';
 import { createBomFromDir } from './cdx.svc.ts';
-import type { Sbom, SbomEntry, SbomMap as SbomModel, ScanOptions } from './eol.types.ts';
+import type { Sbom, ScanOptions } from './eol.types.ts';
 
 /**
  * Main function to scan directory and collect SBOM data
@@ -13,41 +13,29 @@ export async function scanForEol(directory = process.cwd(), opts: ScanOptions = 
   const sbom = await createBomFromDir(directory, opts.cdxgen || {});
   if (!sbom) throw new Error('SBOM not generated');
   log.info('SBOM generated');
-  const model = await extractComponents(sbom);
-  const scan = await submitScan(model);
-  // TODO: probably a better return option here...
-  return { model, sbom, scan };
+  const purls = await extractPurls(sbom);
+  const scan = await submitScan(purls);
+  return { purls, sbom, scan };
 }
 
 /**
- * Translate an SBOM to a SbomModel for easier handling.
+ * Translate an SBOM to a list of purls for api request.
  */
-export async function extractComponents(sbom: Sbom): Promise<SbomModel> {
-  const { components: comps, dependencies } = sbom;
-  const components = [...(comps || []), ...(dependencies || [])].reduce(
-    (acc, entry) => {
-      if (entry.purl) {
-        acc[entry.purl] = entry;
-      }
-
-      return acc;
-    },
-    {} as Record<string, SbomEntry>,
-  );
-
-  return { components, purls: Object.keys(components).sort() };
+export async function extractPurls(sbom: Sbom): Promise<string[]> {
+  const { components: comps } = sbom;
+  return comps?.map((c) => c.purl) ?? [];
 }
 
 /**
- * Uses the purls from the model to run the scan.
+ * Uses the purls from the sbom to run the scan.
  */
-export async function submitScan(model: SbomModel): Promise<ScanResult> {
+export async function submitScan(purls: string[]): Promise<ScanResult> {
   // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
   const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com';
   const path = process.env.GRAPHQL_PATH || '/graphql';
   const url = host + path;
   const client = new NesApolloClient(url);
-  const scan = await client.scan.sbom(model);
+  const scan = await client.scan.sbom(purls);
   return scan;
 }
 
@@ -58,7 +46,7 @@ export async function submitScan(model: SbomModel): Promise<ScanResult> {
  * The idea being that each row can easily be used for
  * processing and/or rendering.
  */
-export async function prepareRows({ components, purls }: SbomModel, scan: ScanResult): Promise<Line[]> {
+export async function prepareRows(purls: string[], scan: ScanResult): Promise<Line[]> {
   const lines: Line[] = [];
 
   for (const purl of purls) {
@@ -66,15 +54,10 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
 
     if (!details) {
       // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
+      // TODO: add UNKNOWN Component Status, create new line, and create flag to show/hide unknown results
       log.debug(`Unknown status: ${purl}.`);
       continue;
     }
-
-    const { evidence } = components[purl];
-    const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
-
-    const SHOW_OCCURRENCES = process.env.SHOW_OCCURRENCES === 'true';
-    const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? `\t - ${occ}\n` : '';
 
     const { info } = details;
 
@@ -95,7 +78,6 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
 
     lines.push({
       daysEol,
-      evidence: occurrences,
       info,
       purl,
       status,
