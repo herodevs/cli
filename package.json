@@ -17,7 +17,7 @@
   "dependencies": {
     "@apollo/client": "^3.13.1",
     "@inquirer/prompts": "^5.0.2",
-    "cli-spinners": "^3.0.0",
+    "cli-spinners": "^3.2.0",
     "date-fns": "^3.6.0",
     "git-last-commit": "^1.0.1",
     "graphql": "^16.8.1",
