@@ -9,7 +9,6 @@ export interface Line {
     isEol: boolean;
   };
   status: ComponentStatus;
-  evidence: string;
 }
 
 export function getStatusFromComponent(component: ScanResultComponent, daysEol: number | null): ComponentStatus {
