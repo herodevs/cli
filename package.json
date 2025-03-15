@@ -37,7 +37,7 @@
     "@nx/workspace": "19.8.14",
     "@swc-node/register": "1.9.2",
     "@swc/core": "1.5.7",
-    "@swc/helpers": "0.5.12",
+    "@swc/helpers": "0.5.15",
     "@types/jest": "29.5.12",
     "@types/minimist": "^1.2.5",
     "@types/node": "18.19.68",
