@@ -18,7 +18,7 @@ export default class ScanSbom extends Command {
     }),
     dir: Flags.string({
       char: 'd',
-      description: 'The directory to scan',
+      description: 'The directory to scan in order to create a cyclonedx sbom',
     }),
     save: Flags.boolean({
       char: 's',
