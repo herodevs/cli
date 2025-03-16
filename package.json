@@ -17,7 +17,7 @@
     "postpack": "shx rm -f oclif.manifest.json",
     "prepack": "oclif manifest && oclif readme",
     "pretest": "npm run lint && npm run typecheck",
-    "readme": "npm exec oclif readme && npm run ci:fix",
+    "readme": "npm run ci:fix && npm run build && npm exec oclif readme",
     "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "version": "oclif readme && git add README.md"

@@ -39,6 +39,7 @@ USAGE
 * [`hd plugins unlink [PLUGIN]`](#hd-plugins-unlink-plugin)
 * [`hd plugins update`](#hd-plugins-update)
 * [`hd report committers [FILE]`](#hd-report-committers-file)
+* [`hd report purls`](#hd-report-purls)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd scan sbom`](#hd-scan-sbom)
 
@@ -376,6 +377,33 @@ EXAMPLES
 
 _See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/committers.ts)_
 
+## `hd report purls`
+
+Generate a list of purls from a sbom
+
+```
+USAGE
+  $ hd report purls [--json] [-f <value>] [-d <value>] [-s]
+
+FLAGS
+  -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
+  -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
+  -s, --save          Save the list of purls as nes.purls.json
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Generate a list of purls from a sbom
+
+EXAMPLES
+  $ hd report purls --dir=./my-project
+
+  $ hd report purls --file=path/to/sbom.json
+```
+
+_See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/purls.ts)_
+
 ## `hd scan eol`
 
 Scan a given sbom for EOL data
@@ -385,7 +413,7 @@ USAGE
   $ hd scan eol [--json] [-f <value>] [-d <value>] [-s]
 
 FLAGS
-  -d, --dir=<value>   The directory to scan
+  -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
   -s, --save          Save the generated SBOM as nes.sbom.json in the scanned directory
 
@@ -412,7 +440,7 @@ USAGE
   $ hd scan sbom [--json] [-f <value>] [-d <value>] [-s]
 
 FLAGS
-  -d, --dir=<value>   The directory to scan
+  -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
   -s, --save          Save the generated SBOM as nes.sbom.json in the scanned directory
 
