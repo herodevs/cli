@@ -22,7 +22,7 @@ export default class ReportPurls extends Command {
     save: Flags.boolean({
       char: 's',
       default: false,
-      description: 'Save the generated SBOM as nes.sbom.json in the scanned directory',
+      description: 'Save the list of purls as nes.purls.json',
     }),
   };
 
