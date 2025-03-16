@@ -1,10 +1,8 @@
 import path from 'node:path';
-import { Args, Command, Flags, ux } from '@oclif/core';
+import { Command, Flags, ux } from '@oclif/core';
 
 import fs from 'node:fs';
-import { type Sbom, createSbom, prepareRows, scanForEol, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
-import { promptComponentDetails } from '../../service/eol/eol.ui.ts';
-import type { ScanResult } from '../../service/nes/modules/sbom.ts';
+import { type Sbom, createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
 
 export default class ScanSbom extends Command {
   static override description = 'Scan a SBOM for purls';
