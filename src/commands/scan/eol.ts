@@ -7,10 +7,7 @@ import { promptComponentDetails } from '../../service/eol/eol.ui.ts';
 import type { ScanResult } from '../../service/nes/modules/sbom.ts';
 
 export default class ScanEol extends Command {
-  static override args = {
-    dir: Args.string({ description: 'file to read' }),
-  };
-  static override description = 'Scan a given directory';
+  static override description = 'Scan a given sbom for EOL data';
   static enableJsonFlag = true;
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
