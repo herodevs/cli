@@ -400,6 +400,8 @@ EXAMPLES
   $ hd report purls --dir=./my-project
 
   $ hd report purls --file=path/to/sbom.json
+
+  $ hd report purls --dir=./my-project --save
 ```
 
 _See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/purls.ts)_

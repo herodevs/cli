@@ -1,3 +1,5 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 
 import { type Sbom, extractPurls } from '../../service/eol/eol.svc.ts';
@@ -9,6 +11,7 @@ export default class ReportPurls extends Command {
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
     '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
+    '<%= config.bin %> <%= command.id %> --dir=./my-project --save',
   ];
   static override flags = {
     file: Flags.string({
@@ -28,7 +31,7 @@ export default class ReportPurls extends Command {
 
   public async run(): Promise<string[]> {
     const { flags } = await this.parse(ReportPurls);
-    const { dir: _dirFlag, file: _fileFlag } = flags;
+    const { dir: _dirFlag, file: _fileFlag, save } = flags;
 
     // Load the SBOM
     const sbomCommand = new SbomScan(this.argv, this.config);
@@ -38,6 +41,24 @@ export default class ReportPurls extends Command {
     const purls = await extractPurls(sbom);
 
     ux.action.stop('Scan completed');
+
+    // Print the purls
+    this.log('Found purls:');
+    for (const purl of purls) {
+      this.log(purl);
+    }
+
+    // Save if requested
+    if (save) {
+      const outputPath = path.join(_dirFlag || process.cwd(), 'nes.purls.json');
+      try {
+        fs.writeFileSync(outputPath, JSON.stringify(purls, null, 2));
+        this.log(`\nPurls saved to ${outputPath}`);
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        this.warn(`Failed to save purls: ${errorMessage}`);
+      }
+    }
 
     return purls;
   }
