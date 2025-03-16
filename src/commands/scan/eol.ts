@@ -30,12 +30,7 @@ export default class ScanEol extends Command {
 
   public async run(): Promise<ScanResult | { components: [] }> {
     const { flags } = await this.parse(ScanEol);
-    const { dir: _dirFlag, save, file: _fileFlag } = flags;
-
-    // Validate that exactly one of --file or --dir is provided
-    if (_fileFlag && _dirFlag) {
-      throw new Error('Cannot specify both --file and --dir flags. Please use one or the other.');
-    }
+    const { dir: _dirFlag, file: _fileFlag } = flags;
 
     // Load the SBOM
     const sbomCommand = new SbomScan(this.argv, this.config);
