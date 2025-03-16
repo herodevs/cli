@@ -4,7 +4,7 @@ import { type Sbom, extractPurls } from '../../service/eol/eol.svc.ts';
 import SbomScan from '../scan/sbom.ts';
 
 export default class ReportPurls extends Command {
-  static override description = 'Scan a given sbom for EOL data';
+  static override description = 'Generate a list of purls from a sbom';
   static enableJsonFlag = true;
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
