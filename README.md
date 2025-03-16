@@ -39,7 +39,8 @@ USAGE
 * [`hd plugins unlink [PLUGIN]`](#hd-plugins-unlink-plugin)
 * [`hd plugins update`](#hd-plugins-update)
 * [`hd report committers [FILE]`](#hd-report-committers-file)
-* [`hd scan eol [DIR]`](#hd-scan-eol-dir)
+* [`hd scan eol`](#hd-scan-eol)
+* [`hd scan sbom`](#hd-scan-sbom)
 
 ## `hd help [COMMAND]`
 
@@ -375,16 +376,13 @@ EXAMPLES
 
 _See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/committers.ts)_
 
-## `hd scan eol [DIR]`
+## `hd scan eol`
 
-Scan a given directory
+Scan a given sbom for EOL data
 
 ```
 USAGE
-  $ hd scan eol [DIR] [--json] [-f <value>] [-d <value>] [-s]
-
-ARGUMENTS
-  DIR  file to read
+  $ hd scan eol [--json] [-f <value>] [-d <value>] [-s]
 
 FLAGS
   -d, --dir=<value>   The directory to scan
@@ -395,17 +393,40 @@ GLOBAL FLAGS
   --json  Format output as json.
 
 DESCRIPTION
-  Scan a given directory
+  Scan a given sbom for EOL data
 
 EXAMPLES
   $ hd scan eol --dir=./my-project
 
   $ hd scan eol --file=path/to/sbom.json
-
-  npm run dev scan:eol -- --file=path/to/sbom.json
-
-  npm run dev scan:eol -- --dir=./my-project --save
 ```
 
 _See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/scan/eol.ts)_
+
+## `hd scan sbom`
+
+Scan a SBOM for purls
+
+```
+USAGE
+  $ hd scan sbom [--json] [-f <value>] [-d <value>] [-s]
+
+FLAGS
+  -d, --dir=<value>   The directory to scan
+  -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
+  -s, --save          Save the generated SBOM as nes.sbom.json in the scanned directory
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Scan a SBOM for purls
+
+EXAMPLES
+  $ hd scan sbom --dir=./my-project
+
+  $ hd scan sbom --file=path/to/sbom.json
+```
+
+_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/scan/sbom.ts)_
 <!-- commandsstop -->

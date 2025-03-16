@@ -31,9 +31,7 @@ describe('scan:eol', () => {
 
   it('runs against simple npm fixture', async () => {
     // Mock the scanOptions to force projectType to use npm (otherwise it'll try yarn and such)
-    sinon
-      .stub(SbomScan.prototype, 'getScanOptions')
-      .returns({ cdxgen: { projectType: ['npm'] } });
+    sinon.stub(SbomScan.prototype, 'getScanOptions').returns({ cdxgen: { projectType: ['npm'] } });
 
     if (!bomJson) fail('No bomJson');
     // TODO: rework this to not require all teh methods for testing
