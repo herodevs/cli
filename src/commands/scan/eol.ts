@@ -1,6 +1,6 @@
 import { Command, Flags, ux } from '@oclif/core';
 
-import { type prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
+import { type Sbom, prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
 import { promptComponentDetails } from '../../service/eol/eol.ui.ts';
 import type { ScanResult } from '../../service/nes/modules/sbom.ts';
 import SbomScan from './sbom.ts';
@@ -37,8 +37,11 @@ export default class ScanEol extends Command {
       throw new Error('Cannot specify both --file and --dir flags. Please use one or the other.');
     }
 
-    const sbom = await new SbomScan([_dirFlag, save, _fileFlag], {}).run();
+    // Load the SBOM
+    const sbomCommand = new SbomScan(this.argv, this.config);
+    const sbom: Sbom = await sbomCommand.run();
 
+    // Scan the SBOM for EOL information
     const { purls, scan } = await scanForEol(sbom);
 
     ux.action.stop('Scan completed');
