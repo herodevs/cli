@@ -11,12 +11,11 @@ describe('handleUpdate', () => {
         current: '0.3.1',
         name: '@herodevs/cli',
       },
-      '0.3.1'
+      '0.3.1',
     );
 
     assert.deepStrictEqual(result, {
-      message:
-        'Update available! v0.3.1 → v1.0.0\nWhile in v0, all updates may contain breaking changes.',
+      message: 'Update available! v0.3.1 → v1.0.0\nWhile in v0, all updates may contain breaking changes.',
       defer: false,
     });
   });
@@ -29,12 +28,11 @@ describe('handleUpdate', () => {
         current: '0.3.1',
         name: '@herodevs/cli',
       },
-      '0.3.1'
+      '0.3.1',
     );
 
     assert.deepStrictEqual(result, {
-      message:
-        'Update available! v0.3.1 → v0.4.0\nWhile in v0, all updates may contain breaking changes.',
+      message: 'Update available! v0.3.1 → v0.4.0\nWhile in v0, all updates may contain breaking changes.',
       defer: false,
     });
   });
@@ -47,12 +45,11 @@ describe('handleUpdate', () => {
         current: '0.3.1',
         name: '@herodevs/cli',
       },
-      '0.3.1'
+      '0.3.1',
     );
 
     assert.deepStrictEqual(result, {
-      message:
-        'Update available! v0.3.1 → v0.3.2\nWhile in v0, all updates may contain breaking changes.',
+      message: 'Update available! v0.3.1 → v0.3.2\nWhile in v0, all updates may contain breaking changes.',
       defer: false,
     });
   });
@@ -65,12 +62,11 @@ describe('handleUpdate', () => {
         current: '1.0.0',
         name: '@herodevs/cli',
       },
-      '1.0.0'
+      '1.0.0',
     );
 
     assert.deepStrictEqual(result, {
-      message:
-        'Major update available! v1.0.0 → v2.0.0\nThis includes breaking changes.',
+      message: 'Major update available! v1.0.0 → v2.0.0\nThis includes breaking changes.',
       defer: false,
     });
   });
@@ -83,12 +79,11 @@ describe('handleUpdate', () => {
         current: '1.0.0',
         name: '@herodevs/cli',
       },
-      '1.0.0'
+      '1.0.0',
     );
 
     assert.deepStrictEqual(result, {
-      message:
-        'New features available! v1.0.0 → v1.1.0\nUpdate includes new functionality.',
+      message: 'New features available! v1.0.0 → v1.1.0\nUpdate includes new functionality.',
       defer: false,
     });
   });
@@ -101,12 +96,11 @@ describe('handleUpdate', () => {
         current: '1.0.0',
         name: '@herodevs/cli',
       },
-      '1.0.0'
+      '1.0.0',
     );
 
     assert.deepStrictEqual(result, {
-      message:
-        'Patch update available v1.0.0 → v1.0.1\nThis may include bug fixes and security updates.',
+      message: 'Patch update available v1.0.0 → v1.0.1\nThis may include bug fixes and security updates.',
       defer: false,
     });
   });
