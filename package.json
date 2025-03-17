@@ -1,7 +1,7 @@
 {
   "name": "@herodevs/cli",
   "description": "The HeroDevs CLI",
-  "version": "2.0.0",
+  "version": "0.3.1",
   "author": "HeroDevs, Inc",
   "bin": {
     "hd": "./bin/run.js"
@@ -32,7 +32,8 @@
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-plugins": "^5",
     "cli-table3": "^0.6.5",
-    "inquirer": "^12.4.2"
+    "inquirer": "^12.4.2",
+    "update-notifier": "^7.3.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
@@ -40,6 +41,7 @@
     "@types/inquirer": "^9.0.7",
     "@types/node": "^22",
     "@types/sinon": "^17.0.4",
+    "@types/update-notifier": "^6.0.8",
     "oclif": "^4",
     "shx": "^0.3.3",
     "sinon": "^19.0.2",
@@ -74,7 +76,7 @@
       }
     },
     "hooks": {
-      "init": "./dist/hooks/init/npm-update-warning",
+      "init": "./dist/hooks/init/npm-update-notifier",
       "prerun": "./dist/hooks/prerun/command-context-hook"
     }
   },

@@ -15,7 +15,8 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "typeRoots": ["node_modules/@types", "types"]
+    "typeRoots": ["node_modules/@types", "types"],
+    "resolveJsonModule": true
   },
   "include": ["src/**/*", "types/**/*.d.ts"],
   "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "test/**/*"]
