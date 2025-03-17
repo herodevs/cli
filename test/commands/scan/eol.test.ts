@@ -6,7 +6,8 @@ import { runCommand } from '@oclif/test';
 import * as sinon from 'sinon';
 
 import { default as EolScan } from '../../../src/commands/scan/eol.ts';
-import { type Sbom, cdxgen, extractComponents, prepareRows } from '../../../src/service/eol/eol.svc.ts';
+import { default as SbomScan } from '../../../src/commands/scan/sbom.ts';
+import { type Sbom, cdxgen, extractPurls, prepareRows } from '../../../src/service/eol/eol.svc.ts';
 import type { CdxCreator } from '../../../src/service/eol/eol.types.ts';
 import { type ScanResponseReport, type ScanResult, buildScanResult } from '../../../src/service/nes/modules/sbom.ts';
 import { FetchMock } from '../../utils/mocks/fetch.mock.ts';
@@ -30,12 +31,12 @@ describe('scan:eol', () => {
 
   it('runs against simple npm fixture', async () => {
     // Mock the scanOptions to force projectType to use npm (otherwise it'll try yarn and such)
-    sinon.stub(EolScan.prototype, 'getScanOptions').returns({ cdxgen: { projectType: ['npm'] } });
+    sinon.stub(SbomScan.prototype, 'getScanOptions').returns({ cdxgen: { projectType: ['npm'] } });
 
     if (!bomJson) fail('No bomJson');
     // TODO: rework this to not require all teh methods for testing
     // dev note: pretending to process the output of our mock, so it matches
-    const lines = await prepareRows(await extractComponents(bomJson), buildScanResult(mocked.simple));
+    const lines = await prepareRows(await extractPurls(bomJson), buildScanResult(mocked.simple));
 
     // now that we've got the mocked options for the UI, we can pretend one is selected
     new InquirerMock().push({
