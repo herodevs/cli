@@ -1,7 +1,6 @@
 {
   "extends": "../tsconfig",
   "compilerOptions": {
-    "noEmit": true,
-    "module": "ESNext"
+    "noEmit": true
   }
 }

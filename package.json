@@ -6,6 +6,11 @@
   "bin": {
     "hd": "./bin/run.js"
   },
+  "bugs": "https://github.com/@herodevs/cli/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/herodevs/cli.git"
+  },
   "type": "module",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
@@ -24,7 +29,6 @@
     "typecheck": "tsc --noEmit",
     "version": "oclif readme && git add README.md"
   },
-  "bugs": "https://github.com/@herodevs/cli/issues",
   "dependencies": {
     "@apollo/client": "^3.13.1",
     "@cyclonedx/cdxgen": "^11.2.0",
@@ -51,7 +55,8 @@
   "files": [
     "./bin",
     "./dist",
-    "./oclif.manifest.json"
+    "./oclif.manifest.json",
+    "LICENSE"
   ],
   "homepage": "https://github.com/@herodevs/cli",
   "keywords": [
@@ -76,10 +81,6 @@
     "hooks": {
       "prerun": "./dist/hooks/prerun/CommandContextHook"
     }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/herodevs/cli.git"
   },
   "types": "dist/index.d.ts"
 }
