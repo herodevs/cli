@@ -12,7 +12,7 @@ export default class ReportPurls extends Command {
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
     '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
     '<%= config.bin %> <%= command.id %> --dir=./my-project --save',
-    '<%= config.bin %> <%= command.id %> --dir=./my-project --save --output=csv',
+    '<%= config.bin %> <%= command.id %> --save --output=csv',
   ];
   static override flags = {
     file: Flags.string({
@@ -33,16 +33,16 @@ export default class ReportPurls extends Command {
       options: ['json', 'csv'],
       default: 'json',
       description: 'The output format of the list of purls',
-      required: false,
     }),
   };
 
   public async run(): Promise<string[]> {
     const { flags } = await this.parse(ReportPurls);
-    const { dir: _dirFlag, file: _fileFlag, save, output = 'json' } = flags;
+    const { dir: _dirFlag, file: _fileFlag, save, output } = flags;
 
-    // Load the SBOM
-    const sbomCommand = new SbomScan(this.argv, this.config);
+    // Load the SBOM: Only pass the file, dir, and save flags to SbomScan
+    const sbomArgs = SbomScan.getSbomArgs(flags);
+    const sbomCommand = new SbomScan(sbomArgs, this.config);
     const sbom: Sbom = await sbomCommand.run();
 
     // Extract purls from SBOM
