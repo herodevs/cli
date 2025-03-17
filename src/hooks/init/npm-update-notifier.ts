@@ -24,7 +24,7 @@ const updateNotifierHook: Hook.Init = async (options) => {
         message: `Update available! v${pkg.version} → v${notifier.update.latest}\nWhile in v0, all updates may contain breaking changes.`,
         defer: false,
       });
-    // Only show major/minor updates for v1.x.x+
+      // Only show major/minor updates for v1.x.x+
     } else if (isMajorOrMinor) {
       notifier.notify({
         message: `New ${notifier.update.type} version available! v${pkg.version} → v${notifier.update.latest}`,
