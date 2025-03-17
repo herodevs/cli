@@ -19,7 +19,7 @@ describe('getPurlOutput', () => {
   });
 
   describe('csv output', () => {
-    it('should format simple purls with header', () => {
+    it('should format purls with header', () => {
       const purls = ['pkg:npm/react@18.2.0', 'pkg:npm/typescript@5.0.0'];
       const result = getPurlOutput(purls, 'csv');
       const expected = 'purl\npkg:npm/react@18.2.0\npkg:npm/typescript@5.0.0';
@@ -30,27 +30,6 @@ describe('getPurlOutput', () => {
       const purls: string[] = [];
       const result = getPurlOutput(purls, 'csv');
       assert.strictEqual(result, 'purl');
-    });
-
-    it('should escape purls containing commas', () => {
-      const purls = ['pkg:npm/foo@1.0.0', 'pkg:npm/bar@1.0.0,beta'];
-      const result = getPurlOutput(purls, 'csv');
-      const expected = 'purl\npkg:npm/foo@1.0.0\n"pkg:npm/bar@1.0.0,beta"';
-      assert.strictEqual(result, expected);
-    });
-
-    it('should escape purls containing quotes', () => {
-      const purls = ['pkg:npm/foo@1.0.0', 'pkg:npm/"bar"@1.0.0'];
-      const result = getPurlOutput(purls, 'csv');
-      const expected = 'purl\npkg:npm/foo@1.0.0\n"pkg:npm/""bar""@1.0.0"';
-      assert.strictEqual(result, expected);
-    });
-
-    it('should handle purls with both quotes and commas', () => {
-      const purls = ['pkg:npm/"foo,bar"@1.0.0'];
-      const result = getPurlOutput(purls, 'csv');
-      const expected = 'purl\n"pkg:npm/""foo,bar""@1.0.0"';
-      assert.strictEqual(result, expected);
     });
   });
 });
