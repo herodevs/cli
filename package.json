@@ -74,6 +74,7 @@
       }
     },
     "hooks": {
+      "init": "./dist/hooks/init/npm-update-warning",
       "prerun": "./dist/hooks/prerun/command-context-hook"
     }
   },
