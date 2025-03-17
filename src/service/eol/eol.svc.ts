@@ -48,7 +48,7 @@ export async function scanForEol(sbom: Sbom) {
  */
 export async function extractPurls(sbom: Sbom): Promise<string[]> {
   const { components: comps } = sbom;
-  return comps?.map((c) => c.purl) ?? [];
+  return comps.map((c) => c.purl) ?? [];
 }
 
 /**
