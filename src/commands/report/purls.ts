@@ -2,8 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 
-import { type Sbom, extractPurls } from '../../service/eol/eol.svc.ts';
-import { getPurlOutput } from '../../service/report/purls.svc.ts';
+import type { Sbom } from '../../service/eol/eol.svc.ts';
+import { extractPurls, getPurlOutput } from '../../service/purls.svc.ts';
 import SbomScan from '../scan/sbom.ts';
 
 export default class ReportPurls extends Command {

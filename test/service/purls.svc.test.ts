@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { getPurlOutput } from '../../src/service/report/purls.svc.ts';
+import { formatCsvValue, getPurlOutput } from '../../src/service/purls.svc.ts';
 
 describe('getPurlOutput', () => {
   describe('json output', () => {
@@ -31,5 +31,21 @@ describe('getPurlOutput', () => {
       const result = getPurlOutput(purls, 'csv');
       assert.strictEqual(result, 'purl');
     });
+  });
+});
+
+describe('formatCsvValue', () => {
+  it('should return value unchanged when no commas present', () => {
+    const value = 'pkg:npm/react@18.2.0';
+    assert.strictEqual(formatCsvValue(value), value);
+  });
+
+  it('should wrap value in quotes when comma present', () => {
+    const value = 'pkg:npm/bar@1.0.0,beta';
+    assert.strictEqual(formatCsvValue(value), '"pkg:npm/bar@1.0.0,beta"');
+  });
+
+  it('should handle empty string', () => {
+    assert.strictEqual(formatCsvValue(''), '');
   });
 });
