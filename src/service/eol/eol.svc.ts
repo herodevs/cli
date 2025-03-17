@@ -6,9 +6,6 @@ import { NesApolloClient } from '../nes/nes.client.ts';
 import { createBomFromDir } from './cdx.svc.ts';
 import type { Sbom, SbomEntry, SbomMap as SbomModel, ScanOptions } from './eol.types.ts';
 
-const SHOW_OCCURRENCES = (process.env.SHOW_OCCURRENCES || 'false') === 'true';
-const SHOW_OK = (process.env.SHOW_OK || 'false') === 'true';
-
 /**
  * Main function to scan directory and collect SBOM data
  */
@@ -62,41 +59,47 @@ export async function submitScan(model: SbomModel): Promise<ScanResult> {
  * processing and/or rendering.
  */
 export async function prepareRows({ components, purls }: SbomModel, scan: ScanResult): Promise<Line[]> {
-  const lines = purls
-    .map((purl): Line | null => {
-      const details = scan.components.get(purl);
+  const lines: Line[] = [];
 
-      if (!details) {
-        // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
-        log.debug(`Unknown status: ${purl}.`);
-        return null;
-      }
+  for (const purl of purls) {
+    const details = scan.components.get(purl);
 
-      const { evidence } = components[purl];
-      const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
-      const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? `\t - ${occ}\n` : '';
+    if (!details) {
+      // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
+      log.debug(`Unknown status: ${purl}.`);
+      continue;
+    }
 
-      const { info } = details;
+    const { evidence } = components[purl];
+    const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
 
-      // Handle date deserialization from GraphQL
-      info.eolAt = typeof info.eolAt === 'string' && info.eolAt ? new Date(info.eolAt) : info.eolAt;
+    const SHOW_OCCURRENCES = process.env.SHOW_OCCURRENCES === 'true';
+    const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? `\t - ${occ}\n` : '';
 
-      const daysEol: number | null = getDaysEolFromEolAt(info.eolAt);
+    const { info } = details;
 
-      const status: ComponentStatus = getStatusFromComponent(details, daysEol);
+    // Handle date deserialization from GraphQL
+    if (typeof info.eolAt === 'string' && info.eolAt) {
+      info.eolAt = new Date(info.eolAt);
+    }
 
-      return {
-        daysEol,
-        evidence: occurrences,
-        info,
-        purl,
-        status,
-      };
-    })
-    .filter((item): item is Line => item !== null);
+    const daysEol: number | null = getDaysEolFromEolAt(info.eolAt);
 
-  if (!SHOW_OK) {
-    return lines.filter((l) => l.status !== 'OK');
+    const status: ComponentStatus = getStatusFromComponent(details, daysEol);
+
+    const showOk = process.env.SHOW_OK === 'true';
+
+    if (!showOk && status === 'OK') {
+      continue;
+    }
+
+    lines.push({
+      daysEol,
+      evidence: occurrences,
+      info,
+      purl,
+      status,
+    });
   }
 
   return lines;
