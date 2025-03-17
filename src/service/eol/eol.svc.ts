@@ -73,7 +73,7 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
     const { evidence } = components[purl];
     const occ = evidence?.occurrences?.map((o) => o.location).join('\n\t - ');
 
-    const SHOW_OCCURRENCES = (process.env.SHOW_OCCURRENCES || 'false') === 'true';
+    const SHOW_OCCURRENCES = process.env.SHOW_OCCURRENCES === 'true';
     const occurrences = SHOW_OCCURRENCES && Boolean(occ) ? `\t - ${occ}\n` : '';
 
     const { info } = details;
