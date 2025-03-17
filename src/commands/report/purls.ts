@@ -8,6 +8,7 @@ import SbomScan from '../scan/sbom.ts';
 
 export default class ReportPurls extends Command {
   static override description = 'Generate a list of purls from a sbom';
+  static enableJsonFlag = true;
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
     '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
@@ -32,7 +33,7 @@ export default class ReportPurls extends Command {
       char: 'o',
       options: ['json', 'csv'],
       default: 'json',
-      description: 'The output format of the list of purls',
+      description: 'The format of the saved file (when using --save)',
     }),
   };
 
