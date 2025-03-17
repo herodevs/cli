@@ -74,7 +74,7 @@
       }
     },
     "hooks": {
-      "prerun": "./dist/hooks/prerun/CommandContextHook"
+      "prerun": "./dist/hooks/prerun/command-context-hook"
     }
   },
   "repository": {
