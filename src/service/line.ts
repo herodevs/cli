@@ -9,14 +9,13 @@ export interface Line {
     isEol: boolean;
   };
   status: ComponentStatus;
-  evidence: string;
 }
 
 export function getStatusFromComponent(component: ScanResultComponent, daysEol: number | null): ComponentStatus {
   const { info } = component;
 
   if (component.status) {
-    if (info.isEol && component.status !== 'EOL') {
+    if (info.isEol && component.status && component.status !== 'EOL') {
       throw new Error(`isEol is true but status is not EOL: ${component.purl}`);
     }
     return component.status;

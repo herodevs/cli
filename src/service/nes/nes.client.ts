@@ -1,12 +1,11 @@
 // TODO move this to another lib altogether!
 
 import * as apollo from '@apollo/client/core/index.js';
-import type { SbomMap } from '../eol/eol.types.ts';
 import { type ScanResult, SbomScanner as sbomScanner } from '../nes/modules/sbom.ts';
 
 export interface NesClient {
   scan: {
-    sbom: (sbom: SbomMap) => Promise<ScanResult>;
+    sbom: (purls: string[]) => Promise<ScanResult>;
   };
 }
 
