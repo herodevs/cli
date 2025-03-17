@@ -79,7 +79,9 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
     const { info } = details;
 
     // Handle date deserialization from GraphQL
-    info.eolAt = typeof info.eolAt === 'string' && info.eolAt ? new Date(info.eolAt) : info.eolAt;
+    if (typeof info.eolAt === 'string' && info.eolAt) {
+      info.eolAt = new Date(info.eolAt);
+    }
 
     const daysEol: number | null = getDaysEolFromEolAt(info.eolAt);
 
