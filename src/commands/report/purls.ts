@@ -55,7 +55,7 @@ export default class ReportPurls extends Command {
         fs.writeFileSync(outputPath, JSON.stringify(purls, null, 2));
         this.log(`\nPurls saved to ${outputPath}`);
       } catch (error: unknown) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage = error && typeof error === 'object' && 'message' in error ? error.message : 'Unknown error';
         this.warn(`Failed to save purls: ${errorMessage}`);
       }
     }
