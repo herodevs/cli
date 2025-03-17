@@ -85,7 +85,7 @@ export async function prepareRows({ components, purls }: SbomModel, scan: ScanRe
 
     const status: ComponentStatus = getStatusFromComponent(details, daysEol);
 
-    const showOk = (process.env.SHOW_OK || 'false') === 'true';
+    const showOk = process.env.SHOW_OK === 'true';
 
     if (!showOk && status === 'OK') {
       continue;
