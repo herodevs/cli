@@ -11,6 +11,8 @@
     "build": "shx rm -rf dist && tsc -b",
     "ci": "biome ci",
     "ci:fix": "biome check --write",
+    "clean": "shx rm -rf dist && npm run clean:files && shx rm -rf node_modules",
+    "clean:files": "shx rm -f nes.purls.csv nes.purls.json nes.sbom.json",
     "dev": "npm run build && ./bin/dev.js",
     "format": "biome format --write",
     "lint": "biome lint --write",

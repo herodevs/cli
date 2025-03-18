@@ -3,6 +3,7 @@ import { getDaysEolFromEolAt, getStatusFromComponent } from '../line.ts';
 import type { Line } from '../line.ts';
 import type { ComponentStatus, ScanResult } from '../nes/modules/sbom.ts';
 import { NesApolloClient } from '../nes/nes.client.ts';
+import { extractPurls } from '../purls.svc.ts';
 import { createBomFromDir } from './cdx.svc.ts';
 import type { Sbom, ScanOptions } from './eol.types.ts';
 
@@ -41,14 +42,6 @@ export async function scanForEol(sbom: Sbom) {
   const purls = await extractPurls(sbom);
   const scan = await submitScan(purls);
   return { purls, scan };
-}
-
-/**
- * Translate an SBOM to a list of purls for api request.
- */
-export async function extractPurls(sbom: Sbom): Promise<string[]> {
-  const { components: comps } = sbom;
-  return comps.map((c) => c.purl) ?? [];
 }
 
 /**
