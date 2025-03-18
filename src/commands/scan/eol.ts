@@ -32,8 +32,9 @@ export default class ScanEol extends Command {
     const { flags } = await this.parse(ScanEol);
     const { dir: _dirFlag, file: _fileFlag } = flags;
 
-    // Load the SBOM
-    const sbomCommand = new SbomScan(this.argv, this.config);
+    // Load the SBOM: Only pass the file, dir, and save flags to SbomScan
+    const sbomArgs = SbomScan.getSbomArgs(flags);
+    const sbomCommand = new SbomScan(sbomArgs, this.config);
     const sbom: Sbom = await sbomCommand.run();
 
     // Scan the SBOM for EOL information

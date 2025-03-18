@@ -383,15 +383,14 @@ Generate a list of purls from a sbom
 
 ```
 USAGE
-  $ hd report purls [--json] [-f <value>] [-d <value>] [-s]
+  $ hd report purls [-f <value>] [-d <value>] [-s] [-o json|csv]
 
 FLAGS
-  -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
-  -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
-  -s, --save          Save the list of purls as nes.purls.json
-
-GLOBAL FLAGS
-  --json  Format output as json.
+  -d, --dir=<value>      The directory to scan in order to create a cyclonedx sbom
+  -f, --file=<value>     The file path of an existing cyclonedx sbom to scan for EOL
+  -o, --output=<option>  [default: json] The output format of the list of purls
+                         <options: json|csv>
+  -s, --save             Save the list of purls as nes.purls.<output>
 
 DESCRIPTION
   Generate a list of purls from a sbom
@@ -402,6 +401,8 @@ EXAMPLES
   $ hd report purls --file=path/to/sbom.json
 
   $ hd report purls --dir=./my-project --save
+
+  $ hd report purls --dir=./my-project --save --output=csv
 ```
 
 _See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/purls.ts)_

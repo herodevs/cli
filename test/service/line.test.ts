@@ -108,7 +108,6 @@ describe('line', () => {
         status: 'EOL',
         daysEol: 30,
         info: { isEol: true, eolAt: new Date() },
-        evidence: '',
       };
       const result = formatLine(line, 0, context);
       assert(result.name.includes('['));
@@ -123,7 +122,6 @@ describe('line', () => {
         status: 'OK',
         daysEol: null,
         info: { isEol: false, eolAt: null },
-        evidence: '',
       };
       const result = formatLine(line, 0, context);
       assert(result.name.includes('OK'));
@@ -136,7 +134,6 @@ describe('line', () => {
         status: 'LTS',
         daysEol: 30,
         info: { isEol: false, eolAt: new Date() },
-        evidence: '',
       };
       const result = formatLine(line, 0, context);
       assert(result.name.includes('LTS'));

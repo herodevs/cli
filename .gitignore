@@ -7,9 +7,10 @@
 node_modules
 oclif.manifest.json
 
-
-
 yarn.lock
 pnpm-lock.yaml
 
 **/tsconfig.tsbuildinfo
+
+# cli-generated files
+nes.**.**
