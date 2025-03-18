@@ -1,0 +1,46 @@
+{
+    "name": "@herodevs/cli-win32-x64",
+    "version": "2.0.0",
+    "license": "MIT",
+    "type": "commonjs",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/herodevs/cli.git",
+        "directory": "packages/cli-win32-x64"
+    },
+    "engines": {
+        "node": ">=8"
+    },
+    "homepage": "https://github.com/@herodevs/cli",
+    "os": [
+        "win32"
+    ],
+    "cpu": [
+        "x64"
+    ],
+    "scripts": {
+        "prepack": "shx cp  -r ../../bin .",
+        "pack": "oclif pack tarballs --targets=win32-x64"
+    },
+    "dependencies": {
+        "@oclif/core": "^4",
+        "@oclif/plugin-help": "^6",
+        "@oclif/plugin-plugins": "^5"
+    },
+    "devDependencies": {
+        "shx": "^0.3.3"
+    },
+    "oclif": {
+        "bin": "hd",
+        "dirname": "hd",
+        "commands": "../../dist/commands",
+        "plugins": [
+            "@oclif/plugin-help",
+            "@oclif/plugin-plugins"
+        ],
+        "hooks": {
+            "prerun": "../../dist/hooks/prerun/CommandContextHook"
+        },
+        "topicSeparator": " "
+    }
+}

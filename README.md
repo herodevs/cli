@@ -7,8 +7,7 @@ The HeroDevs CLI
 [![Downloads/week](https://img.shields.io/npm/dw/@herodevs/cli.svg)](https://npmjs.org/package/@herodevs/cli)
 
 <!-- toc -->
-* [Usage](#usage)
-* [Commands](#commands)
+* [@herodevs/cli](#herodevscli)
 <!-- tocstop -->
 ## Usage
 <!-- usage -->
@@ -17,7 +16,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0 darwin-arm64 node-v22.14.0
+@herodevs/cli/2.0.0 darwin-arm64 node-v22.13.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -37,44 +36,14 @@ USAGE
 * [`hd plugins uninstall [PLUGIN]`](#hd-plugins-uninstall-plugin)
 * [`hd plugins unlink [PLUGIN]`](#hd-plugins-unlink-plugin)
 * [`hd plugins update`](#hd-plugins-update)
-* [`hd report committers [FILE]`](#hd-report-committers-file)
-* [`hd report purls`](#hd-report-purls)
-* [`hd scan eol`](#hd-scan-eol)
-* [`hd scan sbom`](#hd-scan-sbom)
 
-### `hd help [COMMAND]`
+## `hd help [COMMAND]`
 
 Display help for hd.
 
 ```
-
-_See code: [src/commands/hello/index.ts](https://github.com/mdonnalley/mycli123/blob/v0.0.0/src/commands/hello/index.ts)_
-
-### `mycli123 hello world`
-
-Say hello world
-
-```text
 USAGE
-  $ mycli123 hello world
-
-DESCRIPTION
-  Say hello world
-
-EXAMPLES
-  $ mycli123 hello world
-  hello world! (./src/commands/hello/world.ts)
-```
-
-_See code: [src/commands/hello/world.ts](https://github.com/mdonnalley/mycli123/blob/v0.0.0/src/commands/hello/world.ts)_
-
-### `mycli123 help [COMMAND]`
-
-Display help for mycli123.
-
-```text
-USAGE
-  $ mycli123 help [COMMAND...] [-n]
+  $ hd help [COMMAND...] [-n]
 
 ARGUMENTS
   COMMAND...  Command to show help for.
@@ -88,7 +57,7 @@ DESCRIPTION
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.26/src/commands/help.ts)_
 
-### `hd plugins`
+## `hd plugins`
 
 List installed plugins.
 
@@ -111,7 +80,7 @@ EXAMPLES
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/index.ts)_
 
-### `hd plugins add PLUGIN`
+## `hd plugins add PLUGIN`
 
 Installs a plugin into hd.
 
@@ -158,7 +127,7 @@ EXAMPLES
     $ hd plugins add someuser/someplugin
 ```
 
-### `hd plugins:inspect PLUGIN...`
+## `hd plugins:inspect PLUGIN...`
 
 Displays installation properties of a plugin.
 
@@ -185,7 +154,7 @@ EXAMPLES
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/inspect.ts)_
 
-### `hd plugins install PLUGIN`
+## `hd plugins install PLUGIN`
 
 Installs a plugin into hd.
 
@@ -234,11 +203,11 @@ EXAMPLES
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/install.ts)_
 
-### `hd plugins link PATH`
+## `hd plugins link PATH`
 
 Links a plugin into the CLI for development.
 
-```text
+```
 USAGE
   $ hd plugins link PATH [-h] [--install] [-v]
 
@@ -265,7 +234,7 @@ EXAMPLES
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/link.ts)_
 
-### `hd plugins remove [PLUGIN]`
+## `hd plugins remove [PLUGIN]`
 
 Removes a plugin from the CLI.
 
@@ -291,7 +260,7 @@ EXAMPLES
   $ hd plugins remove myplugin
 ```
 
-### `hd plugins reset`
+## `hd plugins reset`
 
 Remove all user-installed and linked plugins.
 
@@ -306,7 +275,7 @@ FLAGS
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/reset.ts)_
 
-### `hd plugins uninstall [PLUGIN]`
+## `hd plugins uninstall [PLUGIN]`
 
 Removes a plugin from the CLI.
 
@@ -334,7 +303,7 @@ EXAMPLES
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/uninstall.ts)_
 
-### `hd plugins unlink [PLUGIN]`
+## `hd plugins unlink [PLUGIN]`
 
 Removes a plugin from the CLI.
 
@@ -360,7 +329,7 @@ EXAMPLES
   $ hd plugins unlink myplugin
 ```
 
-### `hd plugins update`
+## `hd plugins update`
 
 Update installed plugins.
 
@@ -377,112 +346,4 @@ DESCRIPTION
 ```
 
 _See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/update.ts)_
-
-### `hd report committers [FILE]`
-
-Generate report of committers to a git repository
-
-```text
-USAGE
-  $ hd report committers [FILE] [-f] [-n <value>]
-
-ARGUMENTS
-  FILE  file to read
-
-FLAGS
-  -f, --force
-  -n, --name=<value>  name to print
-
-DESCRIPTION
-  Generate report of committers to a git repository
-
-EXAMPLES
-  $ hd report committers
-```
-
-_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/committers.ts)_
-
-### `hd scan eol [DIR]`
-
-Generate a list of purls from a sbom
-
-```text
-USAGE
-  $ hd report purls [-f <value>] [-d <value>] [-s] [-o json|csv]
-
-FLAGS
-  -d, --dir=<value>      The directory to scan in order to create a cyclonedx sbom
-  -f, --file=<value>     The file path of an existing cyclonedx sbom to scan for EOL
-  -o, --output=<option>  [default: json] The output format of the list of purls
-                         <options: json|csv>
-  -s, --save             Save the list of purls as nes.purls.<output>
-
-DESCRIPTION
-  Generate a list of purls from a sbom
-
-EXAMPLES
-  $ hd report purls --dir=./my-project
-
-  $ hd report purls --file=path/to/sbom.json
-
-  $ hd report purls --dir=./my-project --save
-
-  $ hd report purls --dir=./my-project --save --output=csv
-```
-
-_See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/purls.ts)_
-
-## `hd scan eol`
-
-Scan a given sbom for EOL data
-
-```
-USAGE
-  $ hd scan eol [--json] [-f <value>] [-d <value>] [-s]
-
-FLAGS
-  -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
-  -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
-  -s, --save          Save the generated SBOM as nes.sbom.json in the scanned directory
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  Scan a given sbom for EOL data
-
-EXAMPLES
-  $ hd scan eol --dir=./my-project
-
-  $ hd scan eol --file=path/to/sbom.json
-```
-
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/scan/eol.ts)_
-
-## `hd scan sbom`
-
-Scan a SBOM for purls
-
-```
-USAGE
-  $ hd scan sbom [--json] [-f <value>] [-d <value>] [-s]
-
-FLAGS
-  -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
-  -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
-  -s, --save          Save the generated SBOM as nes.sbom.json in the scanned directory
-
-GLOBAL FLAGS
-  --json  Format output as json.
-
-DESCRIPTION
-  Scan a SBOM for purls
-
-EXAMPLES
-  $ hd scan sbom --dir=./my-project
-
-  $ hd scan sbom --file=path/to/sbom.json
-```
-
-_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/scan/sbom.ts)_
 <!-- commandsstop -->

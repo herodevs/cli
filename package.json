@@ -1,15 +1,10 @@
 {
-  "name": "@herodevs/cli",
-  "description": "The HeroDevs CLI",
-  "version": "2.0.0",
+  "name": "@herodevs/monorepo",
+  "private": true,
+  "version": "0.0.0",
   "author": "HeroDevs, Inc",
   "bin": {
     "hd": "./bin/run.js"
-  },
-  "bugs": "https://github.com/@herodevs/cli/issues",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/herodevs/cli.git"
   },
   "type": "module",
   "scripts": {
@@ -55,12 +50,7 @@
   "files": [
     "./bin",
     "./dist",
-    "./oclif.manifest.json",
     "LICENSE"
-  ],
-  "homepage": "https://github.com/@herodevs/cli",
-  "keywords": [
-    "oclif"
   ],
   "license": "MIT",
   "main": "dist/index.js",
@@ -72,15 +62,10 @@
       "@oclif/plugin-help",
       "@oclif/plugin-plugins"
     ],
-    "topicSeparator": " ",
-    "topics": {
-      "hello": {
-        "description": "Say hello to the world and others"
-      }
-    },
     "hooks": {
       "prerun": "./dist/hooks/prerun/CommandContextHook"
-    }
+    },
+    "topicSeparator": " "
   },
   "types": "dist/index.d.ts"
 }

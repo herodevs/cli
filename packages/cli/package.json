@@ -1,0 +1,33 @@
+{
+    "name": "@herodevs/cli",
+    "description": "The HeroDevs CLI",
+    "version": "2.0.0",
+    "author": "HeroDevs, Inc",
+    "type": "commonjs",
+    "bin": {
+        "hd": "./bin/hd.js"
+    },
+    "bugs": "https://github.com/@herodevs/cli/issues",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/herodevs/cli.git"
+    },
+    "engines": {
+        "node": ">=8"
+    },
+    "files": [
+        "./bin/hd.js",
+        "LICENSE"
+    ],
+    "homepage": "https://github.com/@herodevs/cli",
+    "keywords": [
+        "herodevs",
+        "cli"
+    ],
+    "license": "MIT",
+    "optionalDependencies": {
+        "@herodevs/cli-darwin-arm64": "^2.0.0",
+        "@herodevs/cli-linux-x64": "^2.0.0",
+        "@herodevs/cli-win32-x64": "^2.0.0"
+    }
+}
