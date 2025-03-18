@@ -103,6 +103,7 @@ export default class Committers extends Command {
         'git',
         [
           'log',
+          '--all', // Include committers on all branches in the repo
           '--format="%ad|%an"', // Format: date|author
           '--date=format:%Y-%m', // Format date as YYYY-MM
           `--since="${sinceDate}"`,
