@@ -29,6 +29,8 @@ export default class ScanEol extends Command {
   };
 
   public async run(): Promise<ScanResult | { components: [] }> {
+    this.checkEolScanDisabled();
+
     const { flags } = await this.parse(ScanEol);
     const { dir: _dirFlag, file: _fileFlag } = flags;
 
@@ -62,5 +64,22 @@ export default class ScanEol extends Command {
     this.log('What now %o', r);
 
     return scan;
+  }
+
+  private checkEolScanDisabled(override = true) {
+    // Check if running in beta version or pre v1.0.0
+    const version = this.config.version;
+    const [major] = version.split('.').map(Number);
+
+    if (version.includes('beta') || major < 1) {
+      this.log(`VERSION=${version}`);
+      throw new Error('The EOL scan feature is not available in beta releases. Please wait for the stable release.');
+    }
+    // Just in case the beta check fails
+    if (override) {
+      this.log(`VERSION=${version}`);
+      this.log('EOL scan is disabled');
+      return { components: [] };
+    }
   }
 }
