@@ -109,7 +109,7 @@ jobs:
         with:
           name: CLI v${{ needs.check.outputs.version }}
           tag_name: cli/v${{ needs.check.outputs.version }}
-          draft: false
+          draft: true  # Keep as a draft during dry run
           files: |
             artifacts/cli-*
           fail_on_unmatched_files: true
