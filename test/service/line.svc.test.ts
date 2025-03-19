@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import { daysBetween, formatLine, getMessageAndStatus, getStatusFromComponent } from '../../src/service/line.svc.ts';
 import type { Line } from '../../src/service/line.svc.ts';
-import type { ScanResultComponent } from '../../src/service/nes/modules/sbom.ts';
+import type { ScanResultComponent } from '../../src/api/types/nes.ts';
 
 describe('line', () => {
   describe('daysBetween', () => {

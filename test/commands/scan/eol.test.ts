@@ -8,7 +8,11 @@ import * as sinon from 'sinon';
 import { default as SbomScan } from '../../../src/commands/scan/sbom.ts';
 import { type Sbom, cdxgen, prepareRows } from '../../../src/service/eol/eol.svc.ts';
 import type { CdxCreator } from '../../../src/service/eol/eol.types.ts';
-import { type ScanResponseReport, type ScanResult, buildScanResult } from '../../../src/service/nes/modules/sbom.ts';
+import type {
+  ScanResponseReport,
+  ScanResult,
+} from '../../../src/api/types/nes.ts';
+import { buildScanResult } from '../../../src/service/nes/nes.svc.ts';
 import { extractPurls } from '../../../src/service/purls.svc.ts';
 import { FetchMock } from '../../utils/mocks/fetch.mock.ts';
 import { InquirerMock } from '../../utils/mocks/ui.mock.ts';
