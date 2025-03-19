@@ -1,8 +1,9 @@
 import { ok } from 'node:assert';
 import { describe, it } from 'node:test';
 
-import type { ApolloHelper } from '../nes.client.ts';
-import { type ScanResult, type ScanResultComponent, SbomScanner as sbomScanner } from './sbom.ts';
+import type { ApolloHelper } from '../../../api/client.ts';
+import type { ScanResult, ScanResultComponent } from '../../../api/types/nes.ts';
+import { SbomScanner as sbomScanner } from '../nes.svc.ts';
 
 // TODO: move into /test/service/sbom.test.ts, but need to fix type errors first
 describe('SBOM Scanner', () => {

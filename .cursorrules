@@ -122,3 +122,14 @@ rule "service-no-cli-table" {
   not_contains = ["cli-table3"]
   message = "Table formatting should be handled in the UI layer, not services"
 }
+
+# API Layer Rules
+# These rules enforce proper separation of API concerns, ensuring GraphQL/Apollo
+# logic stays in the API layer while services remain pure business logic
+
+rule "service-no-apollo" {
+  # Prevent Apollo Client usage in service layer
+  matches = ["src/service/**/*.ts"]
+  not_contains = ["@apollo/client", "gql`", "useQuery", "useMutation"]
+  message = "GraphQL/Apollo logic should be handled in the API layer, not services"
+}

@@ -1,8 +1,8 @@
+import { NesApolloClient } from '../../api/nes/nes.client.ts';
+import type { ComponentStatus, ScanResult } from '../../api/types/nes.ts';
 import { log } from '../../utils/log.util.ts';
 import { getDaysEolFromEolAt, getStatusFromComponent } from '../line.svc.ts';
 import type { Line } from '../line.svc.ts';
-import type { ComponentStatus, ScanResult } from '../nes/modules/sbom.ts';
-import { NesApolloClient } from '../nes/nes.client.ts';
 import { extractPurls } from '../purls.svc.ts';
 import { createBomFromDir } from './cdx.svc.ts';
 import type { Sbom, ScanOptions } from './eol.types.ts';

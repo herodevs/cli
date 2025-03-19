@@ -1,8 +1,8 @@
-// TODO move this to another lib altogether!
+import type * as apollo from '@apollo/client/core/index.js';
 
 import { ApolloClient } from '../../api/client.ts';
 import type { ScanResult } from '../../api/types/nes.ts';
-import { SbomScanner } from './nes.svc.ts';
+import { SbomScanner } from '../../service/nes/nes.svc.ts';
 
 export interface NesClient {
   scan: {
@@ -20,11 +20,11 @@ export class NesApolloClient implements NesClient {
     this.#apollo = new ApolloClient(url);
   }
 
-  mutate<T, V extends Record<string, unknown>>(mutation: any, variables?: V) {
+  mutate<T, V extends Record<string, unknown>>(mutation: apollo.DocumentNode, variables?: V) {
     return this.#apollo.mutate<T, V>(mutation, variables);
   }
 
-  query<T, V extends Record<string, unknown> | undefined>(query: any, variables?: V) {
+  query<T, V extends Record<string, unknown> | undefined>(query: apollo.DocumentNode, variables?: V) {
     return this.#apollo.query<T, V>(query, variables);
   }
 }

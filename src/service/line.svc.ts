@@ -1,4 +1,4 @@
-import type { ComponentStatus, ScanResultComponent } from './nes/modules/sbom.ts';
+import type { ComponentStatus, ScanResultComponent } from '../api/types/nes.ts';
 
 export interface Line {
   daysEol: number | null;

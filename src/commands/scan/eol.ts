@@ -1,7 +1,7 @@
 import { Command, Flags, ux } from '@oclif/core';
 
+import type { ScanResult } from '../../api/types/nes.ts';
 import { type Sbom, prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
-import type { ScanResult } from '../../service/nes/modules/sbom.ts';
 import { promptComponentDetails } from '../../ui/eol.ui.ts';
 import SbomScan from './sbom.ts';
 
