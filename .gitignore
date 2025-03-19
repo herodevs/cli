@@ -2,15 +2,12 @@
 *-error.log
 **/.DS_Store
 /.idea
-/dist
-/tmp
+dist
+tmp
 node_modules
 oclif.manifest.json
-
 yarn.lock
 pnpm-lock.yaml
-
+**/packages/cli-*/bin/
 **/tsconfig.tsbuildinfo
-
-# cli-generated files
 nes.**.**
