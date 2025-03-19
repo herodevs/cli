@@ -1,8 +1,7 @@
 name: CI
 
 on:
-  workflow_dispatch:
-  # pull_request: temporary exclude
+  pull_request:
 
 jobs:
   commit-lint:

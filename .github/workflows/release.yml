@@ -1,7 +1,20 @@
 name: release
 on:
-  pull_request: # remove me when ready
   workflow_dispatch:
+    inputs:
+      channel:
+        description: 'NPM tag to publish to'
+        type: choice
+        options:
+          - latest
+          - next
+          - beta
+          - alpha
+        default: latest
+      dry-run:
+        description: 'Dry run the release'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -100,27 +113,34 @@ jobs:
           path: artifacts
       - name: Debug artifact paths
         run: ls -lah artifacts/
-      - name: Publish npm packages as latest # remove dry-run when ready
+      - name: Log release channel  
         run: |
-          ls -lah artifacts/  # Debug output
-          for artifact in artifacts/*; do
-            echo "$artifact"
-            npm publish "./$artifact" --tag latest --access public --provenance --dry-run
-          done
+          echo "Publishing to channel: ${{ inputs.channel }}"
+      - name: Publish npm packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Debug artifacts before release
-        run: ls -lah artifacts/
-
+          NPM_TAG: ${{ inputs.channel }}
+        run: |
+          for artifact in artifacts/*; do
+            echo "$artifact"
+            npm publish "./$artifact" --tag "$NPM_TAG" --access public --provenance ${{ inputs.dry-run == true && '--dry-run' || '' }}
+          done
+      - name: Verify publish
+        if: ${{ inputs.dry-run == false }}
+        run: |
+          for artifact in artifacts/*; do
+            echo "Verifying $artifact..."
+            npm view $(basename $artifact) version --tag ${{ inputs.channel }}
+          done
       - name: Create GitHub release and tag
-        if: ${{ github.event_name == 'workflow_dispatch' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run == false }}
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           name: CLI v${{ needs.check.outputs.version }}
           tag_name: cli/v${{ needs.check.outputs.version }}
-          draft: true  # Keep as a draft during dry run
+          draft: false
           files: |
             artifacts/*.tar.gz
           fail_on_unmatched_files: true
