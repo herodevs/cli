@@ -1,6 +1,6 @@
 {
     "name": "@herodevs/cli-win32-x64",
-    "version": "2.0.0",
+    "version": "1.0.0-beta",
     "license": "MIT",
     "type": "commonjs",
     "repository": {
@@ -20,7 +20,7 @@
     ],
     "scripts": {
         "prepack": "shx cp  -r ../../bin .",
-        "pack": "oclif pack tarballs --targets=win32-x64"
+        "pack": "oclif pack tarballs --targets=win32-x64 --no-xz"
     },
     "dependencies": {
         "@oclif/core": "^4",

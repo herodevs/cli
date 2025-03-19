@@ -65,7 +65,10 @@ jobs:
           cd packages/cli-${{ matrix.code-target }}
           npm ci
           npm run pack
-
+      - name: Debug Oclif output
+        shell: bash
+        run: |
+            ls -lah packages/cli-${{ matrix.code-target }}/dist
       - name: Upload CLI artifact
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
@@ -86,6 +89,7 @@ jobs:
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
       - name: Create artifacts folder if it doesn't exist
         run: mkdir -p artifacts
       - name: Download CLI artifacts
@@ -94,14 +98,19 @@ jobs:
           pattern: cli-*
           merge-multiple: true
           path: artifacts
+      - name: Debug artifact paths
+        run: ls -lah artifacts/
       - name: Publish npm packages as latest # remove dry-run when ready
         run: |
+          ls -lah artifacts/  # Debug output
           for artifact in artifacts/*; do
             echo "$artifact"
-            npm publish "$artifact" --tag latest --access public --provenance --dry-run
+            npm publish "./$artifact" --tag latest --access public --provenance --dry-run
           done
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Debug artifacts before release
+        run: ls -lah artifacts/
       - name: Create GitHub release and tag
         uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
         env:
@@ -109,8 +118,8 @@ jobs:
         with:
           name: CLI v${{ needs.check.outputs.version }}
           tag_name: cli/v${{ needs.check.outputs.version }}
-          draft: false
+          draft: true  # Keep as a draft during dry run
           files: |
-            artifacts/cli-*
+            artifacts/*.tar.gz
           fail_on_unmatched_files: true
           generate_release_notes: true
