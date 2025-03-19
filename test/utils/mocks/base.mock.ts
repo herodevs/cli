@@ -5,19 +5,28 @@ import { default as sinon } from 'sinon';
  * from a FIFO
  */
 export class BaseStackMock {
-  stack: unknown[] = [];
+  private stack: unknown[] = [];
+  private stub: sinon.SinonStub | null = null;
 
   constructor(target: Record<string, unknown>, prop: string) {
-    sinon.stub(target, prop).callsFake(() => this.next());
+    // Create a new sandbox for each instance
+    this.stub = sinon.stub(target, prop).callsFake(() => this.next());
   }
 
-  next() {
-    // fair to say it's always a promise?
+  protected next() {
     return Promise.resolve(this.stack.shift());
   }
 
   public push(value: unknown) {
     this.stack.push(value);
     return this;
+  }
+
+  public restore() {
+    if (this.stub) {
+      this.stub.restore();
+      this.stub = null;
+    }
+    this.stack = [];
   }
 }

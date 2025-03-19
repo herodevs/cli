@@ -11,11 +11,6 @@ export interface MonthlyData {
   [month: string]: AuthorCommitCounts;
 }
 
-export interface CommitEntry {
-  month: string;
-  author: string;
-}
-
 export interface ReportData {
   monthly: {
     [month: string]: {

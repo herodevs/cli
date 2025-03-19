@@ -2,7 +2,8 @@ import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 
 import fs from 'node:fs';
-import { type Sbom, createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
+import type { Sbom } from '../../service/eol/cdx.svc.ts';
+import { createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
 
 export default class ScanSbom extends Command {
   static override description = 'Scan a SBOM for purls';

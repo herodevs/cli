@@ -1,9 +1,11 @@
 import { ok } from 'node:assert';
 import { describe, it } from 'node:test';
 
-import type { ApolloHelper } from '../nes.client.ts';
-import { type ScanResult, type ScanResultComponent, SbomScanner as sbomScanner } from './sbom.ts';
+import type { ApolloHelper } from '../../src/api/client.ts';
+import type { ScanResult, ScanResultComponent } from '../../src/api/types/nes.types.ts';
+import { SbomScanner as sbomScanner } from '../../src/service/nes/nes.svc.ts';
 
+// TODO: move into /test/service/sbom.test.ts, but need to fix type errors first
 describe('SBOM Scanner', () => {
   it('parses response and creates components record', async () => {
     const mock = mocked.success.insights.scan.eol;
