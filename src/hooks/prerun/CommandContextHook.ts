@@ -1,6 +1,6 @@
 import type { Hook } from '@oclif/core';
 
-import { initOclifLog, log } from '../../utils/log.util.ts';
+import { initOclifLog, log } from '../../service/log.svc.ts';
 
 const hook: Hook<'prerun'> = async (opts) => {
   initOclifLog(opts.context.log, opts.context.log, opts.context.debug);

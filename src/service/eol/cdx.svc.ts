@@ -1,5 +1,17 @@
-import { log } from '../../utils/log.util.ts';
-import type { CdxCreator, CdxGenOptions } from './eol.types.ts';
+import { log } from '../../service/log.svc.ts';
+import type { CdxCreator, CdxGenOptions } from './eol.svc.ts';
+
+export interface SbomEntry {
+  group: string;
+  name: string;
+  purl: string;
+  version: string;
+}
+
+export interface Sbom {
+  components: SbomEntry[];
+  dependencies: SbomEntry[];
+}
 
 /**
  * Lazy loads cdxgen (for ESM purposes), scans
