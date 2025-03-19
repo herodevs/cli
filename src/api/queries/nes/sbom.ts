@@ -1,5 +1,4 @@
 import { gql } from '@apollo/client/core/core.cjs';
-import type { ScanInput } from '../../types/nes.ts';
 
 export const M_SCAN = {
   gql: gql`

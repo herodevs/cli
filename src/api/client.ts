@@ -34,7 +34,7 @@ export class ApolloClient implements ApolloHelper {
     this.#apollo = createApollo(url);
   }
 
-  mutate<T, V extends apollo.OperationVariables>(mutation: apollo.DocumentNode, variables?: V) {
+  async mutate<T, V extends apollo.OperationVariables>(mutation: apollo.DocumentNode, variables?: V) {
     return this.#apollo
       .mutate<T, V>({
         mutation,
@@ -45,7 +45,7 @@ export class ApolloClient implements ApolloHelper {
       });
   }
 
-  query<T, V extends apollo.OperationVariables | undefined>(query: apollo.DocumentNode, variables?: V) {
+  async query<T, V extends apollo.OperationVariables | undefined>(query: apollo.DocumentNode, variables?: V) {
     return this.#apollo
       .query<T>({
         query,
