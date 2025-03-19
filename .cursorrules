@@ -1,0 +1,124 @@
+# Security-related rules
+rule "no-secrets-in-source" {
+  # Prevent accidental commit of secrets/credentials
+  matches = ["**/*.{ts,js,json}"]
+  pattern = "(?i)(password|secret|token|key).*=.*['\"][^\s]{8,}['\"]"
+  message = "Potential secret detected in source code. Use environment variables instead."
+}
+
+# CLI Architecture patterns
+rule "command-structure" {
+  # Enforce consistent command structure
+  matches = ["src/commands/**/*.ts"]
+  contains = ["export default class", "static description", "async run()"]
+  message = "Commands must export a default class with static description and async run() method"
+}
+
+rule "error-handling" {
+  # Ensure proper error handling in commands
+  matches = ["src/commands/**/*.ts"]
+  not_contains = ["console.error", "process.exit"]
+  message = "Use oclif's error handling utilities instead of console.error or process.exit"
+}
+
+# Testing requirements
+rule "service-tests" {
+  # Ensure each service has corresponding unit tests
+  matches = ["src/services/**/*.svc.ts"]
+  requires_files = ["test/services/{name}.test.ts"]
+  message = "Each service must have a corresponding unit test file"
+}
+
+rule "test-naming" {
+  # Enforce consistent test file naming
+  matches = ["test/**/*.test.ts"]
+  not_contains = [".test.svc.ts"]
+  message = "Test files should be named {name}.test.ts, not {name}.test.svc.ts"
+}
+
+# Documentation
+rule "command-docs" {
+  # Enforce documentation for commands
+  matches = ["src/commands/**/*.ts"]
+  pattern = "static description = '[^']{10,}'"
+  message = "Commands must have meaningful descriptions (at least 10 characters)"
+}
+
+# Dependencies
+rule "native-node" {
+  # Prefer native Node.js modules
+  matches = ["package.json"]
+  not_contains = [
+    "lodash",
+    "moment",
+    "axios",
+    "request",
+    "got",
+    "superagent",
+    "node-fetch",
+    "underscore",
+    "ramda",
+    "date-fns",
+    "dayjs",
+    "luxon",
+    "bluebird",
+    "uuid"
+  ]
+  message = "Prefer native Node.js modules over heavy dependencies. Use native alternatives:\n- Lodash/Underscore/Ramda -> Array methods, Object methods\n- Moment/date-fns/dayjs/luxon -> Temporal API or Date\n- axios/got/request/superagent/node-fetch -> fetch\n- bluebird -> native Promises\n- uuid -> crypto.randomUUID()"
+}
+
+# Architecture patterns
+rule "layer-separation" {
+  # Keep API calls separate from command logic
+  matches = ["src/commands/**/*.ts"]
+  not_contains = ["fetch(", "axios.", "http.request"]
+  message = "API calls should be in separate service files, not in commands"
+}
+
+# Service Layer Rules
+# These rules are implemented in cursorrules because Biome's linting rules
+# cannot be scoped to specific directories. We need to enforce these patterns
+# only in the service layer while allowing them elsewhere in the codebase.
+
+rule "service-layer" {
+  # Enforce service layer structure
+  matches = ["src/services/**/*.svc.ts"]
+  contains = ["export"]
+  pattern = "export (function|const|interface|type)"
+  message = "Services should export pure functions, interfaces, or types"
+}
+
+rule "service-naming" {
+  # Enforce .svc.ts extension for service files
+  matches = ["src/service/*.ts"]
+  not_contains = [".svc.ts"]
+  message = "Service files must end with .svc.ts"
+}
+
+rule "service-no-fs" {
+  # Prevent file system operations in service layer
+  matches = ["src/service/**/*.ts"]
+  not_contains = ["import.*fs", "node:fs"]
+  message = "File system operations should be handled in commands, not services"
+}
+
+rule "service-no-oclif" {
+  # Prevent oclif usage in service layer
+  matches = ["src/service/**/*.ts"]
+  not_contains = ["@oclif"]
+  message = "Oclif dependencies should only be used in commands, not services"
+}
+
+rule "service-no-inquirer" {
+  # Prevent inquirer usage in service layer
+  matches = ["src/service/**/*.ts"]
+  not_contains = ["inquirer"]
+  message = "UI interactions should be handled in the UI layer, not services"
+}
+
+rule "service-no-cli-table" {
+  # Prevent cli-table3 usage in service layer
+  matches = ["src/service/**/*.ts"]
+  not_contains = ["cli-table3"]
+  message = "Table formatting should be handled in the UI layer, not services"
+}

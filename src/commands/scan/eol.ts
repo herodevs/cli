@@ -1,8 +1,8 @@
 import { Command, Flags, ux } from '@oclif/core';
 
 import { type Sbom, prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
-import { promptComponentDetails } from '../../service/eol/eol.ui.ts';
 import type { ScanResult } from '../../service/nes/modules/sbom.ts';
+import { promptComponentDetails } from '../../ui/eol.ui.ts';
 import SbomScan from './sbom.ts';
 
 export default class ScanEol extends Command {

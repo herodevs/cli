@@ -1,4 +1,3 @@
-import { ux } from '@oclif/core';
 import type { ComponentStatus, ScanResultComponent } from './nes/modules/sbom.ts';
 
 export interface Line {
@@ -51,19 +50,19 @@ export function getMessageAndStatus(status: string, daysEol: number | null) {
 
   switch (status) {
     case 'EOL': {
-      stat = ux.colorize('red', 'EOL');
-      msg = `EOL'd ${ux.colorize('red', stringifiedDaysEol)} days ago.`;
+      stat = 'EOL';
+      msg = `EOL'd ${stringifiedDaysEol} days ago.`;
       break;
     }
 
     case 'LTS': {
-      stat = ux.colorize('yellow', 'LTS');
-      msg = `Will go EOL in ${ux.colorize('yellow', stringifiedDaysEol)} days.`;
+      stat = 'LTS';
+      msg = `Will go EOL in ${stringifiedDaysEol} days.`;
       break;
     }
 
     case 'OK': {
-      stat = ux.colorize('green', 'OK');
+      stat = 'OK';
       break;
     }
     default:
