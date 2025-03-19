@@ -1,4 +1,4 @@
-import { log } from '../../utils/log.util.ts';
+import { log } from '../../service/log.svc.ts';
 import type { CdxCreator, CdxGenOptions } from './eol.types.ts';
 
 /**

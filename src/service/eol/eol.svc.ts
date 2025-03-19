@@ -1,6 +1,6 @@
 import { NesApolloClient } from '../../api/nes/nes.client.ts';
 import type { ComponentStatus, ScanResult } from '../../api/types/nes.ts';
-import { log } from '../../utils/log.util.ts';
+import { log } from '../../service/log.svc.ts';
 import { getDaysEolFromEolAt, getStatusFromComponent } from '../line.svc.ts';
 import type { Line } from '../line.svc.ts';
 import { extractPurls } from '../purls.svc.ts';

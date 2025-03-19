@@ -133,3 +133,10 @@ rule "service-no-apollo" {
   not_contains = ["@apollo/client", "gql`", "useQuery", "useMutation"]
   message = "GraphQL/Apollo logic should be handled in the API layer, not services"
 }
+
+# Architecture Organization Rules
+rule "no-utils" {
+  # Prevent use of utils directory
+  matches = ["src/utils/**/*.ts"]
+  message = "Avoid using utils directory. Move functionality to appropriate service or UI layer:\n- Business logic -> services\n- UI/CLI interactions -> ui\n- Shared types/interfaces -> types\n- Constants -> config"
+}
