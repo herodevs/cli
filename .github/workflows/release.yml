@@ -94,9 +94,11 @@ jobs:
           pattern: cli-*
           merge-multiple: true
           path: artifacts
+      - name: Debug artifact paths
+        run: ls -lah artifacts/
       - name: Publish npm packages as latest # remove dry-run when ready
         run: |
-          for artifact in artifacts/*; do
+          for artifact in artifacts/*.tgz; do
             echo "$artifact"
             npm publish "$artifact" --tag latest --access public --provenance --dry-run
           done
