@@ -30,6 +30,7 @@
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-plugins": "^5",
+    "@oclif/plugin-update": "^4.6.35",
     "cli-table3": "^0.6.5",
     "inquirer": "^12.4.2"
   },
@@ -60,12 +61,19 @@
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
+      "@oclif/plugin-plugins",
+      "@oclif/plugin-update"
     ],
     "hooks": {
-      "prerun": "./dist/hooks/prerun/CommandContextHook"
+      "prerun": "./dist/hooks/prerun/CommandContextHook",
+      "init": "./dist/hooks/init/update"
     },
-    "topicSeparator": " "
+    "topicSeparator": " ",
+    "update": {
+      "node": {
+        "version": ">=22.0.0"
+      }
+    }
   },
   "types": "dist/index.d.ts"
 }
