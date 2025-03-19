@@ -3,9 +3,9 @@ import { gql } from '@apollo/client/core/core.cjs';
 export const M_SCAN = {
   gql: gql`
     mutation EolScan($input: InsightsEolScanInput!) {
-      insights {
-        scan {
-          eol(input: $input) {
+        insights {
+          scan {
+            eol(input: $input) {
             components {
               purl
               info {
@@ -13,7 +13,7 @@ export const M_SCAN = {
                 isUnsafe
                 eolAt
               }
-            }
+            } 
             diagnostics
             message
             scanId

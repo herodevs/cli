@@ -9,5 +9,4 @@ oclif.manifest.json
 yarn.lock
 pnpm-lock.yaml
 **/packages/cli-*/bin/
-**/tsconfig.tsbuildinfo
-nes.**.**
+**/tsconfig.tsbuildinfo\
