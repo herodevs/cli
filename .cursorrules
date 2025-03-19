@@ -25,7 +25,7 @@ rule "error-handling" {
 rule "service-tests" {
   # Ensure each service has corresponding unit tests
   matches = ["src/service/**/*.svc.ts"]
-  requires_files = ["test/services/{name}.test.ts"]
+  requires_files = ["test/service/{name}.test.ts"]
   message = "Each service must have a corresponding unit test file"
 }
 
@@ -76,10 +76,7 @@ rule "layer-separation" {
 }
 
 # Service Layer Rules
-# These rules are implemented in cursorrules because Biome's linting rules
-# cannot be scoped to specific directories. We need to enforce these patterns
-# only in the service layer while allowing them elsewhere in the codebase.
-
+# These rules enforce proper separation of concerns in the service layer
 rule "service-layer" {
   # Enforce service layer structure
   matches = ["src/service/**/*.svc.ts"]
@@ -123,10 +120,6 @@ rule "service-no-cli-table" {
   message = "Table formatting should be handled in the UI layer, not services"
 }
 
-# API Layer Rules
-# These rules enforce proper separation of API concerns, ensuring GraphQL/Apollo
-# logic stays in the API layer while services remain pure business logic
-
 rule "service-no-apollo" {
   # Prevent Apollo Client usage in service layer
   matches = ["src/service/**/*.svc.ts"]
@@ -137,6 +130,7 @@ rule "service-no-apollo" {
 # Architecture Organization Rules
 rule "no-utils" {
   # Prevent use of utils directory
-  matches = ["src/utils/**/*.ts"]
+  matches = ["src/**/*.ts"]
+  not_contains = ["from ['\"].*utils"]
   message = "Avoid using utils directory. Move functionality to appropriate service or UI layer:\n- Business logic -> services\n- UI/CLI interactions -> ui\n- Shared types/interfaces -> types\n- Constants -> config"
 }
