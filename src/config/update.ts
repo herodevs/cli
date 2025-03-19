@@ -1,15 +1,10 @@
-export const updateConfig = {
-  // Enable auto-updates
-  autoupdate: true,
+import type { Config } from '@oclif/core';
 
-  // Check for updates every 24 hours
-  autoupdateInterval: 24 * 60 * 60 * 1000,
-
-  // Version update notifications
-  // During beta, we want to show all updates
-  showMajorVersionUpdate: true,
-  showMinorVersionUpdate: true,
-  showPatchVersionUpdate: true,
+export const updateConfig: NonNullable<Config['updateConfig']> = {
+  autoupdate: {
+    debounce: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+    rollout: 100, // 100% rollout
+  },
 };
 
 export default updateConfig;
