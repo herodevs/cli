@@ -1,4 +1,4 @@
-import type { Sbom } from './eol/eol.types.ts';
+import type { Sbom } from './eol/cdx.svc.ts';
 
 /**
  * Formats a value for CSV output by wrapping it in quotes if it contains commas.

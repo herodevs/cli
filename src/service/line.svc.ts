@@ -1,4 +1,4 @@
-import type { ComponentStatus, ScanResultComponent } from '../api/types/nes.ts';
+import type { ComponentStatus, ScanResultComponent } from '../api/types/nes.types.ts';
 
 export interface Line {
   daysEol: number | null;

@@ -1,12 +1,20 @@
 import { NesApolloClient } from '../../api/nes/nes.client.ts';
-import type { ComponentStatus, ScanResult } from '../../api/types/nes.ts';
+import type { ComponentStatus, ScanResult } from '../../api/types/nes.types.ts';
 import { log } from '../../service/log.svc.ts';
 import { getDaysEolFromEolAt, getStatusFromComponent } from '../line.svc.ts';
 import type { Line } from '../line.svc.ts';
 import { extractPurls } from '../purls.svc.ts';
-import { createBomFromDir } from './cdx.svc.ts';
-import type { Sbom, ScanOptions } from './eol.types.ts';
+import { type Sbom, createBomFromDir } from './cdx.svc.ts';
 
+export interface CdxGenOptions {
+  projectType?: string[];
+}
+
+export interface ScanOptions {
+  cdxgen?: CdxGenOptions;
+}
+
+export type CdxCreator = (dir: string, opts: CdxGenOptions) => Promise<{ bomJson: Sbom }>;
 export async function createSbom(directory: string, opts: ScanOptions = {}) {
   const sbom = await createBomFromDir(directory, opts.cdxgen || {});
   if (!sbom) throw new Error('SBOM not generated');
@@ -106,4 +114,3 @@ export async function prepareRows(purls: string[], scan: ScanResult): Promise<Li
 }
 
 export { cdxgen } from './cdx.svc.ts';
-export type { Sbom } from './eol.types.ts';

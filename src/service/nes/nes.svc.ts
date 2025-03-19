@@ -6,7 +6,7 @@ import type {
   ScanResponseReport,
   ScanResult,
   ScanResultComponent,
-} from '../../api/types/nes.ts';
+} from '../../api/types/nes.types.ts';
 import { log } from '../log.svc.ts';
 export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
   const components = new Map<string, ScanResultComponent>();

@@ -1,7 +1,7 @@
 import type * as apollo from '@apollo/client/core/index.js';
 
 import { ApolloClient } from '../../api/client.ts';
-import type { ScanResult } from '../../api/types/nes.ts';
+import type { ScanResult } from '../../api/types/nes.types.ts';
 import { SbomScanner } from '../../service/nes/nes.svc.ts';
 
 export interface NesClient {
