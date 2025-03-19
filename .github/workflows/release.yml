@@ -73,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
           name: cli-${{ matrix.code-target }}
-          path: ./packages/cli-${{ matrix.code-target }}/dist/*.tgz
+          path: ./packages/cli-${{ matrix.code-target }}/dist/hd-*
           if-no-files-found: error
   publish-cli:
     name: Publish
