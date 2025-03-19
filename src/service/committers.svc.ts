@@ -51,17 +51,30 @@ export function parseGitLogOutput(output: string): CommitEntry[] {
  * @returns Object with months as keys and author commit counts as values
  */
 export function groupCommitsByMonth(entries: CommitEntry[]): MonthlyData {
-  const monthlyData: MonthlyData = {};
+  const result: MonthlyData = {};
 
-  for (const { month, author } of entries) {
-    if (!monthlyData[month]) {
-      monthlyData[month] = {};
+  // Group commits by month
+  const commitsByMonth = Object.groupBy(entries, (entry) => entry.month);
+
+  // Process each month
+  for (const [month, commits] of Object.entries(commitsByMonth)) {
+    if (!commits) {
+      result[month] = {};
+      continue;
     }
 
-    monthlyData[month][author] = (monthlyData[month][author] || 0) + 1;
+    // Count commits per author for this month
+    const commitsByAuthor = Object.groupBy(commits, (entry) => entry.author);
+    const authorCounts: AuthorCommitCounts = {};
+
+    for (const [author, authorCommits] of Object.entries(commitsByAuthor)) {
+      authorCounts[author] = authorCommits?.length ?? 0;
+    }
+
+    result[month] = authorCounts;
   }
 
-  return monthlyData;
+  return result;
 }
 
 /**
@@ -70,13 +83,15 @@ export function groupCommitsByMonth(entries: CommitEntry[]): MonthlyData {
  * @returns Object with authors as keys and total commit counts as values
  */
 export function calculateOverallStats(entries: CommitEntry[]): AuthorCommitCounts {
-  const overallStats: AuthorCommitCounts = {};
+  const commitsByAuthor = Object.groupBy(entries, (entry) => entry.author);
+  const result: AuthorCommitCounts = {};
 
-  for (const { author } of entries) {
-    overallStats[author] = (overallStats[author] || 0) + 1;
+  // Count commits for each author
+  for (const author in commitsByAuthor) {
+    result[author] = commitsByAuthor[author]?.length ?? 0;
   }
 
-  return overallStats;
+  return result;
 }
 
 /**
@@ -210,14 +225,6 @@ export function formatAsText(data: ReportData): string {
 }
 
 /**
- * Formats the report data as JSON
- * @param data - The structured report data
- */
-export function formatAsJson(data: ReportData): string {
-  return JSON.stringify(data, null, 2);
-}
-
-/**
  * Format output based on user preference
  * @param output
  * @param reportData
@@ -227,7 +234,7 @@ export function formatOutputBasedOnFlag(output: string, reportData: ReportData) 
   let formattedOutput: string;
   switch (output) {
     case 'json':
-      formattedOutput = formatAsJson(reportData);
+      formattedOutput = JSON.stringify(reportData, null, 2);
       break;
     case 'csv':
       formattedOutput = formatAsCsv(reportData);

@@ -3,7 +3,6 @@ import { describe, it } from 'node:test';
 import {
   calculateOverallStats,
   formatAsCsv,
-  formatAsJson,
   formatAsText,
   formatMonthlyReport,
   formatOutputBasedOnFlag,
@@ -324,20 +323,6 @@ January|Alice Brown`;
         assert.ok(aliceBrownIndex >= 0, 'Alice Brown line not found in January section');
         assert.ok(johnDoeIndex < aliceBrownIndex, 'John Doe line should appear before Alice Brown line');
       }
-    });
-  });
-
-  describe('formatAsJson', () => {
-    it('should format report data as JSON', () => {
-      const result = formatAsJson(sampleReportData);
-
-      // Check output is a valid JSON string
-      const parsedResult = JSON.parse(result);
-      assert.deepStrictEqual(parsedResult, sampleReportData);
-
-      // Check that output is properly indented
-      assert.ok(result.includes('  "monthly": {'));
-      assert.ok(result.includes('    "January": {'));
     });
   });
 
