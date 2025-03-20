@@ -64,10 +64,6 @@
       "@oclif/plugin-plugins",
       "@oclif/plugin-update"
     ],
-    "hooks": {
-      "prerun": "./dist/hooks/prerun/CommandContextHook",
-      "init": "./dist/hooks/init/update"
-    },
     "topicSeparator": " ",
     "update": {
       "node": {
