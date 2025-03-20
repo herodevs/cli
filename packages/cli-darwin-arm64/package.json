@@ -34,13 +34,6 @@
         "bin": "hd",
         "dirname": "hd",
         "commands": "../../dist/commands",
-        "plugins": [
-            "@oclif/plugin-help",
-            "@oclif/plugin-plugins"
-        ],
-        "hooks": {
-            "prerun": "../../dist/hooks/prerun/CommandContextHook"
-        },
         "macos": {
             "identifier": "com.herodevs.cli"
         },
