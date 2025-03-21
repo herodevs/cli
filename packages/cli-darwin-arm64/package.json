@@ -19,7 +19,7 @@
         "arm64"
     ],
     "scripts": {
-        "prepack": "shx cp  -r ../../bin .",
+        "prepack": "shx cp  -rL ../../bin .",
         "pack": "oclif pack tarballs --targets=darwin-arm64 --no-xz"
     },
     "dependencies": {

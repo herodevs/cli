@@ -19,7 +19,7 @@
         "x64"
     ],
     "scripts": {
-        "prepack": "shx cp  -r ../../bin .",
+        "prepack": "shx cp  -rL ../../bin .",
         "pack": "oclif pack tarballs --targets=linux-x64 --no-xz"
     },
     "dependencies": {
