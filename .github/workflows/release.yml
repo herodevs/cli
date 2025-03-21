@@ -120,7 +120,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
           NPM_TAG: ${{ inputs.channel }}
         run: |
-          for artifact in artifacts/*; do
+          for artifact in artifacts/*.tar.gz; do
             echo "$artifact"
             npm publish "./$artifact" --tag "$NPM_TAG" --access public --provenance ${{ inputs.dry-run == true && '--dry-run' || '' }}
           done
