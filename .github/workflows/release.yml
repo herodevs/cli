@@ -134,7 +134,7 @@ jobs:
             "homepage": "https://github.com/herodevs/cli",
             "files": [
               "*.tar.gz",
-              LICENSE,
+              "LICENSE",
               ".bin/hd.js"
             ],
             "os": [
@@ -151,7 +151,10 @@ jobs:
           }
           EOF
           
-          # TODO: add /bin/hd.js to the package
+          # Create .bin directory and copy the hd.js script
+          mkdir -p package/.bin
+          cp assets/hd.js package/.bin/
+          chmod +x package/.bin/hd.js
 
           # Publish the package
           npm publish "./package" --tag "$NPM_TAG" --access public --provenance ${{ inputs.dry-run == true && '--dry-run' || '' }}
