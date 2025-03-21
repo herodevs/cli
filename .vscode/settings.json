@@ -1,0 +1,4 @@
+{
+  "cSpell.words": ["autoupdate", "cyclonedx", "mycommand", "padlen", "prerun", "rownum", "XEOL"],
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
