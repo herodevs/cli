@@ -16,7 +16,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0 darwin-arm64 node-v22.13.0
+@herodevs/cli/1.0.0-beta.0 darwin-arm64 node-v22.14.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -36,6 +36,10 @@ USAGE
 * [`hd plugins uninstall [PLUGIN]`](#hd-plugins-uninstall-plugin)
 * [`hd plugins unlink [PLUGIN]`](#hd-plugins-unlink-plugin)
 * [`hd plugins update`](#hd-plugins-update)
+* [`hd report committers`](#hd-report-committers)
+* [`hd report purls`](#hd-report-purls)
+* [`hd scan eol`](#hd-scan-eol)
+* [`hd scan sbom`](#hd-scan-sbom)
 
 ## `hd help [COMMAND]`
 
@@ -55,7 +59,7 @@ DESCRIPTION
   Display help for hd.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.26/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.27/src/commands/help.ts)_
 
 ## `hd plugins`
 
@@ -78,7 +82,7 @@ EXAMPLES
   $ hd plugins
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/index.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.36/src/commands/plugins/index.ts)_
 
 ## `hd plugins add PLUGIN`
 
@@ -152,7 +156,7 @@ EXAMPLES
   $ hd plugins inspect myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/inspect.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.36/src/commands/plugins/inspect.ts)_
 
 ## `hd plugins install PLUGIN`
 
@@ -201,7 +205,7 @@ EXAMPLES
     $ hd plugins install someuser/someplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/install.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.36/src/commands/plugins/install.ts)_
 
 ## `hd plugins link PATH`
 
@@ -232,7 +236,7 @@ EXAMPLES
   $ hd plugins link myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/link.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.36/src/commands/plugins/link.ts)_
 
 ## `hd plugins remove [PLUGIN]`
 
@@ -273,7 +277,7 @@ FLAGS
   --reinstall  Reinstall all plugins after uninstalling.
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/reset.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.36/src/commands/plugins/reset.ts)_
 
 ## `hd plugins uninstall [PLUGIN]`
 
@@ -301,7 +305,7 @@ EXAMPLES
   $ hd plugins uninstall myplugin
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/uninstall.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.36/src/commands/plugins/uninstall.ts)_
 
 ## `hd plugins unlink [PLUGIN]`
 
@@ -345,5 +349,116 @@ DESCRIPTION
   Update installed plugins.
 ```
 
-_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.34/src/commands/plugins/update.ts)_
+_See code: [@oclif/plugin-plugins](https://github.com/oclif/plugin-plugins/blob/v5.4.36/src/commands/plugins/update.ts)_
+
+## `hd report committers`
+
+Generate report of committers to a git repository
+
+```
+USAGE
+  $ hd report committers [--json] [-m <value>] [-o text|json|csv] [-s]
+
+FLAGS
+  -m, --months=<value>   [default: 12] The number of months of git history to review
+  -o, --output=<option>  [default: text] Output format: text, json, or csv
+                         <options: text|json|csv>
+  -s, --save             Save the committers report as nes.committers.<output>
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Generate report of committers to a git repository
+
+EXAMPLES
+  $ hd report committers
+
+  $ hd report committers -o csv -s
+
+  $ hd report committers --output=json
+
+  $ hd report committers --output=csv
+```
+
+## `hd report purls`
+
+Generate a list of purls from a sbom
+
+```
+USAGE
+  $ hd report purls [--json] [-f <value>] [-d <value>] [-s] [-o json|csv]
+
+FLAGS
+  -d, --dir=<value>      The directory to scan in order to create a cyclonedx sbom
+  -f, --file=<value>     The file path of an existing cyclonedx sbom to scan for EOL
+  -o, --output=<option>  [default: json] The format of the saved file (when using --save)
+                         <options: json|csv>
+  -s, --save             Save the list of purls as nes.purls.<output>
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Generate a list of purls from a sbom
+
+EXAMPLES
+  $ hd report purls --dir=./my-project
+
+  $ hd report purls --file=path/to/sbom.json
+
+  $ hd report purls --dir=./my-project --save
+
+  $ hd report purls --save --output=csv
+```
+
+## `hd scan eol`
+
+Scan a given sbom for EOL data
+
+```
+USAGE
+  $ hd scan eol [--json] [-f <value>] [-d <value>] [-s]
+
+FLAGS
+  -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
+  -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
+  -s, --save          Save the generated SBOM as nes.sbom.json in the scanned directory
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Scan a given sbom for EOL data
+
+EXAMPLES
+  $ hd scan eol --dir=./my-project
+
+  $ hd scan eol --file=path/to/sbom.json
+```
+
+## `hd scan sbom`
+
+Scan a SBOM for purls
+
+```
+USAGE
+  $ hd scan sbom [--json] [-f <value>] [-d <value>] [-s]
+
+FLAGS
+  -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
+  -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
+  -s, --save          Save the generated SBOM as nes.sbom.json in the scanned directory
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Scan a SBOM for purls
+
+EXAMPLES
+  $ hd scan sbom --dir=./my-project
+
+  $ hd scan sbom --file=path/to/sbom.json
+```
 <!-- commandsstop -->

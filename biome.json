@@ -32,7 +32,8 @@
       "node_modules/**",
       "test/snapshot/**",
       "test/fixtures/**",
-      "types/cdxgen.d.ts"
+      "types/cdxgen.d.ts",
+      "assets/hd.js"
     ]
   }
 }

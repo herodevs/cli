@@ -1,7 +1,7 @@
 {
-  "name": "@herodevs/monorepo",
+  "name": "@herodevs/cli",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0-beta.0",
   "author": "HeroDevs, Inc",
   "bin": {
     "hd": "./bin/run.js"
@@ -17,7 +17,7 @@
     "format": "biome format --write",
     "lint": "biome lint --write",
     "postpack": "shx rm -f oclif.manifest.json",
-    "prepack": "oclif manifest && oclif readme",
+    "pack": "oclif pack tarballs --targets=darwin-arm64,linux-x64 --no-xz",
     "pretest": "npm run lint && npm run typecheck",
     "readme": "npm run ci:fix && npm run build && npm exec oclif readme",
     "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test \"test/**/*.test.ts\"",
@@ -27,6 +27,9 @@
   "dependencies": {
     "@apollo/client": "^3.13.1",
     "@inquirer/prompts": "^5.0.2",
+    "@oclif/core": "^4",
+    "@oclif/plugin-help": "^6",
+    "@oclif/plugin-plugins": "^5",
     "cli-spinners": "^3.0.0",
     "date-fns": "^3.6.0",
     "git-last-commit": "^1.0.1",
@@ -66,15 +69,12 @@
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-plugins",
-      "@oclif/plugin-update"
+      "@oclif/plugin-plugins"
     ],
-    "topicSeparator": " ",
-    "update": {
-      "node": {
-        "version": ">=22.0.0"
-      }
-    }
+    "macos": {
+      "identifier": "com.herodevs.cli"
+    },
+    "topicSeparator": " "
   },
   "types": "dist/index.d.ts"
 }
