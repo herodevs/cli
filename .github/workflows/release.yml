@@ -78,10 +78,8 @@ jobs:
       - name: Upload CLI artifact
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
-          name: cli-binaries
-          path: |
-            ./dist/hd-v*-darwin-arm64.tar.gz
-            ./dist/hd-v*-linux-x64.tar.gz
+          name: cli-binaries-${{ matrix.code-target }}
+          path: ./dist/hd-v*-${{ matrix.code-target }}.tar.gz
           if-no-files-found: error
   publish-cli:
     name: Publish
@@ -103,8 +101,9 @@ jobs:
       - name: Download CLI artifacts
         uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
-          pattern: cli-binaries
+          pattern: cli-binaries-*
           path: artifacts
+          merge-multiple: true
       - name: Debug artifact paths
         run: ls -lah artifacts/
       - name: Log release channel  
