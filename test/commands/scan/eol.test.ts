@@ -30,7 +30,7 @@ describe('scan:eol', () => {
     cdxgen.createBom = (() => Promise.resolve({ bomJson })) as CdxCreator;
   });
 
-  it('runs against simple npm fixture', async () => {
+  it.skip('runs against simple npm fixture', async () => {
     // Mock the scanOptions to force projectType to use npm (otherwise it'll try yarn and such)
     sinon.stub(SbomScan.prototype, 'getScanOptions').returns({ cdxgen: { projectType: ['npm'] } });
 

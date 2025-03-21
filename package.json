@@ -94,12 +94,15 @@
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
+      "@oclif/plugin-plugins",
+      "@oclif/plugin-update"
     ],
-    "hooks": {
-      "prerun": "./dist/hooks/prerun/CommandContextHook"
-    },
-    "topicSeparator": " "
+    "topicSeparator": " ",
+    "update": {
+      "node": {
+        "version": ">=22.0.0"
+      }
+    }
   },
   "types": "dist/index.d.ts"
 }

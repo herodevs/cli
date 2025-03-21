@@ -1,6 +1,6 @@
 {
     "name": "@herodevs/cli-linux-x64",
-    "version": "1.0.0-beta",
+    "version": "1.0.0-beta.0",
     "license": "MIT",
     "type": "commonjs",
     "repository": {
@@ -36,10 +36,12 @@
         "commands": "../../dist/commands",
         "plugins": [
             "@oclif/plugin-help",
-            "@oclif/plugin-plugins"
+            "@oclif/plugin-plugins",
+            "@oclif/plugin-update"
         ],
         "hooks": {
-            "prerun": "../../dist/hooks/prerun/CommandContextHook"
+            "prerun": "../../dist/hooks/prerun/CommandContextHook",
+            "init": "../../dist/hooks/init/update"
         },
         "topicSeparator": " "
     }
