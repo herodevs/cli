@@ -1,0 +1,35 @@
+name: Test Node Compatibility
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/test-node-compatibility.yml'
+      - packages/cli/**
+jobs:
+    test:
+        strategy:
+            fail-fast: false
+            matrix:
+                node:
+                - 8
+                - 10
+                - 12
+                - 14
+                - 16
+                - 18
+                - 20
+                - 22
+                - 23
+                platform:
+                - ubuntu-latest
+        name: "Testing compatibility ${{matrix.platform}} w/ Node.js ${{matrix.node}}.x"
+        runs-on: ${{matrix.platform}}
+        steps:
+            - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+            - name: "Use Node.js ${{matrix.node}}.x"
+              uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+              with:
+                node-version: ${{matrix.node}}.x
+            - run: cd packages/cli
+            - run: npm install
+            - run: node ./bin/hd.js --help
