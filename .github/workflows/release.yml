@@ -76,7 +76,7 @@ jobs:
         shell: bash
         run: |
           cd packages/cli-${{ matrix.code-target }}
-          npm ci
+          npm i
           npm run pack
       - name: Debug Oclif output
         shell: bash
