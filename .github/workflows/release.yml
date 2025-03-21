@@ -117,7 +117,7 @@ jobs:
           echo "Publishing to channel: ${{ inputs.channel }}"
       - name: Publish npm packages
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
           NPM_TAG: ${{ inputs.channel }}
         run: |
           for artifact in artifacts/*; do
