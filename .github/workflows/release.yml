@@ -1,4 +1,6 @@
 name: release
+run-name: Release ${{ github.ref_name }} to staging (pushed by ${{ github.actor }})${{ inputs.dry-run == true && ' --dry-run' || '' }}
+
 on:
   workflow_dispatch:
     inputs:
