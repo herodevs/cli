@@ -18,7 +18,7 @@
     "ci:fix": "biome check --write",
     "clean": "shx rm -rf dist && npm run clean:files && shx rm -rf node_modules",
     "clean:files": "shx rm -f nes.**.csv nes.**.json nes.**.text",
-    "dev": "npm run build && ./bin/dev.js",
+    "dev": "npm run build && DEBUG=oclif:hd ./bin/dev.js",
     "format": "biome format --write",
     "lint": "biome lint --write",
     "postpack": "shx rm -f oclif.manifest.json",
@@ -72,9 +72,6 @@
       "@oclif/plugin-help",
       "@oclif/plugin-plugins"
     ],
-    "hooks": {
-      "prerun": "./src/hooks/prerun/command-context-hook.ts"
-    },
     "topicSeparator": " "
   },
   "types": "dist/index.d.ts"
