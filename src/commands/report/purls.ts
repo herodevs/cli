@@ -46,7 +46,7 @@ export default class ReportPurls extends Command {
     const sbom: Sbom = await sbomCommand.run();
 
     const purls = await extractPurls(sbom);
-    this.debug('Extracted %d purls from SBOM', purls.length);
+    this.log('Extracted %d purls from SBOM', purls.length);
 
     ux.action.stop('Scan completed');
 
@@ -63,7 +63,7 @@ export default class ReportPurls extends Command {
         const purlOutput = getPurlOutput(purls, outputFile);
         fs.writeFileSync(outputPath, purlOutput);
 
-        this.debug('Purls saved to %s', outputPath);
+        this.log('Purls saved to %s', outputPath);
       } catch (error: unknown) {
         const errorMessage = error && typeof error === 'object' && 'message' in error ? error.message : 'Unknown error';
 

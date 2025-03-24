@@ -47,20 +47,23 @@ export default class Committers extends Command {
     const isJson = this.jsonEnabled();
 
     const sinceDate = `${months} months ago`;
-    this.debug('Starting committers report with flags: %O', flags);
+    this.log('Starting committers report with flags: %O', flags);
 
     try {
       // Generate structured report data
       const entries = this.fetchGitCommitData(sinceDate);
-      this.debug('Fetched %d commit entries', entries.length);
+      this.log('Fetched %d commit entries', entries.length);
       const reportData = this.generateReportData(entries);
 
       // Handle different output scenarios
       if (isJson) {
         // JSON mode
         if (save) {
-          fs.writeFileSync(path.resolve('nes.committers.json'), JSON.stringify(reportData, null, 2));
-          this.debug('Report written to json');
+          fs.writeFileSync(
+            path.resolve('nes.committers.json'),
+            JSON.stringify(reportData, null, 2)
+          );
+          this.log('Report written to json');
         }
         return reportData;
       }
@@ -69,7 +72,7 @@ export default class Committers extends Command {
         const csvOutput = formatAsCsv(reportData);
         if (save) {
           fs.writeFileSync(path.resolve('nes.committers.csv'), csvOutput);
-          this.debug('Report written to csv');
+          this.log('Report written to csv');
         } else {
           this.log(csvOutput);
         }
@@ -79,7 +82,7 @@ export default class Committers extends Command {
       const textOutput = formatAsText(reportData);
       if (save) {
         fs.writeFileSync(path.resolve('nes.committers.txt'), textOutput);
-        this.debug('Report written to txt');
+        this.log('Report written to txt');
       } else {
         this.log(textOutput);
       }

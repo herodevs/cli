@@ -29,13 +29,14 @@ export default class ScanSbom extends Command {
   };
 
   static getSbomArgs(flags: Record<string, string>): string[] {
-    const { dir, file, save } = flags ?? {};
+    const { dir, file, save, json } = flags ?? {};
 
     const sbomArgs = [];
 
     if (file) sbomArgs.push('--file', file);
     if (dir) sbomArgs.push('--dir', dir);
     if (save) sbomArgs.push('--save');
+    if (json) sbomArgs.push('--json');
 
     return sbomArgs;
   }
