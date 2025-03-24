@@ -29,13 +29,14 @@ export default class ScanSbom extends Command {
   };
 
   static getSbomArgs(flags: Record<string, string>): string[] {
-    const { dir, file, save } = flags ?? {};
+    const { dir, file, save, json } = flags ?? {};
 
     const sbomArgs = [];
 
     if (file) sbomArgs.push('--file', file);
     if (dir) sbomArgs.push('--dir', dir);
     if (save) sbomArgs.push('--save');
+    if (json) sbomArgs.push('--json');
 
     return sbomArgs;
   }
@@ -74,7 +75,9 @@ export default class ScanSbom extends Command {
     if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
       throw new Error(`Directory not found or not a directory: ${dir}`);
     }
+
     ux.action.start(`Scanning ${dir}`);
+
     const options = this.getScanOptions();
     const sbom = await createSbom(dir, options);
     if (!sbom) {
@@ -88,7 +91,9 @@ export default class ScanSbom extends Command {
     if (!fs.existsSync(file)) {
       throw new Error(`SBOM file not found: ${file}`);
     }
+
     ux.action.start(`Loading sbom from ${file}`);
+
     try {
       const fileContent = fs.readFileSync(file, {
         encoding: 'utf8',
@@ -107,7 +112,9 @@ export default class ScanSbom extends Command {
     try {
       const outputPath = path.join(dir, 'nes.sbom.json');
       fs.writeFileSync(outputPath, JSON.stringify(sbom, null, 2));
-      this.log(`SBOM saved to ${outputPath}`);
+      if (!this.jsonEnabled()) {
+        this.log(`SBOM saved to ${outputPath}`);
+      }
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       this.warn(`Failed to save SBOM: ${errorMessage}`);

@@ -1,25 +1,8 @@
-/**
- * A simple logging construct when you
- * don't have the command instance handy
- */
-export const log = {
-  info: (_message?: unknown, ...args: unknown[]) => {
-    console.log('[default_log]', ...args);
-  },
-  warn: (_message?: unknown, ...args: unknown[]) => {
-    console.warn('[default_warn]', ...args);
-  },
-  debug: (_message?: unknown, ...args: unknown[]) => {
-    console.debug('[default_debug]', ...args);
-  },
-};
+import debug from 'debug';
 
-export const initOclifLog = (
-  info: (message?: unknown, ...args: unknown[]) => void,
-  warn: (message?: unknown, ...args: unknown[]) => void,
-  debug: (message?: unknown, ...args: unknown[]) => void,
-) => {
-  log.info = info;
-  log.warn = warn;
-  log.debug = debug;
-};
+/**
+ * A simple debug logger for services.
+ * Services should only use debug logging for development/troubleshooting.
+ * All user-facing output should be handled by commands.
+ */
+export const debugLogger = debug('oclif:herodevs-debug');

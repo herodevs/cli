@@ -19,6 +19,7 @@
     "clean": "shx rm -rf dist && npm run clean:files && shx rm -rf node_modules",
     "clean:files": "shx rm -f nes.**.csv nes.**.json nes.**.text",
     "dev": "npm run build && ./bin/dev.js",
+    "dev:debug": "npm run build && DEBUG=* ./bin/dev.js",
     "format": "biome format --write",
     "lint": "biome lint --write",
     "postpack": "shx rm -f oclif.manifest.json",
@@ -52,6 +53,7 @@
     "oclif": "^4",
     "shx": "^0.3.3",
     "sinon": "^19.0.2",
+    "ts-node": "^10",
     "typescript": "^5.8.0"
   },
   "engines": {
@@ -70,15 +72,12 @@
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-plugins",
-      "@oclif/plugin-update"
+      "@oclif/plugin-plugins"
     ],
-    "topicSeparator": " ",
-    "update": {
-      "node": {
-        "version": ">=22.0.0"
-      }
-    }
+    "hooks": {
+      "prerun": "./dist/hooks/prerun.js"
+    },
+    "topicSeparator": " "
   },
   "types": "dist/index.d.ts"
 }

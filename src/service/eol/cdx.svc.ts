@@ -1,4 +1,4 @@
-import { log } from '../../service/log.svc.ts';
+import { debugLogger } from '../../service/log.svc.ts';
 import type { CdxCreator, CdxGenOptions } from './eol.svc.ts';
 
 export interface SbomEntry {
@@ -80,7 +80,7 @@ export async function createBomFromDir(directory: string, opts: CdxGenOptions = 
 
   const { createBom } = await getCdxGen();
   const sbom = await createBom?.(directory, options);
-  log.info('Successfully generated SBOM');
+  debugLogger('Successfully generated SBOM');
   return sbom?.bomJson;
 }
 
