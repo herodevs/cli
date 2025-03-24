@@ -44,6 +44,6 @@ jobs:
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{matrix.node}}.x
-      - run: npm install
+      - run: npm ci
       - run: npm run build
       - run: npm test
