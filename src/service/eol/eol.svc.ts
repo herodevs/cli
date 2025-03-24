@@ -1,6 +1,6 @@
 import { NesApolloClient } from '../../api/nes/nes.client.ts';
 import type { ComponentStatus, ScanResult } from '../../api/types/nes.types.ts';
-import { log } from '../../service/log.svc.ts';
+import { debugLogger } from '../../service/log.svc.ts';
 import { getDaysEolFromEolAt, getStatusFromComponent } from '../line.svc.ts';
 import type { Line } from '../line.svc.ts';
 import { extractPurls } from '../purls.svc.ts';
@@ -18,7 +18,7 @@ export type CdxCreator = (dir: string, opts: CdxGenOptions) => Promise<{ bomJson
 export async function createSbom(directory: string, opts: ScanOptions = {}) {
   const sbom = await createBomFromDir(directory, opts.cdxgen || {});
   if (!sbom) throw new Error('SBOM not generated');
-  log.info('SBOM generated');
+  debugLogger('SBOM generated');
   return sbom;
 }
 
@@ -81,7 +81,7 @@ export async function prepareRows(purls: string[], scan: ScanResult): Promise<Li
     if (!details) {
       // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
       // TODO: add UNKNOWN Component Status, create new line, and create flag to show/hide unknown results
-      log.debug(`Unknown status: ${purl}.`);
+      debugLogger(`Unknown status: ${purl}.`);
       continue;
     }
 

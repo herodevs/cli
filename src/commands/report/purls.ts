@@ -3,7 +3,6 @@ import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
-import { log } from '../../service/log.svc.ts';
 import { extractPurls, getPurlOutput } from '../../service/purls.svc.ts';
 import SbomScan from '../scan/sbom.ts';
 
@@ -47,13 +46,13 @@ export default class ReportPurls extends Command {
     const sbom: Sbom = await sbomCommand.run();
 
     const purls = await extractPurls(sbom);
-    log.info('Extracted %d purls from SBOM', purls.length);
+    this.debug('Extracted %d purls from SBOM', purls.length);
 
     ux.action.stop('Scan completed');
 
     // Print the purls
     for (const purl of purls) {
-      log.info(purl);
+      this.log(purl);
     }
 
     // Save if requested
@@ -64,11 +63,11 @@ export default class ReportPurls extends Command {
         const purlOutput = getPurlOutput(purls, outputFile);
         fs.writeFileSync(outputPath, purlOutput);
 
-        log.info(`\nPurls saved to ${outputPath}`);
+        this.debug('Purls saved to %s', outputPath);
       } catch (error: unknown) {
         const errorMessage = error && typeof error === 'object' && 'message' in error ? error.message : 'Unknown error';
 
-        log.warn(`Failed to save purls: ${errorMessage}`);
+        this.warn(`Failed to save purls: ${errorMessage}`);
       }
     }
 

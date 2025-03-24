@@ -7,7 +7,7 @@ import type {
   ScanResult,
   ScanResultComponent,
 } from '../../api/types/nes.types.ts';
-import { log } from '../log.svc.ts';
+import { debugLogger } from '../log.svc.ts';
 export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
   const components = new Map<string, ScanResultComponent>();
   for (const c of scan.components) {
@@ -28,8 +28,8 @@ export const SbomScanner =
 
     const scan = res.data?.insights?.scan?.eol;
     if (!scan?.success) {
-      log.info('failed scan %o', scan || {});
-      log.warn('scan failed');
+      debugLogger('failed scan %o', scan || {});
+      debugLogger('scan failed');
 
       throw new Error('Failed to provide scan: ');
     }

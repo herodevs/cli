@@ -12,7 +12,6 @@ import {
   groupCommitsByMonth,
   parseGitLogOutput,
 } from '../../service/committers.svc.ts';
-import { log } from '../../service/log.svc.ts';
 
 export default class Committers extends Command {
   static override description = 'Generate report of committers to a git repository';
@@ -48,12 +47,12 @@ export default class Committers extends Command {
     const isJson = this.jsonEnabled();
 
     const sinceDate = `${months} months ago`;
-    log.debug('Starting committers report with flags: %O', flags);
+    this.debug('Starting committers report with flags: %O', flags);
 
     try {
       // Generate structured report data
       const entries = this.fetchGitCommitData(sinceDate);
-      log.debug('Fetched %d commit entries', entries.length);
+      this.debug('Fetched %d commit entries', entries.length);
       const reportData = this.generateReportData(entries);
 
       // Handle different output scenarios
@@ -61,7 +60,7 @@ export default class Committers extends Command {
         // JSON mode
         if (save) {
           fs.writeFileSync(path.resolve('nes.committers.json'), JSON.stringify(reportData, null, 2));
-          log.debug('Report written to json');
+          this.debug('Report written to json');
         }
         return reportData;
       }
@@ -70,9 +69,9 @@ export default class Committers extends Command {
         const csvOutput = formatAsCsv(reportData);
         if (save) {
           fs.writeFileSync(path.resolve('nes.committers.csv'), csvOutput);
-          log.debug('Report written to csv');
+          this.debug('Report written to csv');
         } else {
-          log.info(csvOutput);
+          this.log(csvOutput);
         }
         return csvOutput;
       }
@@ -80,13 +79,13 @@ export default class Committers extends Command {
       const textOutput = formatAsText(reportData);
       if (save) {
         fs.writeFileSync(path.resolve('nes.committers.txt'), textOutput);
-        log.debug('Report written to txt');
+        this.debug('Report written to txt');
       } else {
-        log.info(textOutput);
+        this.log(textOutput);
       }
       return textOutput;
     } catch (error) {
-      log.error(`Failed to generate report: ${(error as Error).message}`);
+      this.error(`Failed to generate report: ${(error as Error).message}`);
       throw error;
     }
   }
@@ -147,8 +146,8 @@ export default class Committers extends Command {
 
       return parseGitLogOutput(logProcess.stdout);
     } catch (error) {
-      log.error(`Failed to fetch git data: ${(error as Error).message}`);
-      return []; // This line won't execute due to log.error() above
+      this.error(`Failed to fetch git data: ${(error as Error).message}`);
+      return []; // This line won't execute due to this.error() above
     }
   }
 }
