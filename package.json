@@ -10,6 +10,8 @@
     "type": "git",
     "url": "https://github.com/herodevs/cli"
   },
+  "homepage": "https://github.com/herodevs/cli",
+  "bugs": "https://github.com/@herodevs/cli/issues",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "ci": "biome ci",
@@ -27,6 +29,11 @@
     "typecheck": "tsc --noEmit",
     "version": "oclif readme && git add README.md"
   },
+  "keywords": [
+    "herodevs",
+    "cli",
+    "herodevs cli"
+  ],
   "dependencies": {
     "@apollo/client": "^3.13.1",
     "graphql": "^16.8.1",
