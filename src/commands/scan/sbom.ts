@@ -75,9 +75,9 @@ export default class ScanSbom extends Command {
     if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
       throw new Error(`Directory not found or not a directory: ${dir}`);
     }
-    if (!this.jsonEnabled()) {
-      ux.action.start(`Scanning ${dir}`);
-    }
+
+    ux.action.start(`Scanning ${dir}`);
+
     const options = this.getScanOptions();
     const sbom = await createSbom(dir, options);
     if (!sbom) {
@@ -91,9 +91,9 @@ export default class ScanSbom extends Command {
     if (!fs.existsSync(file)) {
       throw new Error(`SBOM file not found: ${file}`);
     }
-    if (!this.jsonEnabled()) {
-      ux.action.start(`Loading sbom from ${file}`);
-    }
+
+    ux.action.start(`Loading sbom from ${file}`);
+
     try {
       const fileContent = fs.readFileSync(file, {
         encoding: 'utf8',
