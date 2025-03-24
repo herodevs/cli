@@ -20,7 +20,7 @@ export function getPurlOutput(purls: string[], output: string): string {
     case 'csv':
       return ['purl', ...purls].map(formatCsvValue).join('\n');
     default:
-      return JSON.stringify(purls, null, 2);
+      return JSON.stringify({ purls }, null, 2);
   }
 }
 

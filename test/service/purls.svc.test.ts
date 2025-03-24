@@ -7,14 +7,14 @@ describe('getPurlOutput', () => {
     it('should format purls as JSON with proper indentation', () => {
       const purls = ['pkg:npm/react@18.2.0', 'pkg:npm/typescript@5.0.0'];
       const result = getPurlOutput(purls, 'json');
-      const expected = JSON.stringify(purls, null, 2);
+      const expected = JSON.stringify({ purls }, null, 2);
       assert.strictEqual(result, expected);
     });
 
     it('should handle empty array', () => {
       const purls: string[] = [];
       const result = getPurlOutput(purls, 'json');
-      assert.strictEqual(result, '[]');
+      assert.strictEqual(result, JSON.stringify({ purls }, null, 2));
     });
   });
 

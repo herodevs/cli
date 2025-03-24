@@ -3,9 +3,9 @@ import { Command, Flags, ux } from '@oclif/core';
 import type { ScanResult } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
+import { log } from '../../service/log.svc.ts';
 import { promptComponentDetails } from '../../ui/eol.ui.ts';
 import SbomScan from './sbom.ts';
-import { log } from '../../service/log.svc.ts';
 
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';

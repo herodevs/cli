@@ -1,22 +1,20 @@
 import type { Hook } from '@oclif/core';
 import { ux } from '@oclif/core';
 
-import { log } from '../service/log.svc.ts';
+import { log, updateLogger } from '../service/log.svc.ts';
 
 const hook: Hook.Prerun = async (opts) => {
   // If JSON flag is enabled, silence all logs and ux actions
   if (opts.argv.includes('--json')) {
-    log.info = () => {};
-    log.warn = () => {};
-    log.debug = () => {};
+    // Create no-op functions for JSON mode
+    const noop = () => {};
+    updateLogger({ log: noop, warn: noop, debug: noop });
     // Silence ux actions
-    ux.action.start = () => {};
-    ux.action.stop = () => {};
+    ux.action.start = noop;
+    ux.action.stop = noop;
   } else {
-    // Otherwise use the command context's logging functions
-    log.info = opts.context.log;
-    log.warn = opts.context.log;
-    log.debug = opts.context.debug;
+    // Use the command context's logging functions
+    updateLogger(opts.context);
   }
 };
 
