@@ -16,7 +16,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/1.0.0-beta.0 darwin-arm64 node-v22.13.0
+@herodevs/cli/1.0.0-beta.1 darwin-arm64 node-v22.13.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND

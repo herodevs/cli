@@ -1,6 +1,6 @@
 {
   "name": "@herodevs/cli",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "author": "HeroDevs, Inc",
   "bin": {
     "hd": "./bin/run.js"
@@ -37,7 +37,8 @@
   "dependencies": {
     "@apollo/client": "^3.13.1",
     "graphql": "^16.8.1",
-    "inquirer": "^12.5.0"
+    "inquirer": "^12.5.0",
+    "@oclif/core": "^4"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
