@@ -1,48 +1,29 @@
-import { getLogger } from '@oclif/core';
+import debug from 'debug';
+
+const debugLogger = debug('oclif:hd');
 
 /**
  * A simple logging construct when you
  * don't have the command instance handy
  */
-export const log = getLogger('oclif:hd');
+export const log = {
+  info: (message: string, ...args: unknown[]) => console.log(message, ...args),
+  warn: (message: string, ...args: unknown[]) => console.warn(message, ...args),
+  debug: (message: string, ...args: unknown[]) => debugLogger(message, ...args),
+  error: (message: string | Error) => console.error(message),
+};
 
-// Function to update the logger with command context
+/**
+ * Updates the logger with command context
+ */
 export function updateLogger(context: {
   log: (message: string) => void;
   warn: (message: string) => void;
   debug: (message: string) => void;
   error: (message: string | Error) => void;
 }) {
-  // Create wrapper functions that handle both string messages and format strings
-  log.info = (formatter: unknown, ...args: unknown[]) => {
-    if (typeof formatter === 'string') {
-      context.log(formatter);
-    } else {
-      context.log(String(formatter));
-    }
-  };
-
-  log.warn = (formatter: unknown, ...args: unknown[]) => {
-    if (typeof formatter === 'string') {
-      context.warn(formatter);
-    } else {
-      context.warn(String(formatter));
-    }
-  };
-
-  log.debug = (formatter: unknown, ...args: unknown[]) => {
-    if (typeof formatter === 'string') {
-      context.debug(formatter);
-    } else {
-      context.debug(String(formatter));
-    }
-  };
-
-  log.error = (formatter: unknown, ...args: unknown[]) => {
-    if (typeof formatter === 'string' || formatter instanceof Error) {
-      context.error(formatter);
-    } else {
-      context.error(String(formatter));
-    }
-  };
+  log.info = context.log;
+  log.warn = context.warn;
+  log.debug = context.debug;
+  log.error = context.error;
 }
