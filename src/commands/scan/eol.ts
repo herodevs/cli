@@ -5,6 +5,8 @@ import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
 import { promptComponentDetails } from '../../ui/eol.ui.ts';
 import SbomScan from './sbom.ts';
+import { log } from '../../service/log.svc.ts';
+
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
   static enableJsonFlag = true;
@@ -56,12 +58,12 @@ export default class ScanEol extends Command {
 
     const lines = await prepareRows(purls, scan);
     if (lines?.length === 0) {
-      this.log('No dependencies found');
+      log.info('No dependencies found');
       return { components: [] };
     }
 
     const r = await promptComponentDetails(lines);
-    this.log('What now %o', r);
+    log.info('What now %o', r);
 
     return scan;
   }
@@ -72,13 +74,13 @@ export default class ScanEol extends Command {
     const [major] = version.split('.').map(Number);
 
     if (version.includes('beta') || major < 1) {
-      this.log(`VERSION=${version}`);
+      log.info(`VERSION=${version}`);
       throw new Error('The EOL scan feature is not available in beta releases. Please wait for the stable release.');
     }
     // Just in case the beta check fails
     if (override) {
-      this.log(`VERSION=${version}`);
-      this.log('EOL scan is disabled');
+      log.info(`VERSION=${version}`);
+      log.info('EOL scan is disabled');
       return { components: [] };
     }
   }

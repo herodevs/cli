@@ -5,6 +5,7 @@ import { Command, Flags, ux } from '@oclif/core';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { extractPurls, getPurlOutput } from '../../service/purls.svc.ts';
 import SbomScan from '../scan/sbom.ts';
+import { log } from '../../service/log.svc.ts';
 
 export default class ReportPurls extends Command {
   static override description = 'Generate a list of purls from a sbom';
@@ -52,9 +53,8 @@ export default class ReportPurls extends Command {
     ux.action.stop('Scan completed');
 
     // Print the purls
-    this.log('Found purls:');
     for (const purl of purls) {
-      this.log(purl);
+      log.info(purl);
     }
 
     // Save if requested
@@ -64,10 +64,10 @@ export default class ReportPurls extends Command {
         const purlOutput = getPurlOutput(purls, output);
         fs.writeFileSync(outputPath, purlOutput);
 
-        this.log(`\nPurls saved to ${outputPath}`);
+        log.info(`\nPurls saved to ${outputPath}`);
       } catch (error: unknown) {
         const errorMessage = error && typeof error === 'object' && 'message' in error ? error.message : 'Unknown error';
-        this.warn(`Failed to save purls: ${errorMessage}`);
+        log.warn(`Failed to save purls: ${errorMessage}`);
       }
     }
 

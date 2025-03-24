@@ -4,6 +4,7 @@ import { Command, Flags, ux } from '@oclif/core';
 import fs from 'node:fs';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
+import { log } from '../../service/log.svc.ts';
 
 export default class ScanSbom extends Command {
   static override description = 'Scan a SBOM for purls';
@@ -107,10 +108,10 @@ export default class ScanSbom extends Command {
     try {
       const outputPath = path.join(dir, 'nes.sbom.json');
       fs.writeFileSync(outputPath, JSON.stringify(sbom, null, 2));
-      this.log(`SBOM saved to ${outputPath}`);
+      log.info(`SBOM saved to ${outputPath}`);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.warn(`Failed to save SBOM: ${errorMessage}`);
+      log.warn(`Failed to save SBOM: ${errorMessage}`);
     }
   }
 }

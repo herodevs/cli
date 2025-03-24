@@ -11,6 +11,7 @@ import {
   groupCommitsByMonth,
   parseGitLogOutput,
 } from '../../service/committers.svc.ts';
+import { log } from '../../service/log.svc.ts';
 
 export default class Committers extends Command {
   static override description = 'Generate report of committers to a git repository';
@@ -56,9 +57,9 @@ export default class Committers extends Command {
       // Output to file or stdout
       if (save) {
         fs.writeFileSync(path.resolve(`nes.committers.${output}`), formattedOutput);
-        this.log(`Report written to ${output}`);
+        log.info(`Report written to ${output}`);
       } else {
-        this.log(formattedOutput);
+        log.info(formattedOutput);
       }
     } catch (error) {
       this.error(`Failed to generate report: ${(error as Error).message}`);
