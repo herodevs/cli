@@ -6,6 +6,10 @@
     "hd": "./bin/run.js"
   },
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/herodevs/cli"
+  },
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "ci": "biome ci",
