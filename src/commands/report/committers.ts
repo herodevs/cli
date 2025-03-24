@@ -59,10 +59,7 @@ export default class Committers extends Command {
       if (isJson) {
         // JSON mode
         if (save) {
-          fs.writeFileSync(
-            path.resolve('nes.committers.json'),
-            JSON.stringify(reportData, null, 2)
-          );
+          fs.writeFileSync(path.resolve('nes.committers.json'), JSON.stringify(reportData, null, 2));
           this.log('Report written to json');
         }
         return reportData;
