@@ -70,15 +70,12 @@
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-plugins",
-      "@oclif/plugin-update"
+      "@oclif/plugin-plugins"
     ],
-    "topicSeparator": " ",
-    "update": {
-      "node": {
-        "version": ">=22.0.0"
-      }
-    }
+    "hooks": {
+      "prerun": "./src/hooks/prerun/command-context-hook.ts"
+    },
+    "topicSeparator": " "
   },
   "types": "dist/index.d.ts"
 }
