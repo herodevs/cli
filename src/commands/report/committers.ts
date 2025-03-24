@@ -7,7 +7,8 @@ import {
   type CommitEntry,
   type ReportData,
   calculateOverallStats,
-  formatOutputBasedOnFlag,
+  formatAsCsv,
+  formatAsText,
   groupCommitsByMonth,
   parseGitLogOutput,
 } from '../../service/committers.svc.ts';
@@ -18,9 +19,9 @@ export default class Committers extends Command {
   static enableJsonFlag = true;
   static override examples = [
     '<%= config.bin %> <%= command.id %>',
-    '<%= config.bin %> <%= command.id %> -o csv -s',
-    '<%= config.bin %> <%= command.id %> --output=json',
-    '<%= config.bin %> <%= command.id %> --output=csv',
+    '<%= config.bin %> <%= command.id %> --csv -s',
+    '<%= config.bin %> <%= command.id %> --json',
+    '<%= config.bin %> <%= command.id %> --csv',
   ];
 
   static override flags = {
@@ -29,11 +30,10 @@ export default class Committers extends Command {
       description: 'The number of months of git history to review',
       default: 12,
     }),
-    output: Flags.string({
-      char: 'o',
-      description: 'Output format: text, json, or csv',
-      options: ['text', 'json', 'csv'],
-      default: 'text',
+    csv: Flags.boolean({
+      char: 'c',
+      description: 'Output in CSV format',
+      default: false,
     }),
     save: Flags.boolean({
       char: 's',
@@ -42,9 +42,10 @@ export default class Committers extends Command {
     }),
   };
 
-  public async run(): Promise<void> {
+  public async run(): Promise<ReportData | string> {
     const { flags } = await this.parse(Committers);
-    const { months, output, save } = flags;
+    const { months, csv, save } = flags;
+    const isJson = this.jsonEnabled();
 
     const sinceDate = `${months} months ago`;
 
@@ -52,17 +53,39 @@ export default class Committers extends Command {
       // Generate structured report data
       const entries = this.fetchGitCommitData(sinceDate);
       const reportData = this.generateReportData(entries);
-      const formattedOutput = formatOutputBasedOnFlag(output, reportData);
 
-      // Output to file or stdout
-      if (save) {
-        fs.writeFileSync(path.resolve(`nes.committers.${output}`), formattedOutput);
-        log.info(`Report written to ${output}`);
-      } else {
-        log.info(formattedOutput);
+      // Handle different output scenarios
+      if (isJson) {
+        // JSON mode
+        if (save) {
+          fs.writeFileSync(path.resolve('nes.committers.json'), JSON.stringify(reportData, null, 2));
+          log.info('Report written to json');
+        }
+        return reportData;
       }
+      if (csv) {
+        // CSV mode
+        const csvOutput = formatAsCsv(reportData);
+        if (save) {
+          fs.writeFileSync(path.resolve('nes.committers.csv'), csvOutput);
+          log.info('Report written to csv');
+        } else {
+          log.info(csvOutput);
+        }
+        return csvOutput;
+      }
+      // Text mode
+      const textOutput = formatAsText(reportData);
+      if (save) {
+        fs.writeFileSync(path.resolve('nes.committers.txt'), textOutput);
+        log.info('Report written to txt');
+      } else {
+        log.info(textOutput);
+      }
+      return textOutput;
     } catch (error) {
       log.error(`Failed to generate report: ${(error as Error).message}`);
+      throw error;
     }
   }
 
