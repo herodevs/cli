@@ -1,30 +1,48 @@
+import { getLogger } from '@oclif/core';
+
 /**
  * A simple logging construct when you
  * don't have the command instance handy
  */
-export const log = {
-  info: (_message?: unknown, ...args: unknown[]) => {
-    console.log('[default_log]', ...args);
-  },
-  warn: (_message?: unknown, ...args: unknown[]) => {
-    console.warn('[default_warn]', ...args);
-  },
-  debug: (_message?: unknown, ...args: unknown[]) => {
-    console.debug('[default_debug]', ...args);
-  },
-  error: (_message?: unknown, ...args: unknown[]) => {
-    console.error('[default_error]', ...args);
-  },
-};
+export const log = getLogger('oclif:hd');
 
-export const initOclifLog = (
-  info: (message?: unknown, ...args: unknown[]) => void,
-  warn: (message?: unknown, ...args: unknown[]) => void,
-  debug: (message?: unknown, ...args: unknown[]) => void,
-  error: (message?: unknown, ...args: unknown[]) => void,
-) => {
-  log.info = info;
-  log.warn = warn;
-  log.debug = debug;
-  log.error = error;
-};
+// Function to update the logger with command context
+export function updateLogger(context: {
+  log: (message: string) => void;
+  warn: (message: string) => void;
+  debug: (message: string) => void;
+  error: (message: string | Error) => void;
+}) {
+  // Create wrapper functions that handle both string messages and format strings
+  log.info = (formatter: unknown, ...args: unknown[]) => {
+    if (typeof formatter === 'string') {
+      context.log(formatter);
+    } else {
+      context.log(String(formatter));
+    }
+  };
+
+  log.warn = (formatter: unknown, ...args: unknown[]) => {
+    if (typeof formatter === 'string') {
+      context.warn(formatter);
+    } else {
+      context.warn(String(formatter));
+    }
+  };
+
+  log.debug = (formatter: unknown, ...args: unknown[]) => {
+    if (typeof formatter === 'string') {
+      context.debug(formatter);
+    } else {
+      context.debug(String(formatter));
+    }
+  };
+
+  log.error = (formatter: unknown, ...args: unknown[]) => {
+    if (typeof formatter === 'string' || formatter instanceof Error) {
+      context.error(formatter);
+    } else {
+      context.error(String(formatter));
+    }
+  };
+}
