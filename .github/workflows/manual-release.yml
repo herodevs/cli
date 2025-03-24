@@ -4,10 +4,6 @@ run-name: Release ${{ github.ref_name }} (pushed by ${{ github.actor }})${{ inpu
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to release'
-        type: string
-        required: true
       channel:
         description: 'NPM tag to publish to'
         type: choice
@@ -39,12 +35,13 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm test
-      - name: Set version
-        run: npm version ${{ inputs.version }} --no-git-tag-version
+      - name: Get version
+        id: version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
       - name: Create and push git tag
         run: |
-          git tag -a "v${{ inputs.version }}" -m "Release v${{ inputs.version }}"
-          git push origin "v${{ inputs.version }}"
+          git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
+          git push origin "v${{ steps.version.outputs.version }}"
       - name: Create NPM release
         run: npm publish --tag ${{ inputs.channel }} --provenance --access public ${{ inputs.dry-run == true && '--dry-run' || '' }}
         env:
