@@ -3,7 +3,6 @@ import { Command, Flags, ux } from '@oclif/core';
 import type { ScanResult } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
-import { log } from '../../service/log.svc.ts';
 import { promptComponentDetails } from '../../ui/eol.ui.ts';
 import SbomScan from './sbom.ts';
 
@@ -58,12 +57,12 @@ export default class ScanEol extends Command {
 
     const lines = await prepareRows(purls, scan);
     if (lines?.length === 0) {
-      log.info('No dependencies found');
+      this.log('No dependencies found');
       return { components: [] };
     }
 
     const r = await promptComponentDetails(lines);
-    log.info('What now %o', r);
+    this.log('What now %o', r);
 
     return scan;
   }
@@ -74,13 +73,13 @@ export default class ScanEol extends Command {
     const [major] = version.split('.').map(Number);
 
     if (version.includes('beta') || major < 1) {
-      log.info(`VERSION=${version}`);
+      this.log(`VERSION=${version}`);
       throw new Error('The EOL scan feature is not available in beta releases. Please wait for the stable release.');
     }
     // Just in case the beta check fails
     if (override) {
-      log.info(`VERSION=${version}`);
-      log.info('EOL scan is disabled');
+      this.log(`VERSION=${version}`);
+      this.log('EOL scan is disabled');
       return { components: [] };
     }
   }
