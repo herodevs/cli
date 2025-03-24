@@ -42,18 +42,12 @@ export default class ReportPurls extends Command {
     const { flags } = await this.parse(ReportPurls);
     const { dir: _dirFlag, file: _fileFlag, save, csv } = flags;
 
-    // If --json is used with --csv, return error object
-    if (this.jsonEnabled() && csv) {
-      this.error(new Error('--csv flag is ignored when using --json'));
-    }
-
-    // Load the SBOM: Only pass the file, dir, and save flags to SbomScan
     const sbomArgs = SbomScan.getSbomArgs(flags);
     const sbomCommand = new SbomScan(sbomArgs, this.config);
     const sbom: Sbom = await sbomCommand.run();
 
-    // Extract purls from SBOM
     const purls = await extractPurls(sbom);
+    log.info('Extracted %d purls from SBOM', purls.length);
 
     ux.action.stop('Scan completed');
 
@@ -65,21 +59,22 @@ export default class ReportPurls extends Command {
     // Save if requested
     if (save) {
       try {
-        const outputPath = path.join(_dirFlag || process.cwd(), `nes.purls.${csv ? 'csv' : 'json'}`);
-        const purlOutput = getPurlOutput(purls, csv ? 'csv' : 'json');
+        const outputFile = csv && !this.jsonEnabled() ? 'csv' : 'json';
+        const outputPath = path.join(_dirFlag || process.cwd(), `nes.purls.${outputFile}`);
+        const purlOutput = getPurlOutput(purls, outputFile);
         fs.writeFileSync(outputPath, purlOutput);
 
         log.info(`\nPurls saved to ${outputPath}`);
       } catch (error: unknown) {
         const errorMessage = error && typeof error === 'object' && 'message' in error ? error.message : 'Unknown error';
-        if (this.jsonEnabled()) {
-          this.error(`Failed to save purls: ${errorMessage}`);
-        }
+
         log.warn(`Failed to save purls: ${errorMessage}`);
       }
     }
 
-    // Return wrapped object
-    return { purls };
+    // Return wrapped object with metadata
+    return {
+      purls,
+    };
   }
 }

@@ -62,7 +62,7 @@ export default class Committers extends Command {
         log.info(formattedOutput);
       }
     } catch (error) {
-      this.error(`Failed to generate report: ${(error as Error).message}`);
+      log.error(`Failed to generate report: ${(error as Error).message}`);
     }
   }
 
@@ -122,8 +122,8 @@ export default class Committers extends Command {
 
       return parseGitLogOutput(logProcess.stdout);
     } catch (error) {
-      this.error(`Failed to fetch git data: ${(error as Error).message}`);
-      return []; // This line won't execute due to this.error() above
+      log.error(`Failed to fetch git data: ${(error as Error).message}`);
+      return []; // This line won't execute due to log.error() above
     }
   }
 }
