@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.0-beta.0](https://github.com/herodevs/cli/compare/v1.0.0-beta.0...v1.1.0-beta.0) (2025-03-24)
+## [1.1.0-beta.1](https://github.com/herodevs/cli/compare/v1.0.0-beta.0...v1.1.0-beta.0) (2025-03-24)
 
 
 ### Features
