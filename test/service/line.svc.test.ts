@@ -1,7 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import type { ScanResultComponent } from '../../src/api/types/nes.types.ts';
-import { daysBetween, formatLine, getMessageAndStatus, getStatusFromComponent } from '../../src/service/line.svc.ts';
+import { daysBetween, formatLine, getMessageAndStatus } from '../../src/service/line.svc.ts';
 import type { Line } from '../../src/service/line.svc.ts';
 
 describe('line', () => {
@@ -45,57 +44,6 @@ describe('line', () => {
 
     it('should throw on unknown status', () => {
       assert.throws(() => getMessageAndStatus('INVALID', null), /Unknown status: INVALID/);
-    });
-  });
-
-  describe('getStatusFromComponent', () => {
-    const baseComponent: ScanResultComponent = {
-      purl: 'pkg:npm/test@1.0.0',
-      info: {
-        eolAt: null,
-        isEol: false,
-        isUnsafe: false,
-      },
-    };
-
-    it('should use component status if provided', () => {
-      const component = { ...baseComponent, status: 'LTS' as const };
-      assert.equal(getStatusFromComponent(component, -30), 'LTS');
-    });
-
-    it('should throw if isEol is true but status is not EOL', () => {
-      const component = {
-        ...baseComponent,
-        status: 'OK' as const,
-        info: { ...baseComponent.info, isEol: true },
-      };
-      assert.throws(() => getStatusFromComponent(component, null), /isEol is true but status is not EOL/);
-    });
-
-    describe('when status is not provided', () => {
-      it('should return EOL if daysEol is null and isEol is true', () => {
-        const component = {
-          ...baseComponent,
-          info: { ...baseComponent.info, isEol: true },
-        };
-        assert.equal(getStatusFromComponent(component, null), 'EOL');
-      });
-
-      it('should return OK if daysEol is null and isEol is false', () => {
-        const component = { ...baseComponent };
-        assert.equal(getStatusFromComponent(component, null), 'OK');
-      });
-
-      it('should return LTS if daysEol is zero or negative (future/today)', () => {
-        const component = { ...baseComponent };
-        assert.equal(getStatusFromComponent(component, 0), 'LTS');
-        assert.equal(getStatusFromComponent(component, -30), 'LTS');
-      });
-
-      it('should return EOL if daysEol is positive (past date)', () => {
-        const component = { ...baseComponent };
-        assert.equal(getStatusFromComponent(component, 30), 'EOL');
-      });
     });
   });
 

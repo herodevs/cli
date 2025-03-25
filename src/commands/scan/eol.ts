@@ -1,6 +1,6 @@
 import { Command, Flags, ux } from '@oclif/core';
 
-import type { ScanResult } from '../../api/types/nes.types.ts';
+import { type ScanResult, VALID_STATUSES } from '../../api/types/nes.types.ts';
 import { prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
 import { promptComponentDetails } from '../../ui/eol.ui.ts';
 import SbomScan from './sbom.ts';
@@ -11,6 +11,7 @@ export default class ScanEol extends Command {
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
     '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
+    '<%= config.bin %> <%= command.id %> -w EOL,UNKNOWN --dir=./my-project',
   ];
   static override flags = {
     file: Flags.string({
@@ -26,13 +27,23 @@ export default class ScanEol extends Command {
       default: false,
       description: 'Save the generated SBOM as nes.sbom.json in the scanned directory',
     }),
+    withStatus: Flags.string({
+      char: 'w',
+      description: `Show components with specific statuses (comma-separated). Valid values: ${VALID_STATUSES.join(
+        ', ',
+      )}`,
+      options: VALID_STATUSES,
+      multiple: true,
+      delimiter: ',',
+      default: ['EOL'],
+    }),
   };
 
   public async run(): Promise<ScanResult | { components: [] }> {
     this.checkEolScanDisabled();
 
     const { flags } = await this.parse(ScanEol);
-    const { dir: _dirFlag, file: _fileFlag } = flags;
+    const { dir: _dirFlag, file: _fileFlag, withStatus } = flags;
 
     // Load the SBOM: Only pass the file, dir, and save flags to SbomScan
     const sbomArgs = SbomScan.getSbomArgs(flags);
@@ -56,7 +67,7 @@ export default class ScanEol extends Command {
       throw new Error('Scan failed to generate components.');
     }
 
-    const lines = await prepareRows(purls, scan);
+    const lines = await prepareRows(purls, scan, withStatus);
     if (lines?.length === 0) {
       this.log('No dependencies found');
       return { components: [] };

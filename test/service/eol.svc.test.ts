@@ -18,8 +18,7 @@ describe('eol.svc', () => {
         const scan = createMockScan([createMockComponent(purl, 'EOL')]);
 
         // Act
-        process.env.SHOW_OK = 'true';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL', 'OK']);
 
         // Assert
         assert.equal(rows.length, 1);
@@ -32,8 +31,7 @@ describe('eol.svc', () => {
         const scan = createMockScan([createMockComponent(purl, 'EOL', new Date())]);
 
         // Act
-        process.env.SHOW_OK = 'true';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL', 'OK']);
 
         // Assert
         assert.equal(rows.length, 1);
@@ -47,8 +45,7 @@ describe('eol.svc', () => {
         const scan = createMockScan([component]);
 
         // Act
-        process.env.SHOW_OK = 'true';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL', 'OK']);
 
         // Assert
         assert.equal(rows.length, 1);
@@ -63,8 +60,7 @@ describe('eol.svc', () => {
         const scan = createMockScan([component]);
 
         // Act
-        process.env.SHOW_OK = 'true';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL', 'OK']);
 
         // Assert
         assert.equal(rows.length, 1);
@@ -76,16 +72,16 @@ describe('eol.svc', () => {
         // Arrange
         const purl = 'pkg:npm/test@1.0.0';
         const eolDate = new Date();
-        eolDate.setDate(eolDate.getDate() - 30); // 30 days ago
-        const scan = createMockScan([createMockComponent(purl, 'EOL', eolDate)]);
+        eolDate.setDate(eolDate.getDate() - 30);
+        const component = createMockComponent(purl, 'EOL', eolDate, 30);
+        const scan = createMockScan([component]);
 
         // Act
-        process.env.SHOW_OK = 'true';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL', 'OK']);
 
         // Assert
         assert.equal(rows.length, 1);
-        assert.equal(rows[0].daysEol, 30);
+        assert.equal(rows[0].daysEol, component.info.daysEol);
       });
     });
 
@@ -96,8 +92,7 @@ describe('eol.svc', () => {
         const scan = createMockScan([createMockComponent(purl)]);
 
         // Act
-        process.env.SHOW_OK = 'false';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL']);
 
         // Assert
         assert.equal(rows.length, 0);
@@ -109,8 +104,7 @@ describe('eol.svc', () => {
         const scan = createMockScan([createMockComponent(purl, 'OK')]);
 
         // Act
-        process.env.SHOW_OK = 'false';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL']);
 
         // Assert
         assert.equal(rows.length, 0);
@@ -122,8 +116,7 @@ describe('eol.svc', () => {
         const scan = createMockScan([createMockComponent(purl, 'EOL', new Date())]);
 
         // Act
-        process.env.SHOW_OK = 'false';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL']);
 
         // Assert
         assert.equal(rows.length, 1);
@@ -136,8 +129,7 @@ describe('eol.svc', () => {
         const scan = createMockScan([createMockComponent('pkg:npm/other@1.0.0')]);
 
         // Act
-        process.env.SHOW_OK = 'false';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL']);
 
         // Assert
         assert.equal(rows.length, 0);
@@ -149,8 +141,7 @@ describe('eol.svc', () => {
         const scan = createMockScan([]);
 
         // Act
-        process.env.SHOW_OK = 'false';
-        const rows = await prepareRows([purl], scan);
+        const rows = await prepareRows([purl], scan, ['EOL']);
 
         // Assert
         assert.equal(rows.length, 0);

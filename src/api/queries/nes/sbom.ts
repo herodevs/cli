@@ -12,6 +12,8 @@ export const M_SCAN = {
                 isEol
                 isUnsafe
                 eolAt
+                daysEol
+                status
               }
             } 
             diagnostics
@@ -21,6 +23,9 @@ export const M_SCAN = {
             warnings {
               purl
               type
+              message
+              error
+              diagnostics
             }
           }
         }

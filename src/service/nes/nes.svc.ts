@@ -13,10 +13,12 @@ export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
   for (const c of scan.components) {
     components.set(c.purl, c);
   }
+
   return {
     components,
     message: scan.message,
     success: true,
+    warnings: scan.warnings || [],
   };
 };
 
