@@ -1,7 +1,6 @@
 import { Command, Flags, ux } from '@oclif/core';
 
 import type { ScanResult } from '../../api/types/nes.types.ts';
-import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
 import { promptComponentDetails } from '../../ui/eol.ui.ts';
 import SbomScan from './sbom.ts';
@@ -38,8 +37,10 @@ export default class ScanEol extends Command {
     // Load the SBOM: Only pass the file, dir, and save flags to SbomScan
     const sbomArgs = SbomScan.getSbomArgs(flags);
     const sbomCommand = new SbomScan(sbomArgs, this.config);
-    const sbom: Sbom = await sbomCommand.run();
-
+    const sbom = await sbomCommand.run();
+    if (!sbom) {
+      throw new Error('SBOM not generated');
+    }
     // Scan the SBOM for EOL information
     const { purls, scan } = await scanForEol(sbom);
 

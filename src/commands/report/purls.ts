@@ -43,8 +43,10 @@ export default class ReportPurls extends Command {
 
     const sbomArgs = SbomScan.getSbomArgs(flags);
     const sbomCommand = new SbomScan(sbomArgs, this.config);
-    const sbom: Sbom = await sbomCommand.run();
-
+    const sbom = await sbomCommand.run();
+    if (!sbom) {
+      throw new Error('SBOM not generated');
+    }
     const purls = await extractPurls(sbom);
     this.log('Extracted %d purls from SBOM', purls.length);
 

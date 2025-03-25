@@ -16,7 +16,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/1.0.0-beta.2 darwin-arm64 node-v22.14.0
+@herodevs/cli/1.0.0-beta.2 darwin-arm64 node-v22.13.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -449,9 +449,10 @@ Scan a SBOM for purls
 
 ```
 USAGE
-  $ hd scan sbom [--json] [-f <value>] [-d <value>] [-s]
+  $ hd scan sbom [--json] [-f <value>] [-d <value>] [-s] [-b]
 
 FLAGS
+  -b, --background    Run the scan in the background
   -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
   -s, --save          Save the generated SBOM as nes.sbom.json in the scanned directory
