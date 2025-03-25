@@ -1,7 +1,7 @@
-import path from 'node:path';
-import { Command, Flags, ux } from '@oclif/core';
-
+import { spawn } from 'node:child_process';
 import fs from 'node:fs';
+import { join, resolve } from 'node:path';
+import { Command, Flags, ux } from '@oclif/core';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
 
@@ -26,10 +26,15 @@ export default class ScanSbom extends Command {
       default: false,
       description: 'Save the generated SBOM as nes.sbom.json in the scanned directory',
     }),
+    background: Flags.boolean({
+      char: 'b',
+      default: false,
+      description: 'Run the scan in the background',
+    }),
   };
 
   static getSbomArgs(flags: Record<string, string>): string[] {
-    const { dir, file, save, json } = flags ?? {};
+    const { dir, file, save, json, background } = flags ?? {};
 
     const sbomArgs = [];
 
@@ -37,6 +42,7 @@ export default class ScanSbom extends Command {
     if (dir) sbomArgs.push('--dir', dir);
     if (save) sbomArgs.push('--save');
     if (json) sbomArgs.push('--json');
+    if (background) sbomArgs.push('--background');
 
     return sbomArgs;
   }
@@ -46,24 +52,26 @@ export default class ScanSbom extends Command {
     return {};
   }
 
-  public async run(): Promise<Sbom> {
+  public async run(): Promise<Sbom | undefined> {
     const { flags } = await this.parse(ScanSbom);
-    const { dir: _dirFlag, save, file: _fileFlag } = flags;
+    const { dir, save, file, background } = flags;
 
     // Validate that exactly one of --file or --dir is provided
-    if (_fileFlag && _dirFlag) {
+    if (file && dir) {
       throw new Error('Cannot specify both --file and --dir flags. Please use one or the other.');
     }
-
     let sbom: Sbom;
-
-    if (_fileFlag) {
-      sbom = this._getSbomFromFile(_fileFlag);
+    const path = dir || process.cwd();
+    if (file) {
+      sbom = this._getSbomFromFile(file);
+    } else if (background) {
+      this._getSbomInBackground(path);
+      this.log(`The scan is running in the background. The file will be saved at ${path}/nes.sbom.json`);
+      return;
     } else {
-      const _dir = _dirFlag || process.cwd();
-      sbom = await this._getSbomFromScan(_dir);
+      sbom = await this._getSbomFromScan(path);
       if (save) {
-        this._saveSbom(_dir, sbom);
+        this._saveSbom(path, sbom);
       }
     }
 
@@ -71,7 +79,7 @@ export default class ScanSbom extends Command {
   }
 
   private async _getSbomFromScan(_dirFlag: string): Promise<Sbom> {
-    const dir = path.resolve(_dirFlag);
+    const dir = resolve(_dirFlag);
     if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
       throw new Error(`Directory not found or not a directory: ${dir}`);
     }
@@ -86,8 +94,26 @@ export default class ScanSbom extends Command {
     return sbom;
   }
 
+  private _getSbomInBackground(path: string): void {
+    const opts = this.getScanOptions();
+    const args = [
+      JSON.stringify({
+        opts,
+        path,
+      }),
+    ];
+
+    const workerProcess = spawn('node', [join(import.meta.dirname, '../../service/eol/sbom.worker.js'), ...args], {
+      stdio: 'ignore',
+      detached: true,
+      env: { ...process.env },
+    });
+
+    workerProcess.unref();
+  }
+
   private _getSbomFromFile(_fileFlag: string): Sbom {
-    const file = path.resolve(_fileFlag);
+    const file = resolve(_fileFlag);
     if (!fs.existsSync(file)) {
       throw new Error(`SBOM file not found: ${file}`);
     }
@@ -110,7 +136,7 @@ export default class ScanSbom extends Command {
 
   private _saveSbom(dir: string, sbom: Sbom) {
     try {
-      const outputPath = path.join(dir, 'nes.sbom.json');
+      const outputPath = join(dir, 'nes.sbom.json');
       fs.writeFileSync(outputPath, JSON.stringify(sbom, null, 2));
       if (!this.jsonEnabled()) {
         this.log(`SBOM saved to ${outputPath}`);
