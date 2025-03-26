@@ -17,7 +17,7 @@ export interface ScanResponseReport {
 }
 
 export const VALID_STATUSES = ['UNKNOWN', 'OK', 'EOL', 'LTS'] as const;
-export type ComponentStatus = 'EOL' | 'LTS' | 'OK' | 'UNKNOWN';
+export type ComponentStatus = (typeof VALID_STATUSES)[number];
 
 export interface ScanResultComponent {
   info: {
