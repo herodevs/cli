@@ -13,18 +13,29 @@ export interface ScanResponseReport {
   diagnostics?: Record<string, unknown>;
   message: string;
   success: boolean;
+  warnings?: ScanWarning[];
 }
 
-export type ComponentStatus = 'EOL' | 'LTS' | 'OK';
+export const VALID_STATUSES = ['UNKNOWN', 'OK', 'EOL', 'LTS'] as const;
+export type ComponentStatus = (typeof VALID_STATUSES)[number];
 
 export interface ScanResultComponent {
   info: {
     eolAt: Date | null;
     isEol: boolean;
+    daysEol: number | null;
     isUnsafe: boolean;
+    status: ComponentStatus;
   };
   purl: string;
-  status?: ComponentStatus;
+}
+
+export interface ScanWarning {
+  purl: string;
+  message: string;
+  type?: string;
+  error?: unknown;
+  diagnostics?: Record<string, unknown>;
 }
 
 export interface ScanResult {
@@ -32,4 +43,5 @@ export interface ScanResult {
   diagnostics?: Record<string, unknown>;
   message: string;
   success: boolean;
+  warnings: ScanWarning[];
 }

@@ -1,7 +1,6 @@
 import { NesApolloClient } from '../../api/nes/nes.client.ts';
-import type { ComponentStatus, ScanResult } from '../../api/types/nes.types.ts';
+import type { ScanResult } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
-import { getDaysEolFromEolAt, getStatusFromComponent } from '../line.svc.ts';
 import type { Line } from '../line.svc.ts';
 import { extractPurls } from '../purls.svc.ts';
 import { type Sbom, createBomFromDir } from './cdx.svc.ts';
@@ -72,17 +71,15 @@ export async function submitScan(purls: string[]): Promise<ScanResult> {
  * The idea being that each row can easily be used for
  * processing and/or rendering.
  */
-export async function prepareRows(purls: string[], scan: ScanResult): Promise<Line[]> {
+export async function prepareRows(purls: string[], scan: ScanResult, withStatus: string[]): Promise<Line[]> {
   const lines: Line[] = [];
 
   for (const purl of purls) {
     const details = scan.components.get(purl);
 
     if (!details) {
-      // In this case, the purl string is in the generated sbom, but the NES/XEOL api has no data
-      // TODO: add UNKNOWN Component Status, create new line, and create flag to show/hide unknown results
-      debugLogger(`Unknown status: ${purl}.`);
-      continue;
+      // The api should create a default component with status UNKNOWN even if the purl is not found
+      throw new Error(`API failed to return details for: ${purl}.`);
     }
 
     const { info } = details;
@@ -92,21 +89,16 @@ export async function prepareRows(purls: string[], scan: ScanResult): Promise<Li
       info.eolAt = new Date(info.eolAt);
     }
 
-    const daysEol: number | null = getDaysEolFromEolAt(info.eolAt);
-
-    const status: ComponentStatus = getStatusFromComponent(details, daysEol);
-
-    const showOk = process.env.SHOW_OK === 'true';
-
-    if (!showOk && status === 'OK') {
+    if (!withStatus.includes(details.info.status)) {
+      debugLogger('Skipping', details.info.status, 'withStatus', withStatus);
       continue;
     }
 
     lines.push({
-      daysEol,
+      daysEol: details.info.daysEol,
       info,
       purl,
-      status,
+      status: details.info.status,
     });
   }
 
