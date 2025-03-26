@@ -5,13 +5,14 @@
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
-    "target": "ESNext",
+    "lib": ["ES2022"],
+    "target": "ES2022",
     "erasableSyntaxOnly": true,
     "rewriteRelativeImportExtensions": true,
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "types/**/*.d.ts"],
+  "include": ["src/**/*"],
   "exclude": ["src/**/*.test.ts", "src/**/*.spec.ts", "test/**/*"]
 }

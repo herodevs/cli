@@ -2,15 +2,17 @@ import { fail, ok, strictEqual } from 'node:assert';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { runCommand } from '@oclif/test';
 import * as sinon from 'sinon';
 
-import type { ScanResponseReport, ScanResult } from '../../../src/api/types/nes.types.ts';
-import { default as SbomScan } from '../../../src/commands/scan/sbom.ts';
-import { type Sbom, cdxgen, prepareRows } from '../../../src/service/eol/eol.svc.ts';
-import type { CdxCreator } from '../../../src/service/eol/eol.svc.ts';
-import { buildScanResult } from '../../../src/service/nes/nes.svc.ts';
-import { extractPurls } from '../../../src/service/purls.svc.ts';
+import type { ScanResponseReport, ScanResult } from '../../../dist/api/types/nes.types.js';
+import { default as SbomScan } from '../../../dist/commands/scan/sbom.js';
+import type { Sbom } from '../../../dist/service/eol/cdx.svc.js';
+import { cdxgen, prepareRows } from '../../../dist/service/eol/eol.svc.js';
+import type { CdxCreator } from '../../../dist/service/eol/eol.svc.js';
+import { buildScanResult } from '../../../dist/service/nes/nes.svc.js';
+import { extractPurls } from '../../../dist/service/purls.svc.js';
 import { FetchMock } from '../../utils/mocks/fetch.mock.ts';
 import { InquirerMock } from '../../utils/mocks/ui.mock.ts';
 
@@ -25,7 +27,8 @@ describe('scan:eol', () => {
     process.env.GRAPHQL_HOST = 'http://localhost:3000';
 
     // mock cdxgen because it's slow AF
-    const example = path.resolve(import.meta.dirname, 'bom.json');
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const example = path.resolve(__dirname, 'bom.json');
     bomJson = JSON.parse(await fs.readFile(example, 'utf8'));
     cdxgen.createBom = (() => Promise.resolve({ bomJson })) as CdxCreator;
   });

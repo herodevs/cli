@@ -41,7 +41,7 @@ export class ApolloClient implements ApolloHelper {
         variables,
       })
       .catch((error) => {
-        throw new ApolloError('Failed GQL Mutation', error);
+        throw new ApolloError('Failed GQL Mutation');
       });
   }
 
@@ -52,7 +52,7 @@ export class ApolloClient implements ApolloHelper {
         variables,
       })
       .catch((error) => {
-        throw new ApolloError('Failed GQL Query', error);
+        throw new ApolloError('Failed GQL Query');
       });
   }
 }

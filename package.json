@@ -26,7 +26,7 @@
     "prepack": "oclif manifest && oclif readme",
     "pretest": "npm run lint && npm run typecheck",
     "readme": "npm run ci:fix && npm run build && npm exec oclif readme",
-    "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test \"test/**/*.test.ts\"",
+    "test": "globstar -- node --import tsx --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "version": "oclif readme && git add README.md"
   },
@@ -50,10 +50,12 @@
     "@types/inquirer": "^9.0.7",
     "@types/node": "^22",
     "@types/sinon": "^17.0.4",
+    "globstar": "^1.0.0",
     "oclif": "^4",
     "shx": "^0.3.3",
     "sinon": "^19.0.2",
     "ts-node": "^10",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.0"
   },
   "engines": {

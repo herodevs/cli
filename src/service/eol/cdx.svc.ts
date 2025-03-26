@@ -91,6 +91,7 @@ export async function getCdxGen() {
   const ogEnv = process.env.NODE_ENV;
   process.env.NODE_ENV = undefined;
   try {
+    // @ts-expect-error
     cdxgen.createBom = (await import('@cyclonedx/cdxgen')).createBom;
   } finally {
     process.env.NODE_ENV = ogEnv;
