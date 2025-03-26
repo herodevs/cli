@@ -4,6 +4,7 @@ import { join, resolve } from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
+import { getErrorMessage } from '../../service/error.svc.ts';
 
 export default class ScanSbom extends Command {
   static override description = 'Scan a SBOM for purls';
@@ -58,7 +59,7 @@ export default class ScanSbom extends Command {
 
     // Validate that exactly one of --file or --dir is provided
     if (file && dir) {
-      throw new Error('Cannot specify both --file and --dir flags. Please use one or the other.');
+      this.error('Cannot specify both --file and --dir flags. Please use one or the other.');
     }
     let sbom: Sbom;
     const path = dir || process.cwd();
@@ -80,28 +81,37 @@ export default class ScanSbom extends Command {
 
   private async _getSbomFromScan(_dirFlag: string): Promise<Sbom> {
     const dir = resolve(_dirFlag);
-    if (!fs.existsSync(dir) || !fs.statSync(dir).isDirectory()) {
-      throw new Error(`Directory not found or not a directory: ${dir}`);
-    }
+    try {
+      if (!fs.existsSync(dir)) {
+        this.error(`Directory not found: ${dir}`);
+      }
+      const stats = fs.statSync(dir);
+      if (!stats.isDirectory()) {
+        this.error(`Path is not a directory: ${dir}`);
+      }
 
-    ux.action.start(`Scanning ${dir}`);
+      ux.action.start(`Scanning ${dir}`);
 
-    const options = this.getScanOptions();
-    const sbom = await createSbom(dir, options);
-    if (!sbom) {
-      throw new Error(`SBOM failed to generate for dir: ${dir}`);
+      const options = this.getScanOptions();
+      const sbom = await createSbom(dir, options);
+      if (!sbom) {
+        this.error(`SBOM failed to generate for dir: ${dir}`);
+      }
+      return sbom;
+    } catch (error) {
+      this.error(`Failed to scan directory: ${getErrorMessage(error)}`);
     }
-    return sbom;
   }
 
   private _getSbomInBackground(path: string): void {
-    const opts = this.getScanOptions();
-    const args = [
-      JSON.stringify({
-        opts,
-        path,
-      }),
-    ];
+    try {
+      const opts = this.getScanOptions();
+      const args = [
+        JSON.stringify({
+          opts,
+          path,
+        }),
+      ];
 
     const workerProcess = spawn('node', [join(import.meta.url, '../../service/eol/sbom.worker.js'), ...args], {
       stdio: 'ignore',
@@ -109,18 +119,21 @@ export default class ScanSbom extends Command {
       env: { ...process.env },
     });
 
-    workerProcess.unref();
+      workerProcess.unref();
+    } catch (error) {
+      this.error(`Failed to start background scan: ${getErrorMessage(error)}`);
+    }
   }
 
   private _getSbomFromFile(_fileFlag: string): Sbom {
     const file = resolve(_fileFlag);
-    if (!fs.existsSync(file)) {
-      throw new Error(`SBOM file not found: ${file}`);
-    }
-
-    ux.action.start(`Loading sbom from ${file}`);
-
     try {
+      if (!fs.existsSync(file)) {
+        this.error(`SBOM file not found: ${file}`);
+      }
+
+      ux.action.start(`Loading sbom from ${file}`);
+
       const fileContent = fs.readFileSync(file, {
         encoding: 'utf8',
         flag: 'r',
@@ -128,9 +141,8 @@ export default class ScanSbom extends Command {
       const sbom = JSON.parse(fileContent) as Sbom;
       validateIsCycloneDxSbom(sbom);
       return sbom;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to read or parse SBOM file: ${errorMessage}`);
+    } catch (error) {
+      this.error(`Failed to read SBOM file: ${getErrorMessage(error)}`);
     }
   }
 
@@ -141,9 +153,8 @@ export default class ScanSbom extends Command {
       if (!this.jsonEnabled()) {
         this.log(`SBOM saved to ${outputPath}`);
       }
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      this.warn(`Failed to save SBOM: ${errorMessage}`);
+    } catch (error) {
+      this.error(`Failed to save SBOM: ${getErrorMessage(error)}`);
     }
   }
 }

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 
-import type { Sbom } from '../../service/eol/cdx.svc.ts';
+import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, getPurlOutput } from '../../service/purls.svc.ts';
 import SbomScan from '../scan/sbom.ts';
 
@@ -41,41 +41,58 @@ export default class ReportPurls extends Command {
     const { flags } = await this.parse(ReportPurls);
     const { dir: _dirFlag, file: _fileFlag, save, csv } = flags;
 
-    const sbomArgs = SbomScan.getSbomArgs(flags);
-    const sbomCommand = new SbomScan(sbomArgs, this.config);
-    const sbom = await sbomCommand.run();
-    if (!sbom) {
-      throw new Error('SBOM not generated');
-    }
-    const purls = await extractPurls(sbom);
-    this.log('Extracted %d purls from SBOM', purls.length);
-
-    ux.action.stop('Scan completed');
-
-    // Print the purls
-    for (const purl of purls) {
-      this.log(purl);
-    }
-
-    // Save if requested
-    if (save) {
-      try {
-        const outputFile = csv && !this.jsonEnabled() ? 'csv' : 'json';
-        const outputPath = path.join(_dirFlag || process.cwd(), `nes.purls.${outputFile}`);
-        const purlOutput = getPurlOutput(purls, outputFile);
-        fs.writeFileSync(outputPath, purlOutput);
-
-        this.log('Purls saved to %s', outputPath);
-      } catch (error: unknown) {
-        const errorMessage = error && typeof error === 'object' && 'message' in error ? error.message : 'Unknown error';
-
-        this.warn(`Failed to save purls: ${errorMessage}`);
+    try {
+      const sbomArgs = SbomScan.getSbomArgs(flags);
+      const sbomCommand = new SbomScan(sbomArgs, this.config);
+      const sbom = await sbomCommand.run();
+      if (!sbom) {
+        throw new Error('SBOM not generated');
       }
-    }
+      const purls = await extractPurls(sbom);
+      this.log('Extracted %d purls from SBOM', purls.length);
 
-    // Return wrapped object with metadata
-    return {
-      purls,
-    };
+      ux.action.stop('Scan completed');
+
+      // Print the purls
+      for (const purl of purls) {
+        this.log(purl);
+      }
+
+      // Save if requested
+      if (save) {
+        try {
+          const outputFile = csv && !this.jsonEnabled() ? 'csv' : 'json';
+          const outputPath = path.join(_dirFlag || process.cwd(), `nes.purls.${outputFile}`);
+          const purlOutput = getPurlOutput(purls, outputFile);
+          fs.writeFileSync(outputPath, purlOutput);
+
+          this.log('Purls saved to %s', outputPath);
+        } catch (error: unknown) {
+          if (isErrnoException(error)) {
+            switch (error.code) {
+              case 'EACCES':
+                this.error('Permission denied: Cannot write to output file');
+                break;
+              case 'ENOSPC':
+                this.error('No space left on device');
+                break;
+              case 'EISDIR':
+                this.error('Cannot write to output file: Is a directory');
+                break;
+              default:
+                this.error(`Failed to save purls: ${getErrorMessage(error)}`);
+            }
+          }
+          this.error(`Failed to save purls: ${getErrorMessage(error)}`);
+        }
+      }
+
+      // Return wrapped object with metadata
+      return {
+        purls,
+      };
+    } catch (error) {
+      this.error(`Failed to generate PURLs: ${getErrorMessage(error)}`);
+    }
   }
 }

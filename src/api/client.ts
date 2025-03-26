@@ -1,4 +1,5 @@
 import * as apollo from '@apollo/client/core/index.js';
+import { ApolloError } from '../service/error.svc.ts';
 
 export interface ApolloHelper {
   mutate<T, V extends apollo.OperationVariables>(
@@ -26,7 +27,6 @@ export const createApollo = (url: string) =>
     ]),
   });
 
-export class ApolloError extends Error {}
 export class ApolloClient implements ApolloHelper {
   #apollo: apollo.ApolloClient<apollo.NormalizedCacheObject>;
 
@@ -35,24 +35,24 @@ export class ApolloClient implements ApolloHelper {
   }
 
   async mutate<T, V extends apollo.OperationVariables>(mutation: apollo.DocumentNode, variables?: V) {
-    return this.#apollo
-      .mutate<T, V>({
+    try {
+      return await this.#apollo.mutate<T, V>({
         mutation,
         variables,
-      })
-      .catch((error) => {
-        throw new ApolloError('Failed GQL Mutation');
       });
+    } catch (error: unknown) {
+      throw new ApolloError('GraphQL mutation failed', error);
+    }
   }
 
   async query<T, V extends apollo.OperationVariables | undefined>(query: apollo.DocumentNode, variables?: V) {
-    return this.#apollo
-      .query<T>({
+    try {
+      return await this.#apollo.query<T>({
         query,
         variables,
-      })
-      .catch((error) => {
-        throw new ApolloError('Failed GQL Query');
       });
+    } catch (error) {
+      throw new ApolloError('GraphQL query failed', error);
+    }
   }
 }
