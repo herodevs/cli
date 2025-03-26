@@ -113,11 +113,11 @@ export default class ScanSbom extends Command {
         }),
       ];
 
-    const workerProcess = spawn('node', [join(import.meta.url, '../../service/eol/sbom.worker.js'), ...args], {
-      stdio: 'ignore',
-      detached: true,
-      env: { ...process.env },
-    });
+      const workerProcess = spawn('node', [join(import.meta.url, '../../service/eol/sbom.worker.js'), ...args], {
+        stdio: 'ignore',
+        detached: true,
+        env: { ...process.env },
+      });
 
       workerProcess.unref();
     } catch (error) {
