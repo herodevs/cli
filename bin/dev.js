@@ -1,10 +1,7 @@
 #!/usr/bin/env node
 
+import { execute } from '@oclif/core';
+
 process.env.GRAPHQL_HOST = 'http://localhost:3000';
 
-async function run() {
-  const oclif = await import('@oclif/core');
-  await oclif.execute({ development: true, dir: import.meta.dirname });
-}
-
-run();
+await execute({ development: true, dir: import.meta.url });

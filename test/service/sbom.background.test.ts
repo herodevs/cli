@@ -3,7 +3,7 @@ import child_process from 'node:child_process';
 import { test } from 'node:test';
 import type { Config } from '@oclif/core';
 import sinon from 'sinon';
-import ScanSbom from '../../src/commands/scan/sbom.ts';
+import ScanSbom from '../../src/commands/scan/sbom.js';
 
 test('ScanSbom - Run scan in the background', async () => {
   const cmd = new ScanSbom([], {} as Config);

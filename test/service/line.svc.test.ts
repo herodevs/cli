@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { daysBetween, formatLine, getMessageAndStatus } from '../../src/service/line.svc.ts';
-import type { Line } from '../../src/service/line.svc.ts';
+import { daysBetween, formatLine, getMessageAndStatus } from '../../src/service/line.svc.js';
+import type { Line } from '../../src/service/line.svc.js';
 
 describe('line', () => {
   describe('daysBetween', () => {

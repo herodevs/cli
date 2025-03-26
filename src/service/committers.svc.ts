@@ -49,7 +49,17 @@ export function groupCommitsByMonth(entries: CommitEntry[]): MonthlyData {
   const result: MonthlyData = {};
 
   // Group commits by month
-  const commitsByMonth = Object.groupBy(entries, (entry) => entry.month);
+  const commitsByMonth = entries.reduce<Record<string, CommitEntry[]>>((acc, entry) => {
+    const monthKey = entry.month;
+
+    if (!acc[monthKey]) {
+      acc[monthKey] = [];
+    }
+
+    acc[monthKey].push(entry);
+
+    return acc;
+  }, {});
 
   // Process each month
   for (const [month, commits] of Object.entries(commitsByMonth)) {
@@ -59,7 +69,18 @@ export function groupCommitsByMonth(entries: CommitEntry[]): MonthlyData {
     }
 
     // Count commits per author for this month
-    const commitsByAuthor = Object.groupBy(commits, (entry) => entry.author);
+    const commitsByAuthor = commits.reduce<Record<string, CommitEntry[]>>((acc, entry) => {
+      const authorKey = entry.author;
+
+      if (!acc[authorKey]) {
+        acc[authorKey] = [];
+      }
+
+      acc[authorKey].push(entry);
+
+      return acc;
+    }, {});
+
     const authorCounts: AuthorCommitCounts = {};
 
     for (const [author, authorCommits] of Object.entries(commitsByAuthor)) {
@@ -78,7 +99,17 @@ export function groupCommitsByMonth(entries: CommitEntry[]): MonthlyData {
  * @returns Object with authors as keys and total commit counts as values
  */
 export function calculateOverallStats(entries: CommitEntry[]): AuthorCommitCounts {
-  const commitsByAuthor = Object.groupBy(entries, (entry) => entry.author);
+  const commitsByAuthor = entries.reduce<Record<string, CommitEntry[]>>((acc, entry) => {
+    const authorKey = entry.author;
+
+    if (!acc[authorKey]) {
+      acc[authorKey] = [];
+    }
+
+    acc[authorKey].push(entry);
+
+    return acc;
+  }, {});
   const result: AuthorCommitCounts = {};
 
   // Count commits for each author
