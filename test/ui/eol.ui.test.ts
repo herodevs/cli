@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { afterEach, beforeEach, describe, it } from 'node:test';
-import type { Line } from '../../dist/service/line.svc.js';
-import { promptComponentDetails } from '../../dist/ui/eol.ui.js';
+import type { Line } from '../../src/service/line.svc.js';
+import { promptComponentDetails } from '../../src/ui/eol.ui.js';
 import { InquirerMock } from '../utils/mocks/ui.mock.ts';
 
 describe('EOL UI', () => {

@@ -6,13 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { runCommand } from '@oclif/test';
 import * as sinon from 'sinon';
 
-import type { ScanResponseReport, ScanResult } from '../../../dist/api/types/nes.types.js';
-import { default as SbomScan } from '../../../dist/commands/scan/sbom.js';
-import type { Sbom } from '../../../dist/service/eol/cdx.svc.js';
-import { cdxgen, prepareRows } from '../../../dist/service/eol/eol.svc.js';
-import type { CdxCreator } from '../../../dist/service/eol/eol.svc.js';
-import { buildScanResult } from '../../../dist/service/nes/nes.svc.js';
-import { extractPurls } from '../../../dist/service/purls.svc.js';
+import type { ScanResponseReport, ScanResult } from '../../../src/api/types/nes.types.js';
+import { default as SbomScan } from '../../../src/commands/scan/sbom.js';
+import type { Sbom } from '../../../src/service/eol/cdx.svc.js';
+import { cdxgen, prepareRows } from '../../../src/service/eol/eol.svc.js';
+import type { CdxCreator } from '../../../src/service/eol/eol.svc.js';
+import { buildScanResult } from '../../../src/service/nes/nes.svc.js';
+import { extractPurls } from '../../../src/service/purls.svc.js';
 import { FetchMock } from '../../utils/mocks/fetch.mock.ts';
 import { InquirerMock } from '../../utils/mocks/ui.mock.ts';
 
@@ -40,7 +40,7 @@ describe('scan:eol', () => {
     if (!bomJson) fail('No bomJson');
     // TODO: rework this to not require all teh methods for testing
     // dev note: pretending to process the output of our mock, so it matches
-    const lines = await prepareRows(await extractPurls(bomJson), buildScanResult(mocked.simple));
+    const lines = await prepareRows(await extractPurls(bomJson), buildScanResult(mocked.simple), []);
 
     // now that we've got the mocked options for the UI, we can pretend one is selected
     new InquirerMock().push({

@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { formatCsvValue, getPurlOutput } from '../../dist/service/purls.svc.js';
+import { formatCsvValue, getPurlOutput } from '../../src/service/purls.svc.js';
 
 describe('getPurlOutput', () => {
   describe('json output', () => {
