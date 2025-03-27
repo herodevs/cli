@@ -12,6 +12,7 @@ import {
   groupCommitsByMonth,
   parseGitLogOutput,
 } from '../../service/committers.svc.ts';
+import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 
 export default class Committers extends Command {
   static override description = 'Generate report of committers to a git repository';
@@ -59,8 +60,12 @@ export default class Committers extends Command {
       if (isJson) {
         // JSON mode
         if (save) {
-          fs.writeFileSync(path.resolve('nes.committers.json'), JSON.stringify(reportData, null, 2));
-          this.log('Report written to json');
+          try {
+            fs.writeFileSync(path.resolve('nes.committers.json'), JSON.stringify(reportData, null, 2));
+            this.log('Report written to json');
+          } catch (error) {
+            this.error(`Failed to save JSON report: ${getErrorMessage(error)}`);
+          }
         }
         return reportData;
       }
@@ -68,8 +73,12 @@ export default class Committers extends Command {
         // CSV mode
         const csvOutput = formatAsCsv(reportData);
         if (save) {
-          fs.writeFileSync(path.resolve('nes.committers.csv'), csvOutput);
-          this.log('Report written to csv');
+          try {
+            fs.writeFileSync(path.resolve('nes.committers.csv'), csvOutput);
+            this.log('Report written to csv');
+          } catch (error) {
+            this.error(`Failed to save CSV report: ${getErrorMessage(error)}`);
+          }
         } else {
           this.log(csvOutput);
         }
@@ -78,15 +87,18 @@ export default class Committers extends Command {
       // Text mode
       const textOutput = formatAsText(reportData);
       if (save) {
-        fs.writeFileSync(path.resolve('nes.committers.txt'), textOutput);
-        this.log('Report written to txt');
+        try {
+          fs.writeFileSync(path.resolve('nes.committers.txt'), textOutput);
+          this.log('Report written to txt');
+        } catch (error) {
+          this.error(`Failed to save txt report: ${getErrorMessage(error)}`);
+        }
       } else {
         this.log(textOutput);
       }
       return textOutput;
     } catch (error) {
-      this.error(`Failed to generate report: ${(error as Error).message}`);
-      throw error;
+      this.error(`Failed to generate report: ${getErrorMessage(error)}`);
     }
   }
 
@@ -123,31 +135,36 @@ export default class Committers extends Command {
    * @param sinceDate - Date range for git log
    */
   private fetchGitCommitData(sinceDate: string): CommitEntry[] {
-    try {
-      const logProcess = spawnSync(
-        'git',
-        [
-          'log',
-          '--all', // Include committers on all branches in the repo
-          '--format="%ad|%an"', // Format: date|author
-          '--date=format:%Y-%m', // Format date as YYYY-MM
-          `--since="${sinceDate}"`,
-        ],
-        { encoding: 'utf-8' },
-      );
+    const logProcess = spawnSync(
+      'git',
+      [
+        'log',
+        '--all', // Include committers on all branches in the repo
+        '--format="%ad|%an"', // Format: date|author
+        '--date=format:%Y-%m', // Format date as YYYY-MM
+        `--since="${sinceDate}"`,
+      ],
+      { encoding: 'utf-8' },
+    );
 
-      if (logProcess.error) {
-        throw new Error(`Git command failed: ${logProcess.error.message}`);
+    if (logProcess.error) {
+      if (isErrnoException(logProcess.error)) {
+        if (logProcess.error.code === 'ENOENT') {
+          this.error('Git command not found. Please ensure git is installed and available in your PATH.');
+        }
+        this.error(`Git command failed: ${getErrorMessage(logProcess.error)}`);
       }
-
-      if (!logProcess.stdout) {
-        return [];
-      }
-
-      return parseGitLogOutput(logProcess.stdout);
-    } catch (error) {
-      this.error(`Failed to fetch git data: ${(error as Error).message}`);
-      return []; // This line won't execute due to this.error() above
+      this.error(`Git command failed: ${getErrorMessage(logProcess.error)}`);
     }
+
+    if (logProcess.status !== 0) {
+      this.error(`Git command failed with status ${logProcess.status}: ${logProcess.stderr}`);
+    }
+
+    if (!logProcess.stdout) {
+      return [];
+    }
+
+    return parseGitLogOutput(logProcess.stdout);
   }
 }
