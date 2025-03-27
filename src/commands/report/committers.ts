@@ -91,7 +91,7 @@ export default class Committers extends Command {
           fs.writeFileSync(path.resolve('nes.committers.txt'), textOutput);
           this.log('Report written to txt');
         } catch (error) {
-          this.error(`Failed to save text report: ${getErrorMessage(error)}`);
+          this.error(`Failed to save txt report: ${getErrorMessage(error)}`);
         }
       } else {
         this.log(textOutput);
