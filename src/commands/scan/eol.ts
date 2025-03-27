@@ -1,23 +1,23 @@
-import fs from 'node:fs';
 import { Command, Flags, ux } from '@oclif/core';
-import type { Table } from 'cli-table3';
+import fs from 'node:fs';
 import { submitScan } from '../../api/nes/nes.client.ts';
 import {
   type ComponentStatus,
   type ScanResult,
   VALID_STATUSES,
-  validateComponentStatuses,
+  validateComponentStatuses
 } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
 import {
-  createTableForStatus,
+  createStatusDisplay,
   initializeStatusCounts,
   promptForContinue,
   promptTableSelection,
 } from '../../ui/eol.ui.ts';
 import ScanSbom from './sbom.ts';
+
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
   static enableJsonFlag = true;
@@ -59,7 +59,6 @@ export default class ScanEol extends Command {
 
   public async run(): Promise<ScanResult | { components: [] }> {
     const { flags } = await this.parse(ScanEol);
-
     const sbom = await ScanSbom.loadSbom(flags, this.config);
     const scan = await this.scanSbom(sbom);
 
@@ -75,7 +74,7 @@ export default class ScanEol extends Command {
       return scan;
     }
 
-    await this.displayInteractiveTables(scan, validStatuses);
+    await this.displayInteractiveResults(scan, validStatuses);
 
     return scan;
   }
@@ -102,29 +101,15 @@ export default class ScanEol extends Command {
     return scan;
   }
 
-  private displayTable(status: ComponentStatus, table: Table): void {
-    this.log(`\n${status} Components:`);
-    this.log(table.toString());
-    this.log('\nPress any key to continue...');
-  }
-
-  private async displayInteractiveTables(scan: ScanResult, withStatus: ComponentStatus[]): Promise<void> {
+  private async displayInteractiveResults(scan: ScanResult, withStatus: ComponentStatus[]): Promise<void> {
     const statusCounts = initializeStatusCounts(scan, withStatus);
-    const tableCache = new Map<ComponentStatus, Table>();
 
     while (true) {
       const selectedStatus = await promptTableSelection(statusCounts);
       if (selectedStatus === 'exit') break;
 
-      // Check cache first
-      let table = tableCache.get(selectedStatus);
-      if (!table) {
-        // Create and cache table if not found
-        table = createTableForStatus(scan.components, selectedStatus);
-        tableCache.set(selectedStatus, table);
-      }
-
-      this.displayTable(selectedStatus, table);
+      const output = createStatusDisplay(scan.components, selectedStatus);
+      this.log(output);
       await promptForContinue();
     }
   }

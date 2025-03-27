@@ -1,12 +1,6 @@
 import { ux } from '@oclif/core';
-import Table from 'cli-table3';
 import inquirer from 'inquirer';
-import type {
-  ComponentStatus,
-  ScanResult,
-  ScanResultComponent,
-  ScanResultComponentsMap,
-} from '../api/types/nes.types.ts';
+import type { ComponentStatus, ScanResult, ScanResultComponentsMap } from '../api/types/nes.types.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
 
 export function truncatePurl(purl: string): string {
@@ -21,42 +15,29 @@ export function colorizeStatus(status: ComponentStatus): string {
   return ux.colorize(getColorForStatus(status), status);
 }
 
-export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus): Table.Table {
-  const table = new Table({
-    head: ['PURL', 'Status', 'EOL At', 'Days Eol'],
-    colWidths: [50, 12, 12, 12],
-    wordWrap: true,
-    style: {
-      'padding-left': 1,
-      'padding-right': 1,
-      head: [],
-      border: [],
-    },
-  });
+export function createStatusDisplay(components: ScanResultComponentsMap, status: ComponentStatus): string {
+  const matchingComponents = Array.from(components.entries())
+    .filter(([_, component]) => component.info.status === status)
+    .map(([purl, component]) => {
+      const truncatedPurl = truncatePurl(purl);
 
-  for (const [_, component] of components.entries()) {
-    if (component.info.status !== status) continue;
+      // For OK and UNKNOWN, just show the PURL
+      if (status === 'OK' || status === 'UNKNOWN') {
+        return `  ${truncatedPurl}`;
+      }
 
-    const row = convertComponentToTableRow(component);
-    table.push(row);
-  }
-  return table;
-}
+      // For EOL and LTS, show full metadata
+      const { eolAt, daysEol } = component.info;
+      const eolAtString = parseMomentToSimpleDate(eolAt);
+      const daysEolString = daysEol ? `(${daysEol} days)` : '';
+      const statusText = colorizeStatus(component.info.status);
 
-export function convertComponentToTableRow(component: ScanResultComponent) {
-  const { eolAt, daysEol } = component.info;
-  const statusColorized = colorizeStatus(component.info.status);
-  // "eolAt": "2019-07-24T00:00:00.000Z" from API (MomentJS)
-  const eolAtString = parseMomentToSimpleDate(eolAt);
-  const truncatedPurl = truncatePurl(component.purl);
-  const daysEolString = daysEol ? daysEol.toString() : '';
+      return `  ${truncatedPurl}\n    Status: ${statusText}\n    EOL Date: ${eolAtString} ${daysEolString}`;
+    });
 
-  return [
-    { content: truncatedPurl },
-    { content: statusColorized },
-    { content: eolAtString },
-    { content: daysEolString },
-  ];
+  return `${status} Components (${matchingComponents.length} found):\n${matchingComponents.join(
+    status === 'OK' || status === 'UNKNOWN' ? '\n' : '\n\n',
+  )}`;
 }
 
 export async function promptTableSelection(
@@ -92,7 +73,6 @@ export function initializeStatusCounts(
     UNKNOWN: 0,
   };
 
-  // Count only components with allowed statuses
   for (const [_, component] of scan.components) {
     if (withStatus.includes(component.info.status)) {
       statusCounts[component.info.status]++;

@@ -1,7 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { createTableForStatus, getColorForStatus, truncatePurl } from '../../src/ui/eol.ui.ts';
-import { createMockComponent, createMockScan } from '../utils/mocks/scan-result-component.mock.ts';
+import { getColorForStatus, truncatePurl } from '../../src/ui/eol.ui.ts';
 
 describe('EOL UI', () => {
   describe('truncatePurl', () => {
@@ -26,68 +25,6 @@ describe('EOL UI', () => {
 
       // Assert
       assert.strictEqual(result, expected);
-    });
-  });
-
-  describe('createTableForStatus', () => {
-    it('creates table with correct headers', () => {
-      // Arrange
-      const scan = createMockScan([]);
-
-      // Act
-      const table = createTableForStatus(scan.components, 'OK');
-      const tableString = table.toString();
-
-      // Assert
-      assert(tableString.includes('PURL'));
-      assert(tableString.includes('Status'));
-      assert(tableString.includes('EOL At'));
-      assert(tableString.includes('Days Eol'));
-    });
-
-    it('includes only components with matching status', () => {
-      // Arrange
-      const components = [
-        createMockComponent('pkg:npm/test1@1.0.0', 'OK'),
-        createMockComponent('pkg:npm/test2@1.0.0', 'EOL'),
-        createMockComponent('pkg:npm/test3@1.0.0', 'OK'),
-      ];
-      const scan = createMockScan(components);
-
-      // Act
-      const table = createTableForStatus(scan.components, 'OK');
-      const tableString = table.toString();
-
-      // Assert
-      assert(tableString.includes('pkg:npm/test1@1.0.0'));
-      assert(!tableString.includes('pkg:npm/test2@1.0.0'));
-      assert(tableString.includes('pkg:npm/test3@1.0.0'));
-    });
-
-    it('handles null daysEol', () => {
-      // Arrange
-      const components = [createMockComponent('pkg:npm/test@1.0.0', 'OK', null, null)];
-      const scan = createMockScan(components);
-
-      // Act
-      const table = createTableForStatus(scan.components, 'OK');
-      const tableString = table.toString();
-
-      // Assert
-      assert(tableString.includes(''));
-    });
-
-    it('handles empty components map', () => {
-      // Arrange
-      const scan = createMockScan([]);
-
-      // Act
-      const table = createTableForStatus(scan.components, 'OK');
-      const tableString = table.toString();
-
-      // Assert
-      assert(tableString.includes('PURL'));
-      assert(!tableString.includes('pkg:npm'));
     });
   });
 
