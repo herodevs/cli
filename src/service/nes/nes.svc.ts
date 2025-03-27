@@ -8,6 +8,7 @@ import type {
   ScanResultComponent,
 } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../log.svc.ts';
+
 export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
   const components = new Map<string, ScanResultComponent>();
   for (const c of scan.components) {

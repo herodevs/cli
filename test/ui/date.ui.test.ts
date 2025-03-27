@@ -1,37 +1,86 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { parseDateToString } from '../../src/ui/date.ui.ts';
+import { parseMomentToSimpleDate } from '../../src/ui/date.ui.ts';
 
 describe('date.ui', () => {
-  describe('parseDateToString', () => {
+  describe('parseMomentToSimpleDate', () => {
     it('returns empty string for null input', () => {
-      assert.strictEqual(parseDateToString(null), '');
+      assert.strictEqual(parseMomentToSimpleDate(null), '');
     });
 
-    it('converts string date to ISO string', () => {
-      const dateStr = '2024-03-20T12:00:00Z';
-      const result = parseDateToString(dateStr);
-      assert.strictEqual(result, new Date(dateStr).toISOString());
+    it('converts moment string to YYYY-MM-DD format', () => {
+      // Arrange
+      const momentDate = '2024-03-20T12:00:00Z';
+
+      // Act
+      const result = parseMomentToSimpleDate(momentDate);
+
+      // Assert
+      assert.strictEqual(result, '2024-03-20');
     });
 
-    it('converts number timestamp to ISO string', () => {
-      const timestamp = Date.now();
-      const result = parseDateToString(timestamp);
-      assert.strictEqual(result, new Date(timestamp).toISOString());
+    it('converts number timestamp to YYYY-MM-DD format', () => {
+      // Arrange
+      const timestamp = new Date('2024-03-20').getTime();
+
+      // Act
+      const result = parseMomentToSimpleDate(timestamp);
+
+      // Assert
+      assert.strictEqual(result, '2024-03-20');
     });
 
-    it('converts Date object to ISO string', () => {
-      const date = new Date();
-      const result = parseDateToString(date);
-      assert.strictEqual(result, date.toISOString());
+    it('converts Date object to YYYY-MM-DD format', () => {
+      // Arrange
+      const date = new Date('2024-03-20');
+
+      // Act
+      const result = parseMomentToSimpleDate(date);
+
+      // Assert
+      assert.strictEqual(result, '2024-03-20');
     });
 
-    it('throws error for invalid date input', () => {
-      assert.throws(() => parseDateToString({}), { message: 'Invalid date' });
+    it('throws error for empty string input', () => {
+      // Arrange
+      const input = '';
+
+      // Assert
+      assert.throws(
+        // Act
+        () => parseMomentToSimpleDate(input),
+        {
+          message: 'Invalid date',
+        },
+      );
     });
 
-    it('handles empty string input', () => {
-      assert.throws(() => parseDateToString(''), { message: 'Invalid date' });
+    it('throws error for non-date string input', () => {
+      // Arrange
+      const input = 'not-a-date';
+
+      // Assert
+      assert.throws(
+        // Act
+        () => parseMomentToSimpleDate(input),
+        {
+          message: 'Invalid date',
+        },
+      );
+    });
+
+    it('throws error for invalid date values', () => {
+      // Arrange
+      const input = '2024-13-45';
+
+      // Assert
+      assert.throws(
+        // Act
+        () => parseMomentToSimpleDate(input),
+        {
+          message: 'Invalid date',
+        },
+      );
     });
   });
 });

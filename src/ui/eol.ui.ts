@@ -7,7 +7,7 @@ import type {
   ScanResultComponent,
   ScanResultComponentsMap,
 } from '../api/types/nes.types.ts';
-import { parseDateToString } from './date.ui.ts';
+import { parseMomentToSimpleDate } from './date.ui.ts';
 
 export function truncatePurl(purl: string): string {
   return purl.length > 50 ? `${purl.slice(0, 47)}...` : purl;
@@ -24,7 +24,7 @@ export function colorizeStatus(status: ComponentStatus): string {
 export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus): Table.Table {
   const table = new Table({
     head: ['PURL', 'Status', 'EOL At', 'Days Eol'],
-    colWidths: [50, 12, 24, 12],
+    colWidths: [50, 12, 12, 12],
     wordWrap: true,
     style: {
       'padding-left': 1,
@@ -46,7 +46,8 @@ export function createTableForStatus(components: ScanResultComponentsMap, status
 export function convertComponentToTableRow(component: ScanResultComponent) {
   const { eolAt, daysEol } = component.info;
   const statusColorized = colorizeStatus(component.info.status);
-  const eolAtString = parseDateToString(eolAt);
+  // "eolAt": "2019-07-24T00:00:00.000Z" from API (MomentJS)
+  const eolAtString = parseMomentToSimpleDate(eolAt);
   const truncatedPurl = truncatePurl(component.purl);
   const daysEolString = daysEol ? daysEol.toString() : '';
 
