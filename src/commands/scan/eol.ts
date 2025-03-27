@@ -59,16 +59,15 @@ export default class ScanEol extends Command {
 
   public async run(): Promise<ScanResult | { components: [] }> {
     const { flags } = await this.parse(ScanEol);
-    const { dir: _dirFlag, file: _fileFlag, withStatus, save } = flags;
 
     const sbom = await ScanSbom.loadSbom(flags, this.config);
-    const { scan } = await this.scanSbom(sbom);
+    const scan = await this.scanSbom(sbom);
 
     ux.action.stop('\nScan completed');
 
-    const validStatuses = validateComponentStatuses(withStatus);
+    const validStatuses = validateComponentStatuses(flags.withStatus);
 
-    if (save) {
+    if (flags.save) {
       await this.saveReport(scan, validStatuses);
     }
 
@@ -81,7 +80,7 @@ export default class ScanEol extends Command {
     return scan;
   }
 
-  private async scanSbom(sbom: Sbom): Promise<{ scan: ScanResult; purls: string[] }> {
+  private async scanSbom(sbom: Sbom): Promise<ScanResult> {
     let scan: ScanResult;
     let purls: string[];
 
@@ -100,7 +99,7 @@ export default class ScanEol extends Command {
       this.warn('No components found in scan');
     }
 
-    return { scan, purls };
+    return scan;
   }
 
   private displayTable(status: ComponentStatus, table: Table): void {
