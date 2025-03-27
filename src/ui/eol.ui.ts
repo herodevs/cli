@@ -1,7 +1,17 @@
+import { ux } from '@oclif/core';
 import Table from 'cli-table3';
 import inquirer from 'inquirer';
 import type { ComponentStatus, ScanResultComponentsMap } from '../api/types/nes.types.ts';
 import { parseDateToString } from './date.ui.ts';
+
+export function truncatePurl(purl: string): string {
+  return purl.length > 50 ? `${purl.slice(0, 47)}...` : purl;
+}
+
+export function colorizeStatus(status: ComponentStatus): string {
+  const color = status === 'EOL' ? 'red' : status === 'LTS' ? 'yellow' : status === 'OK' ? 'green' : 'default';
+  return ux.colorize(color, status);
+}
 
 export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus): Table.Table {
   const table = new Table({
@@ -20,12 +30,14 @@ export function createTableForStatus(components: ScanResultComponentsMap, status
     if (component.info.status !== status) continue;
 
     const { eolAt, daysEol } = component.info;
+
+    const statusColorized = colorizeStatus(component.info.status);
     const eolAtString = parseDateToString(eolAt);
-    const truncatedPurl = purl.length > 50 ? `${purl.slice(0, 47)}...` : purl;
+    const truncatedPurl = truncatePurl(purl);
 
     table.push([
       { content: truncatedPurl },
-      { content: status },
+      { content: statusColorized },
       { content: eolAtString },
       { content: daysEol?.toString() ?? '' },
     ]);
