@@ -40,7 +40,6 @@
     "@cyclonedx/cdxgen": "^11.2.2",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
-    "@oclif/plugin-plugins": "^5",
     "graphql": "^16.8.1",
     "inquirer": "^12.5.0"
   },
