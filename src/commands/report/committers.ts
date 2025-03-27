@@ -52,7 +52,7 @@ export default class Committers extends Command {
 
     try {
       // Generate structured report data
-      const entries = await this.fetchGitCommitData(sinceDate);
+      const entries = this.fetchGitCommitData(sinceDate);
       this.log('Fetched %d commit entries', entries.length);
       const reportData = this.generateReportData(entries);
 
@@ -134,7 +134,7 @@ export default class Committers extends Command {
    * Fetches git commit data with month and author information
    * @param sinceDate - Date range for git log
    */
-  private async fetchGitCommitData(sinceDate: string): Promise<CommitEntry[]> {
+  private fetchGitCommitData(sinceDate: string): CommitEntry[] {
     const logProcess = spawnSync(
       'git',
       [
