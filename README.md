@@ -422,12 +422,14 @@ Scan a given sbom for EOL data
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value>] [-d <value>] [-s]
+  $ hd scan eol [--json] [-f <value>] [-d <value>] [-s] [-a] [-c]
 
 FLAGS
-  -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
-  -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
-  -s, --save          Save the generated SBOM as nes.sbom.json in the scanned directory
+  -a, --all                 Show all components (default is EOL and LTS only)
+  -c, --getCustomerSupport  Get Never-Ending Support for End-of-Life components
+  -d, --dir=<value>         The directory to scan in order to create a cyclonedx sbom
+  -f, --file=<value>        The file path of an existing cyclonedx sbom to scan for EOL
+  -s, --save                Save the generated SBOM as nes.sbom.json in the scanned directory
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -439,6 +441,8 @@ EXAMPLES
   $ hd scan eol --dir=./my-project
 
   $ hd scan eol --file=path/to/sbom.json
+
+  $ hd scan eol -a --dir=./my-project
 ```
 
 _See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v1.1.0-beta.1/src/commands/scan/eol.ts)_

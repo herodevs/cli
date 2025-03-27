@@ -24,7 +24,7 @@ export default class ScanEol extends Command {
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
     '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
-    '<%= config.bin %> <%= command.id %> -w EOL,UNKNOWN --dir=./my-project',
+    '<%= config.bin %> <%= command.id %> -a --dir=./my-project',
   ];
   static override flags = {
     file: Flags.string({
