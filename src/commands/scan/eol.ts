@@ -97,6 +97,19 @@ export default class ScanEol extends Command {
   private async displayInteractiveResults(scan: ScanResult, all: boolean): Promise<void> {
     const statusCounts = initializeStatusCounts(scan, all);
 
+    // Check if there are any components to display
+    const totalComponents = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+
+    if (totalComponents === 0) {
+      if (!all) {
+        this.log('No End-of-Life or Long Term Support components found in scan.');
+        this.log('Use --all flag to view all components.');
+      } else {
+        this.log('No components found in scan.');
+      }
+      return;
+    }
+
     while (true) {
       const selectedStatus = await promptStatusSelection(statusCounts);
       if (selectedStatus === 'exit') break;
