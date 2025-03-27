@@ -1,11 +1,11 @@
-import { Command, Flags, ux } from '@oclif/core';
 import fs from 'node:fs';
+import { Command, Flags, ux } from '@oclif/core';
 import { submitScan } from '../../api/nes/nes.client.ts';
 import {
   type ComponentStatus,
   type ScanResult,
   VALID_STATUSES,
-  validateComponentStatuses
+  validateComponentStatuses,
 } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';

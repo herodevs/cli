@@ -1,6 +1,11 @@
 import { ux } from '@oclif/core';
 import inquirer from 'inquirer';
-import type { ComponentStatus, ScanResult, ScanResultComponentsMap } from '../api/types/nes.types.ts';
+import type {
+  ComponentStatus,
+  ScanResult,
+  ScanResultComponent,
+  ScanResultComponentsMap,
+} from '../api/types/nes.types.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
 
 export function truncatePurl(purl: string): string {
@@ -15,29 +20,46 @@ export function colorizeStatus(status: ComponentStatus): string {
   return ux.colorize(getColorForStatus(status), status);
 }
 
+function formatSimpleComponent(purl: string): string {
+  return `  ${truncatePurl(purl)}`;
+}
+
+function formatDetailedComponent(
+  purl: string,
+  eolAt: Date | null,
+  daysEol: number | null,
+  status: ComponentStatus,
+): string {
+  const eolAtString = parseMomentToSimpleDate(eolAt);
+  const daysEolString = daysEol ? `(${daysEol} days)` : '';
+  const statusText = colorizeStatus(status);
+
+  return `  ${truncatePurl(purl)}\n    Status: ${statusText}\n    EOL Date: ${eolAtString} ${daysEolString}`;
+}
+
+function getMatchingComponents(
+  components: ScanResultComponentsMap,
+  status: ComponentStatus,
+): Array<[string, ScanResultComponent]> {
+  return Array.from(components.entries()).filter(([_, component]) => component.info.status === status);
+}
+
+function formatComponentList(components: string[], status: ComponentStatus): string {
+  const separator = status === 'OK' || status === 'UNKNOWN' ? '\n' : '\n\n';
+  return `${status} Components (${components.length} found):\n${components.join(separator)}`;
+}
+
 export function createStatusDisplay(components: ScanResultComponentsMap, status: ComponentStatus): string {
-  const matchingComponents = Array.from(components.entries())
-    .filter(([_, component]) => component.info.status === status)
-    .map(([purl, component]) => {
-      const truncatedPurl = truncatePurl(purl);
+  const matchingComponents = getMatchingComponents(components, status).map(([purl, component]) => {
+    if (status === 'OK' || status === 'UNKNOWN') {
+      return formatSimpleComponent(purl);
+    }
 
-      // For OK and UNKNOWN, just show the PURL
-      if (status === 'OK' || status === 'UNKNOWN') {
-        return `  ${truncatedPurl}`;
-      }
+    const { eolAt, daysEol } = component.info;
+    return formatDetailedComponent(purl, eolAt, daysEol, status);
+  });
 
-      // For EOL and LTS, show full metadata
-      const { eolAt, daysEol } = component.info;
-      const eolAtString = parseMomentToSimpleDate(eolAt);
-      const daysEolString = daysEol ? `(${daysEol} days)` : '';
-      const statusText = colorizeStatus(component.info.status);
-
-      return `  ${truncatedPurl}\n    Status: ${statusText}\n    EOL Date: ${eolAtString} ${daysEolString}`;
-    });
-
-  return `${status} Components (${matchingComponents.length} found):\n${matchingComponents.join(
-    status === 'OK' || status === 'UNKNOWN' ? '\n' : '\n\n',
-  )}`;
+  return formatComponentList(matchingComponents, status);
 }
 
 export async function promptTableSelection(
