@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { Command, Flags, ux } from '@oclif/core';
-import inquirer from 'inquirer';
+import type { Table } from 'cli-table3';
 import { submitScan } from '../../api/nes/nes.client.ts';
 import {
   type ComponentStatus,
@@ -11,10 +11,13 @@ import {
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
-import { createTableForStatus, promptTableSelection } from '../../ui/eol.ui.ts';
+import {
+  createTableForStatus,
+  initializeStatusCounts,
+  promptForContinue,
+  promptTableSelection,
+} from '../../ui/eol.ui.ts';
 import ScanSbom from './sbom.ts';
-import type { Table } from 'cli-table3';
-
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
   static enableJsonFlag = true;
@@ -100,24 +103,15 @@ export default class ScanEol extends Command {
     return { scan, purls };
   }
 
+  private displayTable(status: ComponentStatus, table: Table): void {
+    this.log(`\n${status} Components:`);
+    this.log(table.toString());
+    this.log('\nPress any key to continue...');
+  }
+
   private async displayInteractiveTables(scan: ScanResult, withStatus: ComponentStatus[]): Promise<void> {
-    // Count components by status, but only for allowed statuses
-    const statusCounts: Record<ComponentStatus, number> = {
-      EOL: 0,
-      LTS: 0,
-      OK: 0,
-      UNKNOWN: 0,
-    };
-
-    // Create a cache for tables
+    const statusCounts = initializeStatusCounts(scan, withStatus);
     const tableCache = new Map<ComponentStatus, Table>();
-
-    // Count only components with allowed statuses
-    for (const [_, component] of scan.components) {
-      if (withStatus.includes(component.info.status)) {
-        statusCounts[component.info.status]++;
-      }
-    }
 
     while (true) {
       const selectedStatus = await promptTableSelection(statusCounts);
@@ -131,18 +125,8 @@ export default class ScanEol extends Command {
         tableCache.set(selectedStatus, table);
       }
 
-      this.log(`\n${selectedStatus} Components:`);
-      this.log(table.toString());
-      this.log('\nPress any key to continue...');
-
-      // Wait for user input before showing menu again
-      await inquirer.prompt([
-        {
-          type: 'input',
-          name: 'continue',
-          message: 'Press enter to continue...',
-        },
-      ]);
+      this.displayTable(selectedStatus, table);
+      await promptForContinue();
     }
   }
 

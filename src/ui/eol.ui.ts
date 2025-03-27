@@ -1,7 +1,12 @@
 import { ux } from '@oclif/core';
 import Table from 'cli-table3';
 import inquirer from 'inquirer';
-import type { ComponentStatus, ScanResultComponent, ScanResultComponentsMap } from '../api/types/nes.types.ts';
+import type {
+  ComponentStatus,
+  ScanResult,
+  ScanResultComponent,
+  ScanResultComponentsMap,
+} from '../api/types/nes.types.ts';
 import { parseDateToString } from './date.ui.ts';
 
 export function truncatePurl(purl: string): string {
@@ -73,4 +78,35 @@ export async function promptTableSelection(
     },
   ]);
   return selection;
+}
+
+export function initializeStatusCounts(
+  scan: ScanResult,
+  withStatus: ComponentStatus[],
+): Record<ComponentStatus, number> {
+  const statusCounts: Record<ComponentStatus, number> = {
+    EOL: 0,
+    LTS: 0,
+    OK: 0,
+    UNKNOWN: 0,
+  };
+
+  // Count only components with allowed statuses
+  for (const [_, component] of scan.components) {
+    if (withStatus.includes(component.info.status)) {
+      statusCounts[component.info.status]++;
+    }
+  }
+
+  return statusCounts;
+}
+
+export async function promptForContinue(): Promise<void> {
+  await inquirer.prompt([
+    {
+      type: 'input',
+      name: 'continue',
+      message: 'Press enter to continue...',
+    },
+  ]);
 }
