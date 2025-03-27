@@ -1,13 +1,11 @@
 import { Command, Flags, ux } from '@oclif/core';
 
+import { submitScan } from '../../api/nes/nes.client.ts';
 import { type ScanResult, VALID_STATUSES } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
-import { prepareRows, submitScan } from '../../service/eol/eol.svc.ts';
 import { getErrorMessage } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
-import { promptComponentDetails } from '../../ui/eol.ui.ts';
-import SbomScan from './sbom.ts';
-
+import ScanSbom from './sbom.ts';
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
   static enableJsonFlag = true;
@@ -46,31 +44,16 @@ export default class ScanEol extends Command {
     const { flags } = await this.parse(ScanEol);
     const { dir: _dirFlag, file: _fileFlag, withStatus } = flags;
 
-    const sbom = await this.loadSbom(flags);
+    const sbom = await ScanSbom.loadSbom(flags, this.config);
     const { scan, purls } = await this.scanSbom(sbom);
 
     ux.action.stop('Scan completed');
 
-    // const lines = await prepareRows(purls, scan, withStatus);
-    // if (lines?.length === 0) {
-    //   this.log('No dependencies found');
-    //   return { components: [] };
-    // }
-
-    // const r = await promptComponentDetails(lines);
-    // this.log('What now %o', r);
+    // TODO:
+    // - display rows using cli table
+    // - save to file
 
     return scan;
-  }
-
-  private async loadSbom(flags: Record<string, string>) {
-    const sbomArgs = SbomScan.getSbomArgs(flags);
-    const sbomCommand = new SbomScan(sbomArgs, this.config);
-    const sbom = await sbomCommand.run();
-    if (!sbom) {
-      this.error('SBOM not generated');
-    }
-    return sbom;
   }
 
   private async scanSbom(sbom: Sbom): Promise<{ scan: ScanResult; purls: string[] }> {

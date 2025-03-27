@@ -4,7 +4,7 @@ import { Command, Flags, ux } from '@oclif/core';
 
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, getPurlOutput } from '../../service/purls.svc.ts';
-import SbomScan from '../scan/sbom.ts';
+import ScanSbom from '../scan/sbom.ts';
 
 export default class ReportPurls extends Command {
   static override description = 'Generate a list of purls from a sbom';
@@ -42,12 +42,7 @@ export default class ReportPurls extends Command {
     const { dir: _dirFlag, file: _fileFlag, save, csv } = flags;
 
     try {
-      const sbomArgs = SbomScan.getSbomArgs(flags);
-      const sbomCommand = new SbomScan(sbomArgs, this.config);
-      const sbom = await sbomCommand.run();
-      if (!sbom) {
-        throw new Error('SBOM not generated');
-      }
+      const sbom = await ScanSbom.loadSbom(flags, this.config);
       const purls = await extractPurls(sbom);
       this.log('Extracted %d purls from SBOM', purls.length);
 

@@ -42,19 +42,6 @@ export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
 }
 
 /**
- * Uses the purls from the sbom to run the scan.
- */
-export async function submitScan(purls: string[]): Promise<ScanResult> {
-  // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
-  const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com';
-  const path = process.env.GRAPHQL_PATH || '/graphql';
-  const url = host + path;
-  const client = new NesApolloClient(url);
-  const scan = await client.scan.sbom(purls);
-  return scan;
-}
-
-/**
  * Work in progress; creates "rows" for each component
  * based on the model + the scan result from NES.
  *

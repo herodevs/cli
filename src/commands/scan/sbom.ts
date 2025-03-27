@@ -34,6 +34,16 @@ export default class ScanSbom extends Command {
     }),
   };
 
+  static async loadSbom(flags: Record<string, string>, config: Command['config']) {
+    const sbomArgs = ScanSbom.getSbomArgs(flags);
+    const sbomCommand = new ScanSbom(sbomArgs, config);
+    const sbom = await sbomCommand.run();
+    if (!sbom) {
+      throw new Error('SBOM not generated');
+    }
+    return sbom;
+  }
+
   static getSbomArgs(flags: Record<string, string>): string[] {
     const { dir, file, save, json, background } = flags ?? {};
 
