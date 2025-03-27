@@ -21,49 +21,73 @@ export function colorizeStatus(status: ComponentStatus): string {
 }
 
 function formatSimpleComponent(purl: string): string {
-  return `  ${truncatePurl(purl)}`;
+  return `  • ${truncatePurl(purl)}`;
 }
 
 function formatDetailedComponent(
   purl: string,
   eolAt: Date | null,
   daysEol: number | null,
-  status: ComponentStatus,
+  status: ComponentStatus
 ): string {
   const eolAtString = parseMomentToSimpleDate(eolAt);
-  const daysEolString = daysEol ? `(${daysEol} days)` : '';
+  const daysEolString = daysEol ? `${daysEol} days ago` : '';
   const statusText = colorizeStatus(status);
 
-  return `  ${truncatePurl(purl)}\n    Status: ${statusText}\n    EOL Date: ${eolAtString} ${daysEolString}`;
+  return [
+    `  • ${ux.colorize('bold', truncatePurl(purl))}`,
+    `    ⮑  Status: ${statusText}`,
+    `    ⮑  EOL Date: ${eolAtString}`,
+    daysEolString &&
+      `    ⮑  Time Elapsed: ${ux.colorize('red', daysEolString)}`,
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 function getMatchingComponents(
   components: ScanResultComponentsMap,
-  status: ComponentStatus,
+  status: ComponentStatus
 ): Array<[string, ScanResultComponent]> {
-  return Array.from(components.entries()).filter(([_, component]) => component.info.status === status);
+  return Array.from(components.entries()).filter(
+    ([_, component]) => component.info.status === status
+  );
 }
 
-function formatComponentList(components: string[], status: ComponentStatus): string {
+function formatComponentList(
+  components: string[],
+  status: ComponentStatus
+): string {
   const separator = status === 'OK' || status === 'UNKNOWN' ? '\n' : '\n\n';
-  return `${status} Components (${components.length} found):\n${components.join(separator)}`;
+  const header = ux.colorize(
+    'bold',
+    `${status} Components (${components.length} found):`
+  );
+  const separatorLine = '\n' + ux.colorize('dim', '  ' + '─'.repeat(50));
+
+  return `${header}${separatorLine}\n${components.join(separator)}`;
 }
 
-export function createStatusDisplay(components: ScanResultComponentsMap, status: ComponentStatus): string {
-  const matchingComponents = getMatchingComponents(components, status).map(([purl, component]) => {
-    if (status === 'OK' || status === 'UNKNOWN') {
-      return formatSimpleComponent(purl);
-    }
+export function createStatusDisplay(
+  components: ScanResultComponentsMap,
+  status: ComponentStatus
+): string {
+  const matchingComponents = getMatchingComponents(components, status).map(
+    ([purl, component]) => {
+      if (status === 'OK' || status === 'UNKNOWN') {
+        return formatSimpleComponent(purl);
+      }
 
-    const { eolAt, daysEol } = component.info;
-    return formatDetailedComponent(purl, eolAt, daysEol, status);
-  });
+      const { eolAt, daysEol } = component.info;
+      return formatDetailedComponent(purl, eolAt, daysEol, status);
+    }
+  );
 
   return formatComponentList(matchingComponents, status);
 }
 
-export async function promptTableSelection(
-  statusCounts: Record<ComponentStatus, number>,
+export async function promptStatusSelection(
+  statusCounts: Record<ComponentStatus, number>
 ): Promise<ComponentStatus | 'exit'> {
   const { selection } = await inquirer.prompt([
     {
@@ -74,7 +98,9 @@ export async function promptTableSelection(
         ...Object.entries(statusCounts)
           .filter(([_, count]) => count > 0)
           .map(([status, count]) => ({
-            name: `${status} (${count} components)`,
+            name: `${colorizeStatus(
+              status as ComponentStatus
+            )} (${count} components)`,
             value: status,
           })),
         { name: 'Exit', value: 'exit' },

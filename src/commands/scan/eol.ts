@@ -14,7 +14,7 @@ import {
   createStatusDisplay,
   initializeStatusCounts,
   promptForContinue,
-  promptTableSelection,
+  promptStatusSelection,
 } from '../../ui/eol.ui.ts';
 import ScanSbom from './sbom.ts';
 
@@ -105,7 +105,7 @@ export default class ScanEol extends Command {
     const statusCounts = initializeStatusCounts(scan, withStatus);
 
     while (true) {
-      const selectedStatus = await promptTableSelection(statusCounts);
+      const selectedStatus = await promptStatusSelection(statusCounts);
       if (selectedStatus === 'exit') break;
 
       const output = createStatusDisplay(scan.components, selectedStatus);
