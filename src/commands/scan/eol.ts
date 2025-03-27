@@ -64,7 +64,7 @@ export default class ScanEol extends Command {
     const sbom = await ScanSbom.loadSbom(flags, this.config);
     const { scan } = await this.scanSbom(sbom);
 
-    ux.action.stop('Scan completed');
+    ux.action.stop('\nScan completed');
 
     const validStatuses = validateComponentStatuses(withStatus);
 
