@@ -9,7 +9,7 @@ import {
   formatOverallStats,
   groupCommitsByMonth,
   parseGitLogOutput,
-} from '../../src/service/committers.svc.js';
+} from '../../src/service/committers.svc.ts';
 
 describe('committers', () => {
   // Sample test data to be reused across tests
