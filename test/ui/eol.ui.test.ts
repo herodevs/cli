@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { colorizeStatus, createTableForStatus, truncatePurl } from '../../src/ui/eol.ui.ts';
+import { createTableForStatus, getColorForStatus, truncatePurl } from '../../src/ui/eol.ui.ts';
 import { createMockComponent, createMockScan } from '../utils/mocks/scan-result-component.mock.ts';
 
 describe('EOL UI', () => {
@@ -91,16 +91,16 @@ describe('EOL UI', () => {
     });
   });
 
-  describe('colorizeStatus', () => {
+  describe('getColorForStatus', () => {
     it('returns red for EOL status', () => {
       // Arrange
       const status = 'EOL';
 
       // Act
-      const result = colorizeStatus(status);
+      const result = getColorForStatus(status);
 
       // Assert
-      assert.strictEqual(result, '\x1B[31mEOL\x1B[39m');
+      assert.strictEqual(result, 'red');
     });
 
     it('returns yellow for LTS status', () => {
@@ -108,10 +108,10 @@ describe('EOL UI', () => {
       const status = 'LTS';
 
       // Act
-      const result = colorizeStatus(status);
+      const result = getColorForStatus(status);
 
       // Assert
-      assert.strictEqual(result, '\x1B[33mLTS\x1B[39m');
+      assert.strictEqual(result, 'yellow');
     });
 
     it('returns green for OK status', () => {
@@ -119,21 +119,21 @@ describe('EOL UI', () => {
       const status = 'OK';
 
       // Act
-      const result = colorizeStatus(status);
+      const result = getColorForStatus(status);
 
       // Assert
-      assert.strictEqual(result, '\x1B[32mOK\x1B[39m');
+      assert.strictEqual(result, 'green');
     });
 
-    it('returns default color for UNKNOWN status', () => {
+    it('returns default for UNKNOWN status', () => {
       // Arrange
       const status = 'UNKNOWN';
 
       // Act
-      const result = colorizeStatus(status);
+      const result = getColorForStatus(status);
 
       // Assert
-      assert.strictEqual(result, 'UNKNOWN');
+      assert.strictEqual(result, 'default');
     });
   });
 });

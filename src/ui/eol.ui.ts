@@ -1,16 +1,19 @@
 import { ux } from '@oclif/core';
 import Table from 'cli-table3';
 import inquirer from 'inquirer';
-import type { ComponentStatus, ScanResultComponentsMap } from '../api/types/nes.types.ts';
+import type { ComponentStatus, ScanResultComponent, ScanResultComponentsMap } from '../api/types/nes.types.ts';
 import { parseDateToString } from './date.ui.ts';
 
 export function truncatePurl(purl: string): string {
   return purl.length > 50 ? `${purl.slice(0, 47)}...` : purl;
 }
 
+export function getColorForStatus(status: ComponentStatus): string {
+  return status === 'EOL' ? 'red' : status === 'LTS' ? 'yellow' : status === 'OK' ? 'green' : 'default';
+}
+
 export function colorizeStatus(status: ComponentStatus): string {
-  const color = status === 'EOL' ? 'red' : status === 'LTS' ? 'yellow' : status === 'OK' ? 'green' : 'default';
-  return ux.colorize(color, status);
+  return ux.colorize(getColorForStatus(status), status);
 }
 
 export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus): Table.Table {
@@ -26,23 +29,28 @@ export function createTableForStatus(components: ScanResultComponentsMap, status
     },
   });
 
-  for (const [purl, component] of components.entries()) {
+  for (const [_, component] of components.entries()) {
     if (component.info.status !== status) continue;
 
-    const { eolAt, daysEol } = component.info;
-
-    const statusColorized = colorizeStatus(component.info.status);
-    const eolAtString = parseDateToString(eolAt);
-    const truncatedPurl = truncatePurl(purl);
-
-    table.push([
-      { content: truncatedPurl },
-      { content: statusColorized },
-      { content: eolAtString },
-      { content: daysEol?.toString() ?? '' },
-    ]);
+    const row = convertComponentToTableRow(component);
+    table.push(row);
   }
   return table;
+}
+
+export function convertComponentToTableRow(component: ScanResultComponent) {
+  const { eolAt, daysEol } = component.info;
+  const statusColorized = colorizeStatus(component.info.status);
+  const eolAtString = parseDateToString(eolAt);
+  const truncatedPurl = truncatePurl(component.purl);
+  const daysEolString = daysEol ? daysEol.toString() : '';
+
+  return [
+    { content: truncatedPurl },
+    { content: statusColorized },
+    { content: eolAtString },
+    { content: daysEolString },
+  ];
 }
 
 export async function promptTableSelection(
