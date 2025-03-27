@@ -38,5 +38,5 @@ export async function submitScan(purls: string[]): Promise<ScanResult> {
   const path = process.env.GRAPHQL_PATH || '/graphql';
   const url = host + path;
   const client = new NesApolloClient(url);
-  return await client.scan.sbom(purls);
+  return client.scan.sbom(purls);
 }
