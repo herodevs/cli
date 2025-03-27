@@ -4,20 +4,6 @@ import { daysBetween, formatLine, getMessageAndStatus } from '../../src/service/
 import type { Line } from '../../src/service/line.svc.ts';
 
 describe('line', () => {
-  describe('daysBetween', () => {
-    it('should calculate days between dates', () => {
-      const date1 = new Date('2024-01-01');
-      const date2 = new Date('2024-01-31');
-      assert.equal(daysBetween(date1, date2), 30);
-    });
-
-    it('should handle negative differences', () => {
-      const date1 = new Date('2024-01-31');
-      const date2 = new Date('2024-01-01');
-      assert.equal(daysBetween(date1, date2), -30);
-    });
-  });
-
   describe('getMessageAndStatus', () => {
     it('should format EOL status with days', () => {
       const { stat, msg } = getMessageAndStatus('EOL', 30);

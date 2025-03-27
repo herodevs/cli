@@ -1,7 +1,10 @@
 import { Command, Flags, ux } from '@oclif/core';
 
 import { type ScanResult, VALID_STATUSES } from '../../api/types/nes.types.ts';
-import { prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
+import type { Sbom } from '../../service/eol/cdx.svc.ts';
+import { prepareRows, submitScan } from '../../service/eol/eol.svc.ts';
+import { getErrorMessage } from '../../service/error.svc.ts';
+import { extractPurls } from '../../service/purls.svc.ts';
 import { promptComponentDetails } from '../../ui/eol.ui.ts';
 import SbomScan from './sbom.ts';
 
@@ -40,59 +43,55 @@ export default class ScanEol extends Command {
   };
 
   public async run(): Promise<ScanResult | { components: [] }> {
-    this.checkEolScanDisabled();
-
     const { flags } = await this.parse(ScanEol);
     const { dir: _dirFlag, file: _fileFlag, withStatus } = flags;
 
-    // Load the SBOM: Only pass the file, dir, and save flags to SbomScan
-    const sbomArgs = SbomScan.getSbomArgs(flags);
-    const sbomCommand = new SbomScan(sbomArgs, this.config);
-    const sbom = await sbomCommand.run();
-    if (!sbom) {
-      throw new Error('SBOM not generated');
-    }
-    // Scan the SBOM for EOL information
-    const { purls, scan } = await scanForEol(sbom);
+    const sbom = await this.loadSbom(flags);
+    const { scan, purls } = await this.scanSbom(sbom);
 
     ux.action.stop('Scan completed');
 
-    if (!scan?.components) {
-      if (_fileFlag) {
-        throw new Error(`Scan failed to generate for file path: ${_fileFlag}`);
-      }
-      if (_dirFlag) {
-        throw new Error(`Scan failed to generate for dir: ${_dirFlag}`);
-      }
-      throw new Error('Scan failed to generate components.');
-    }
+    // const lines = await prepareRows(purls, scan, withStatus);
+    // if (lines?.length === 0) {
+    //   this.log('No dependencies found');
+    //   return { components: [] };
+    // }
 
-    const lines = await prepareRows(purls, scan, withStatus);
-    if (lines?.length === 0) {
-      this.log('No dependencies found');
-      return { components: [] };
-    }
-
-    const r = await promptComponentDetails(lines);
-    this.log('What now %o', r);
+    // const r = await promptComponentDetails(lines);
+    // this.log('What now %o', r);
 
     return scan;
   }
 
-  private checkEolScanDisabled(override = true) {
-    // Check if running in beta version or pre v1.0.0
-    const version = this.config.version;
-    const [major] = version.split('.').map(Number);
+  private async loadSbom(flags: Record<string, string>) {
+    const sbomArgs = SbomScan.getSbomArgs(flags);
+    const sbomCommand = new SbomScan(sbomArgs, this.config);
+    const sbom = await sbomCommand.run();
+    if (!sbom) {
+      this.error('SBOM not generated');
+    }
+    return sbom;
+  }
 
-    if (version.includes('beta') || major < 1) {
-      this.log(`VERSION=${version}`);
-      throw new Error('The EOL scan feature is not available in beta releases. Please wait for the stable release.');
+  private async scanSbom(sbom: Sbom): Promise<{ scan: ScanResult; purls: string[] }> {
+    let scan: ScanResult;
+    let purls: string[];
+
+    try {
+      purls = await extractPurls(sbom);
+    } catch (error) {
+      this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
     }
-    // Just in case the beta check fails
-    if (override) {
-      this.log(`VERSION=${version}`);
-      this.log('EOL scan is disabled');
-      return { components: [] };
+    try {
+      scan = await submitScan(purls);
+    } catch (error) {
+      this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
     }
+
+    if (scan.components.size === 0) {
+      this.warn('No components found in scan');
+    }
+
+    return { scan, purls };
   }
 }

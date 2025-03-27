@@ -2,7 +2,6 @@ import { NesApolloClient } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import type { Line } from '../line.svc.ts';
-import { extractPurls } from '../purls.svc.ts';
 import { type Sbom, createBomFromDir } from './cdx.svc.ts';
 
 export interface CdxGenOptions {
@@ -40,15 +39,6 @@ export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
   if (!('components' in s) || !Array.isArray(s.components)) {
     throw new Error('Invalid SBOM: missing or invalid components array');
   }
-}
-
-/**
- * Main function to scan directory and collect SBOM data
- */
-export async function scanForEol(sbom: Sbom) {
-  const purls = await extractPurls(sbom);
-  const scan = await submitScan(purls);
-  return { purls, scan };
 }
 
 /**
