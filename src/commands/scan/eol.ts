@@ -131,7 +131,6 @@ export default class ScanEol extends Command {
   }
 
   private async saveReport(scan: ScanResult, validStatuses: string[]): Promise<void> {
-    console.log('validStatuses', validStatuses);
     try {
       // Filter components based on withStatus
       const filteredComponents = [];
