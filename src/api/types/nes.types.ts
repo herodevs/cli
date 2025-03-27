@@ -19,6 +19,18 @@ export interface ScanResponseReport {
 export const VALID_STATUSES = ['UNKNOWN', 'OK', 'EOL', 'LTS'] as const;
 export type ComponentStatus = (typeof VALID_STATUSES)[number];
 
+export const isValidComponentStatus = (status: string): status is ComponentStatus => {
+  return VALID_STATUSES.includes(status as ComponentStatus);
+};
+
+export const validateComponentStatuses = (statuses: string[]): ComponentStatus[] => {
+  const validStatuses = statuses.filter(isValidComponentStatus);
+  if (validStatuses.length !== statuses.length) {
+    throw new Error('Invalid component status provided');
+  }
+  return validStatuses;
+};
+
 export interface ScanResultComponent {
   info: {
     eolAt: Date | null;

@@ -1,12 +1,18 @@
 import { Command, Flags, ux } from '@oclif/core';
 import inquirer from 'inquirer';
 import { submitScan } from '../../api/nes/nes.client.ts';
-import { type ComponentStatus, type ScanResult, VALID_STATUSES } from '../../api/types/nes.types.ts';
+import {
+  type ComponentStatus,
+  type ScanResult,
+  VALID_STATUSES,
+  validateComponentStatuses,
+} from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
 import { createTableForStatus, promptTableSelection } from '../../ui/eol.ui.ts';
 import ScanSbom from './sbom.ts';
+
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
   static enableJsonFlag = true;
@@ -37,7 +43,7 @@ export default class ScanEol extends Command {
       options: VALID_STATUSES,
       multiple: true,
       delimiter: ',',
-      default: ['EOL'],
+      default: ['EOL', 'LTS', 'OK', 'UNKNOWN'],
     }),
     getCustomerSupport: Flags.boolean({
       char: 'c',
@@ -55,7 +61,9 @@ export default class ScanEol extends Command {
 
     ux.action.stop('Scan completed');
 
-    await this.displayInteractiveTables(scan);
+    const validStatuses = validateComponentStatuses(withStatus);
+
+    await this.displayInteractiveTables(scan, validStatuses);
 
     return scan;
   }
@@ -82,8 +90,8 @@ export default class ScanEol extends Command {
     return { scan, purls };
   }
 
-  private async displayInteractiveTables(scan: ScanResult): Promise<void> {
-    // Count components by status
+  private async displayInteractiveTables(scan: ScanResult, withStatus: ComponentStatus[]): Promise<void> {
+    // Count components by status, but only for allowed statuses
     const statusCounts: Record<ComponentStatus, number> = {
       EOL: 0,
       LTS: 0,
@@ -91,8 +99,11 @@ export default class ScanEol extends Command {
       UNKNOWN: 0,
     };
 
+    // Count only components with allowed statuses
     for (const [_, component] of scan.components) {
-      statusCounts[component.info.status]++;
+      if (withStatus.includes(component.info.status)) {
+        statusCounts[component.info.status]++;
+      }
     }
 
     while (true) {
