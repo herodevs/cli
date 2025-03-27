@@ -51,7 +51,7 @@ export default class ScanSbom extends Command {
 
     if (file) sbomArgs.push('--file', file);
     if (dir) sbomArgs.push('--dir', dir);
-    if (save) sbomArgs.push('--save');
+    // if (save) sbomArgs.push('--save'); // only save if sbom command is used directly with -s flag
     if (json) sbomArgs.push('--json');
     if (background) sbomArgs.push('--background');
 

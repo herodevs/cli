@@ -1,5 +1,6 @@
 import { Command, Flags, ux } from '@oclif/core';
 import inquirer from 'inquirer';
+import fs from 'node:fs';
 import { submitScan } from '../../api/nes/nes.client.ts';
 import {
   type ComponentStatus,
@@ -8,7 +9,7 @@ import {
   validateComponentStatuses,
 } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
-import { getErrorMessage } from '../../service/error.svc.ts';
+import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
 import { createTableForStatus, promptTableSelection } from '../../ui/eol.ui.ts';
 import ScanSbom from './sbom.ts';
@@ -54,14 +55,22 @@ export default class ScanEol extends Command {
 
   public async run(): Promise<ScanResult | { components: [] }> {
     const { flags } = await this.parse(ScanEol);
-    const { dir: _dirFlag, file: _fileFlag, withStatus } = flags;
+    const { dir: _dirFlag, file: _fileFlag, withStatus, save } = flags;
 
     const sbom = await ScanSbom.loadSbom(flags, this.config);
-    const { scan, purls } = await this.scanSbom(sbom);
+    const { scan } = await this.scanSbom(sbom);
 
     ux.action.stop('Scan completed');
 
     const validStatuses = validateComponentStatuses(withStatus);
+
+    if (save) {
+      await this.saveReport(scan, validStatuses);
+    }
+
+    if (this.jsonEnabled()) {
+      return scan;
+    }
 
     await this.displayInteractiveTables(scan, validStatuses);
 
@@ -123,6 +132,37 @@ export default class ScanEol extends Command {
           message: 'Press enter to continue...',
         },
       ]);
+    }
+  }
+
+  private async saveReport(scan: ScanResult, validStatuses: string[]): Promise<void> {
+    console.log('validStatuses', validStatuses);
+    try {
+      // Filter components based on withStatus
+      const filteredComponents = [];
+      for (const [_, component] of scan.components.entries()) {
+        if (validStatuses.includes(component.info.status)) {
+          filteredComponents.push(component);
+        }
+      }
+
+      fs.writeFileSync('nes.eol.json', JSON.stringify({ components: filteredComponents }, null, 2));
+      this.log('Report saved to nes.eol.json');
+    } catch (error) {
+      if (isErrnoException(error)) {
+        switch (error.code) {
+          case 'EACCES':
+            this.error('Permission denied. Unable to save report to nes.eol.json');
+            break;
+          case 'ENOSPC':
+            this.error('No space left on device. Unable to save report to nes.eol.json');
+            break;
+          default:
+            this.error(`Failed to save report: ${getErrorMessage(error)}`);
+        }
+      } else {
+        this.error(`Failed to save report: ${getErrorMessage(error)}`);
+      }
     }
   }
 }
