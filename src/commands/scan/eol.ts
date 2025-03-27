@@ -1,10 +1,11 @@
 import { Command, Flags, ux } from '@oclif/core';
-
+import inquirer from 'inquirer';
 import { submitScan } from '../../api/nes/nes.client.ts';
-import { type ScanResult, VALID_STATUSES } from '../../api/types/nes.types.ts';
+import { type ComponentStatus, type ScanResult, VALID_STATUSES } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
+import { createTableForStatus, promptTableSelection } from '../../ui/eol.ui.ts';
 import ScanSbom from './sbom.ts';
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
@@ -38,6 +39,11 @@ export default class ScanEol extends Command {
       delimiter: ',',
       default: ['EOL'],
     }),
+    getCustomerSupport: Flags.boolean({
+      char: 'c',
+      description: 'Get Never-Ending Support for End-of-Life components',
+      default: false,
+    }),
   };
 
   public async run(): Promise<ScanResult | { components: [] }> {
@@ -49,9 +55,7 @@ export default class ScanEol extends Command {
 
     ux.action.stop('Scan completed');
 
-    // TODO:
-    // - display rows using cli table
-    // - save to file
+    await this.displayInteractiveTables(scan);
 
     return scan;
   }
@@ -76,5 +80,38 @@ export default class ScanEol extends Command {
     }
 
     return { scan, purls };
+  }
+
+  private async displayInteractiveTables(scan: ScanResult): Promise<void> {
+    // Count components by status
+    const statusCounts: Record<ComponentStatus, number> = {
+      EOL: 0,
+      LTS: 0,
+      OK: 0,
+      UNKNOWN: 0,
+    };
+
+    for (const [_, component] of scan.components) {
+      statusCounts[component.info.status]++;
+    }
+
+    while (true) {
+      const selectedStatus = await promptTableSelection(statusCounts);
+      if (selectedStatus === 'exit') break;
+
+      const table = createTableForStatus(scan.components, selectedStatus);
+      console.log(`\n${selectedStatus} Components:`);
+      console.log(table.toString());
+      console.log('\nPress any key to continue...');
+
+      // Wait for user input before showing menu again
+      await inquirer.prompt([
+        {
+          type: 'input',
+          name: 'continue',
+          message: 'Press enter to continue...',
+        },
+      ]);
+    }
   }
 }

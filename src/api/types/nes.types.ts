@@ -38,8 +38,10 @@ export interface ScanWarning {
   diagnostics?: Record<string, unknown>;
 }
 
+export type ScanResultComponentsMap = Map<string, ScanResultComponent>;
+
 export interface ScanResult {
-  components: Map<string, ScanResultComponent>;
+  components: ScanResultComponentsMap;
   diagnostics?: Record<string, unknown>;
   message: string;
   success: boolean;

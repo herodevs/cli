@@ -14,7 +14,6 @@ import type { CdxCreator } from '../../../src/service/eol/eol.svc.ts';
 import { buildScanResult } from '../../../src/service/nes/nes.svc.ts';
 import { extractPurls } from '../../../src/service/purls.svc.ts';
 import { FetchMock } from '../../utils/mocks/fetch.mock.ts';
-import { InquirerMock } from '../../utils/mocks/ui.mock.ts';
 
 // Toggle off if you want to try against an actual server
 const MOCK_GQL = true;
@@ -40,12 +39,8 @@ describe('scan:eol', () => {
     if (!bomJson) fail('No bomJson');
     // TODO: rework this to not require all teh methods for testing
     // dev note: pretending to process the output of our mock, so it matches
-    const lines = await prepareRows(await extractPurls(bomJson), buildScanResult(mocked.simple), []);
 
     // now that we've got the mocked options for the UI, we can pretend one is selected
-    new InquirerMock().push({
-      selected: [lines[0]],
-    });
 
     if (MOCK_GQL) {
       new FetchMock().addGraphQL({
