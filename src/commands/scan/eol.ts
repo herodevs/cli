@@ -1,6 +1,6 @@
+import fs from 'node:fs';
 import { Command, Flags, ux } from '@oclif/core';
 import inquirer from 'inquirer';
-import fs from 'node:fs';
 import { submitScan } from '../../api/nes/nes.client.ts';
 import {
   type ComponentStatus,

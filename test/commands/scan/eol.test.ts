@@ -9,10 +9,8 @@ import * as sinon from 'sinon';
 import type { ScanResponseReport, ScanResult } from '../../../src/api/types/nes.types.ts';
 import { default as SbomScan } from '../../../src/commands/scan/sbom.ts';
 import type { Sbom } from '../../../src/service/eol/cdx.svc.ts';
-import { cdxgen, prepareRows } from '../../../src/service/eol/eol.svc.ts';
+import { cdxgen } from '../../../src/service/eol/eol.svc.ts';
 import type { CdxCreator } from '../../../src/service/eol/eol.svc.ts';
-import { buildScanResult } from '../../../src/service/nes/nes.svc.ts';
-import { extractPurls } from '../../../src/service/purls.svc.ts';
 import { FetchMock } from '../../utils/mocks/fetch.mock.ts';
 
 // Toggle off if you want to try against an actual server
