@@ -13,6 +13,7 @@ import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
 import { createTableForStatus, promptTableSelection } from '../../ui/eol.ui.ts';
 import ScanSbom from './sbom.ts';
+import type { Table } from 'cli-table3';
 
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
@@ -108,6 +109,9 @@ export default class ScanEol extends Command {
       UNKNOWN: 0,
     };
 
+    // Create a cache for tables
+    const tableCache = new Map<ComponentStatus, Table>();
+
     // Count only components with allowed statuses
     for (const [_, component] of scan.components) {
       if (withStatus.includes(component.info.status)) {
@@ -119,7 +123,14 @@ export default class ScanEol extends Command {
       const selectedStatus = await promptTableSelection(statusCounts);
       if (selectedStatus === 'exit') break;
 
-      const table = createTableForStatus(scan.components, selectedStatus);
+      // Check cache first
+      let table = tableCache.get(selectedStatus);
+      if (!table) {
+        // Create and cache table if not found
+        table = createTableForStatus(scan.components, selectedStatus);
+        tableCache.set(selectedStatus, table);
+      }
+
       this.log(`\n${selectedStatus} Components:`);
       this.log(table.toString());
       this.log('\nPress any key to continue...');
