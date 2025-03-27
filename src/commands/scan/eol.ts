@@ -100,9 +100,9 @@ export default class ScanEol extends Command {
       if (selectedStatus === 'exit') break;
 
       const table = createTableForStatus(scan.components, selectedStatus);
-      console.log(`\n${selectedStatus} Components:`);
-      console.log(table.toString());
-      console.log('\nPress any key to continue...');
+      this.log(`\n${selectedStatus} Components:`);
+      this.log(table.toString());
+      this.log('\nPress any key to continue...');
 
       // Wait for user input before showing menu again
       await inquirer.prompt([
