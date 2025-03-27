@@ -40,15 +40,10 @@ export default class ScanEol extends Command {
       default: false,
       description: 'Save the generated SBOM as nes.sbom.json in the scanned directory',
     }),
-    withStatus: Flags.string({
-      char: 'w',
-      description: `Show components with specific statuses (comma-separated). Valid values: ${VALID_STATUSES.join(
-        ', ',
-      )}`,
-      options: VALID_STATUSES,
-      multiple: true,
-      delimiter: ',',
-      default: ['EOL', 'LTS', 'OK', 'UNKNOWN'],
+    all: Flags.boolean({
+      char: 'a',
+      description: 'Show all components (default is EOL and LTS only)',
+      default: false,
     }),
     getCustomerSupport: Flags.boolean({
       char: 'c',
@@ -64,17 +59,15 @@ export default class ScanEol extends Command {
 
     ux.action.stop('\nScan completed');
 
-    const validStatuses = validateComponentStatuses(flags.withStatus);
-
     if (flags.save) {
-      await this.saveReport(scan, validStatuses);
+      await this.saveReport(scan, flags.all);
     }
 
     if (this.jsonEnabled()) {
       return scan;
     }
 
-    await this.displayInteractiveResults(scan, validStatuses);
+    await this.displayInteractiveResults(scan, flags.all);
 
     return scan;
   }
@@ -101,8 +94,8 @@ export default class ScanEol extends Command {
     return scan;
   }
 
-  private async displayInteractiveResults(scan: ScanResult, withStatus: ComponentStatus[]): Promise<void> {
-    const statusCounts = initializeStatusCounts(scan, withStatus);
+  private async displayInteractiveResults(scan: ScanResult, all: boolean): Promise<void> {
+    const statusCounts = initializeStatusCounts(scan, all);
 
     while (true) {
       const selectedStatus = await promptStatusSelection(statusCounts);
@@ -114,15 +107,14 @@ export default class ScanEol extends Command {
     }
   }
 
-  private async saveReport(scan: ScanResult, validStatuses: string[]): Promise<void> {
+  private async saveReport(scan: ScanResult, all: boolean): Promise<void> {
     try {
-      // Filter components based on withStatus
-      const filteredComponents = [];
-      for (const [_, component] of scan.components.entries()) {
-        if (validStatuses.includes(component.info.status)) {
-          filteredComponents.push(component);
-        }
-      }
+      const filteredComponents = Array.from(scan.components.entries())
+        .filter(([_, component]) => {
+          const status = component.info.status;
+          return all ? true : status === 'EOL' || status === 'LTS';
+        })
+        .map(([_, component]) => component);
 
       fs.writeFileSync('nes.eol.json', JSON.stringify({ components: filteredComponents }, null, 2));
       this.log('Report saved to nes.eol.json');

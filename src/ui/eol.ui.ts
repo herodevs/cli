@@ -20,8 +20,9 @@ export function colorizeStatus(status: ComponentStatus): string {
   return ux.colorize(getColorForStatus(status), status);
 }
 
-function formatSimpleComponent(purl: string): string {
-  return `  • ${truncatePurl(purl)}`;
+function formatSimpleComponent(purl: string, status: ComponentStatus): string {
+  const unknownIndicator = status === 'UNKNOWN' ? ux.colorize('blue', ' *') : '';
+  return `  • ${truncatePurl(purl)}${unknownIndicator}`;
 }
 
 function formatDetailedComponent(
@@ -46,13 +47,18 @@ function formatDetailedComponent(
 
 function getMatchingComponents(
   components: ScanResultComponentsMap,
-  status: ComponentStatus,
+  status: ComponentStatus | 'OTHER',
 ): Array<[string, ScanResultComponent]> {
-  return Array.from(components.entries()).filter(([_, component]) => component.info.status === status);
+  return Array.from(components.entries()).filter(([_, component]) => {
+    if (status === 'OTHER') {
+      return component.info.status === 'OK' || component.info.status === 'UNKNOWN';
+    }
+    return component.info.status === status;
+  });
 }
 
-function formatComponentList(components: string[], status: ComponentStatus): string {
-  const separator = status === 'OK' || status === 'UNKNOWN' ? '\n' : '\n\n';
+function formatComponentList(components: string[], status: ComponentStatus | 'OTHER'): string {
+  const separator = status === 'EOL' || status === 'LTS' ? '\n\n' : '\n';
   const header = ux.colorize('bold', `${status} Components (${components.length} found):`);
   const line = '─'.repeat(50);
   const separatorLine = `\n${ux.colorize('dim', `  ${line}`)}`;
@@ -60,14 +66,15 @@ function formatComponentList(components: string[], status: ComponentStatus): str
   return `${header}${separatorLine}\n${components.join(separator)}`;
 }
 
-export function createStatusDisplay(components: ScanResultComponentsMap, status: ComponentStatus): string {
+export function createStatusDisplay(components: ScanResultComponentsMap, status: ComponentStatus | 'OTHER'): string {
   const matchingComponents = getMatchingComponents(components, status).map(([purl, component]) => {
-    if (status === 'OK' || status === 'UNKNOWN') {
-      return formatSimpleComponent(purl);
+    // For EOL and LTS, keep detailed view
+    if (component.info.status === 'EOL' || component.info.status === 'LTS') {
+      const { eolAt, daysEol } = component.info;
+      return formatDetailedComponent(purl, eolAt, daysEol, component.info.status);
     }
-
-    const { eolAt, daysEol } = component.info;
-    return formatDetailedComponent(purl, eolAt, daysEol, status);
+    // For others (OK, UNKNOWN), use simple view with potential unknown indicator
+    return formatSimpleComponent(purl, component.info.status);
   });
 
   return formatComponentList(matchingComponents, status);
@@ -95,24 +102,41 @@ export async function promptStatusSelection(
   return selection;
 }
 
-export function initializeStatusCounts(
-  scan: ScanResult,
-  withStatus: ComponentStatus[],
-): Record<ComponentStatus, number> {
-  const statusCounts: Record<ComponentStatus, number> = {
+export function initializeStatusCounts(scan: ScanResult, all: boolean): Record<string, number> {
+  // If not showing all, only track EOL and LTS
+  if (!all) {
+    const counts = {
+      EOL: 0,
+      LTS: 0,
+    };
+
+    for (const [_, component] of scan.components) {
+      const status = component.info.status;
+      if (status === 'EOL' || status === 'LTS') {
+        counts[status]++;
+      }
+    }
+
+    return counts;
+  }
+
+  // When showing all, group OK and UNKNOWN under OTHER
+  const counts = {
     EOL: 0,
     LTS: 0,
-    OK: 0,
-    UNKNOWN: 0,
+    OTHER: 0,
   };
 
   for (const [_, component] of scan.components) {
-    if (withStatus.includes(component.info.status)) {
-      statusCounts[component.info.status]++;
+    const status = component.info.status;
+    if (status === 'EOL' || status === 'LTS') {
+      counts[status]++;
+    } else {
+      counts.OTHER++;
     }
   }
 
-  return statusCounts;
+  return counts;
 }
 
 export async function promptForContinue(): Promise<void> {
