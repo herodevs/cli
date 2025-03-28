@@ -1,4 +1,5 @@
 import { lookup } from 'node:dns/promises';
+import http from 'node:http';
 import https from 'node:https';
 import * as apollo from '@apollo/client/core/index.js';
 import { ApolloError } from '../service/error.svc.ts';
@@ -33,17 +34,20 @@ const createCustomFetch = () => {
 
       return new Promise((resolve, reject) => {
         const headers = init?.headers as Record<string, string> | undefined;
-        const req = https.request(
+        const isHttps = urlObj.protocol === 'https:';
+        const client = isHttps ? https : http;
+
+        const req = client.request(
           {
             host: ipv4.address,
-            port: urlObj.port || '443',
+            port: urlObj.port || (isHttps ? '443' : '80'),
             path: '/graphql',
             method: init?.method,
             headers: {
               ...headers,
               Host: urlObj.hostname,
             },
-            servername: urlObj.hostname,
+            ...(isHttps ? { servername: urlObj.hostname } : {}),
           },
           (res) => {
             const chunks: Buffer[] = [];
