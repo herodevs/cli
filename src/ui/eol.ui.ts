@@ -37,62 +37,30 @@ function formatDetailedComponent(
     .join('\n');
 }
 
-export function createStatusDisplay(components: ScanResultComponentsMap, all: boolean): [string[], string[]] {
-  const regularOutput: string[] = [];
-  const criticalOutput: Array<{ output: string; daysEol: number }> = [];
+export function createStatusDisplay(
+  components: ScanResultComponentsMap,
+  all: boolean,
+): Record<ComponentStatus, string[]> {
+  const statusOutput: Record<ComponentStatus, string[]> = {
+    UNKNOWN: [],
+    OK: [],
+    LTS: [],
+    EOL: [],
+  };
 
   // Single loop to separate and format components
   for (const [purl, component] of components.entries()) {
     const { status, eolAt, daysEol } = component.info;
 
-    if (status === 'EOL' || status === 'LTS') {
-      const output = formatDetailedComponent(purl, eolAt, daysEol, status);
-      criticalOutput.push({ output, daysEol: daysEol ?? 0 });
-    } else if (all) {
-      regularOutput.push(formatSimpleComponent(purl, status));
-    }
-  }
-
-  // Sort only the critical components by daysEol
-  const sortedCriticalOutput = criticalOutput.sort((a, b) => b.daysEol - a.daysEol).map((item) => item.output);
-
-  // Combine with separator if both arrays have content
-  return [regularOutput, sortedCriticalOutput];
-}
-
-export function initializeStatusCounts(scan: ScanResult, all: boolean): Record<string, number> {
-  // If not showing all, only track EOL and LTS
-  if (!all) {
-    const counts = {
-      EOL: 0,
-      LTS: 0,
-    };
-
-    for (const [_, component] of scan.components) {
-      const status = component.info.status;
-      if (status === 'EOL' || status === 'LTS') {
-        counts[status]++;
+    if (all) {
+      if (status === 'UNKNOWN' || status === 'OK') {
+        statusOutput[status].push(formatSimpleComponent(purl, status));
       }
     }
-
-    return counts;
-  }
-
-  // When showing all, group OK and UNKNOWN under OTHER
-  const counts = {
-    EOL: 0,
-    LTS: 0,
-    OTHER: 0,
-  };
-
-  for (const [_, component] of scan.components) {
-    const status = component.info.status;
-    if (status === 'EOL' || status === 'LTS') {
-      counts[status]++;
-    } else {
-      counts.OTHER++;
+    if (status === 'LTS' || status === 'EOL') {
+      statusOutput[status].push(formatDetailedComponent(purl, eolAt, daysEol, status));
     }
   }
 
-  return counts;
+  return statusOutput;
 }
