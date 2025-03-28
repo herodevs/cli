@@ -83,9 +83,7 @@ export default class ReportPurls extends Command {
       }
 
       // Return wrapped object with metadata
-      return {
-        purls,
-      };
+      return { purls };
     } catch (error) {
       this.error(`Failed to generate PURLs: ${getErrorMessage(error)}`);
     }

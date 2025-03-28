@@ -5,6 +5,7 @@ import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
+import { parsePurlsFile } from '../../service/purls.svc.ts';
 import { createStatusDisplay } from '../../ui/eol.ui.ts';
 import { INDICATORS, STATUS_COLORS } from '../../ui/shared.us.ts';
 import ScanSbom from './sbom.ts';
@@ -15,12 +16,17 @@ export default class ScanEol extends Command {
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
     '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
+    '<%= config.bin %> <%= command.id %> --purls=path/to/purls.json',
     '<%= config.bin %> <%= command.id %> -a --dir=./my-project',
   ];
   static override flags = {
     file: Flags.string({
       char: 'f',
       description: 'The file path of an existing cyclonedx sbom to scan for EOL',
+    }),
+    purls: Flags.string({
+      char: 'p',
+      description: 'The file path of a list of purls to scan for EOL',
     }),
     dir: Flags.string({
       char: 'd',
@@ -50,8 +56,7 @@ export default class ScanEol extends Command {
       this.log(ux.colorize('yellow', 'Never-Ending Support is on the way. Please stay tuned for this feature.'));
     }
 
-    const sbom = await ScanSbom.loadSbom(flags, this.config);
-    const scan = await this.scanSbom(sbom);
+    const scan = await this.getScan(flags, this.config);
 
     ux.action.stop('\nScan completed');
 
@@ -68,6 +73,27 @@ export default class ScanEol extends Command {
     await this.displayResults(scan, flags.all);
 
     return { components: filteredComponents };
+  }
+
+  private async getScan(flags: Record<string, string>, config: Command['config']): Promise<ScanResult> {
+    if (flags.purls) {
+      const purls = this.getPurlsFromFile(flags.purls);
+      return submitScan(purls);
+    }
+
+    const sbom = await ScanSbom.loadSbom(flags, config);
+    const scan = this.scanSbom(sbom);
+
+    return scan;
+  }
+
+  private getPurlsFromFile(filePath: string): string[] {
+    try {
+      const purlsFileString = fs.readFileSync(filePath, 'utf8');
+      return parsePurlsFile(purlsFileString);
+    } catch (error) {
+      this.error(`Failed to read purls file. ${getErrorMessage(error)}`);
+    }
   }
 
   private async scanSbom(sbom: Sbom): Promise<ScanResult> {
