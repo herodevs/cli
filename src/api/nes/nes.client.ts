@@ -58,21 +58,22 @@ function combineScanResults(results: ScanResult[]): ScanResult {
   return combinedResults;
 }
 
-const BATCH_SIZE = 1000;
+export function createBatches(items: string[], batchSize: number): string[][] {
+  return Array.from({ length: Math.ceil(items.length / batchSize) }, (_, i) =>
+    items.slice(i * batchSize, (i + 1) * batchSize),
+  );
+}
 
-export async function batchSubmitPurls(purls: string[]): Promise<ScanResult> {
+export async function batchSubmitPurls(purls: string[], batchSize = 1000): Promise<ScanResult> {
   try {
-    const batches = Array.from(
-      { length: Math.ceil(purls.length / BATCH_SIZE) },
-      (_, i) => purls.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE)
-    );
+    const batches = createBatches(purls, batchSize);
     debugLogger('Processing %d batches', batches.length);
 
     const results = await Promise.allSettled(
       batches.map((batch, index) => {
         debugLogger('Starting batch %d', index + 1);
         return submitScan(batch);
-      })
+      }),
     );
 
     const successfulResults: ScanResult[] = [];
@@ -89,7 +90,7 @@ export async function batchSubmitPurls(purls: string[]): Promise<ScanResult> {
     }
 
     if (successfulResults.length === 0) {
-      throw new Error('All batches failed:\n' + errors.join('\n'));
+      throw new Error(`All batches failed:\n${errors.join('\n')}`);
     }
 
     const combinedResults = combineScanResults(successfulResults);
@@ -101,10 +102,6 @@ export async function batchSubmitPurls(purls: string[]): Promise<ScanResult> {
     return combinedResults;
   } catch (error) {
     debugLogger('Fatal error in batchSubmitPurls: %s', error);
-    throw new Error(
-      `Failed to process purls: ${
-        error instanceof Error ? error.message : String(error)
-      }`
-    );
+    throw new Error(`Failed to process purls: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
