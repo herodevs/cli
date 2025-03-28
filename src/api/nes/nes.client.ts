@@ -68,26 +68,25 @@ export async function batchSubmitPurls(purls: string[]): Promise<ScanResult> {
     );
     debugLogger('Processing %d batches', batches.length);
 
+    const results = await Promise.allSettled(
+      batches.map((batch, index) => {
+        debugLogger('Starting batch %d', index + 1);
+        return submitScan(batch);
+      })
+    );
+
     const successfulResults: ScanResult[] = [];
     const errors: string[] = [];
 
-    await Promise.all(
-      batches.map(async (batch, index) => {
-        try {
-          debugLogger('Starting batch %d', index + 1);
-          const result = await submitScan(batch);
-          debugLogger('Batch %d completed successfully', index + 1);
-          successfulResults.push(result);
-        } catch (error) {
-          debugLogger('Batch %d failed: %s', index + 1, error);
-          errors.push(
-            `Batch ${index + 1}: ${
-              error instanceof Error ? error.message : String(error)
-            }`
-          );
-        }
-      })
-    );
+    for (const [index, result] of results.entries()) {
+      if (result.status === 'fulfilled') {
+        debugLogger('Batch %d completed successfully', index + 1);
+        successfulResults.push(result.value);
+      } else {
+        debugLogger('Batch %d failed: %s', index + 1, result.reason);
+        errors.push(`Batch ${index + 1}: ${result.reason}`);
+      }
+    }
 
     if (successfulResults.length === 0) {
       throw new Error('All batches failed:\n' + errors.join('\n'));
