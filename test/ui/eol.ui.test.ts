@@ -4,7 +4,7 @@ import { getColorForStatus, truncatePurl } from '../../src/ui/eol.ui.ts';
 
 describe('EOL UI', () => {
   describe('truncatePurl', () => {
-    it('returns original PURL if length is 50 or less', () => {
+    it('returns original PURL if length is 60 or less', () => {
       // Arrange
       const purl = 'pkg:npm/test@1.0.0';
 
@@ -15,11 +15,12 @@ describe('EOL UI', () => {
       assert.strictEqual(result, purl);
     });
 
-    it('truncates PURL if length is greater than 50', () => {
+    it('truncates PURL if length is greater than 60', () => {
       // Arrange
-      const longPurl = 'pkg:npm/very-long-package-name-that-exceeds-fifty-characters@1.0.0';
-      const sliced = 'pkg:npm/very-long-package-name-that-exceeds-fifty-characters'.slice(0, 47);
-      const expected = `${sliced}...`;
+      const longPurl =
+        'pkg:npm/very-long-package-name-that-exceeds-sixty-characters-significantly@1.0.0';
+      const expected = `${longPurl.slice(0, 57)}...`;
+
       // Act
       const result = truncatePurl(longPurl);
 
