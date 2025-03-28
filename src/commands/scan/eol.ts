@@ -45,6 +45,11 @@ export default class ScanEol extends Command {
 
   public async run(): Promise<{ components: ScanResultComponent[] }> {
     const { flags } = await this.parse(ScanEol);
+
+    if (flags.getCustomerSupport) {
+      this.log(ux.colorize('yellow', 'Never-Ending Support is on the way. Please stay tuned for this feature.'));
+    }
+
     const sbom = await ScanSbom.loadSbom(flags, this.config);
     const scan = await this.scanSbom(sbom);
 
