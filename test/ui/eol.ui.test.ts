@@ -17,8 +17,7 @@ describe('EOL UI', () => {
 
     it('truncates PURL if length is greater than 60', () => {
       // Arrange
-      const longPurl =
-        'pkg:npm/very-long-package-name-that-exceeds-sixty-characters-significantly@1.0.0';
+      const longPurl = 'pkg:npm/very-long-package-name-that-exceeds-sixty-characters-significantly@1.0.0';
       const expected = `${longPurl.slice(0, 57)}...`;
 
       // Act
