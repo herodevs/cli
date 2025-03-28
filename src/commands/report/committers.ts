@@ -69,6 +69,9 @@ export default class Committers extends Command {
         }
         return reportData;
       }
+
+      const textOutput = formatAsText(reportData);
+
       if (csv) {
         // CSV mode
         const csvOutput = formatAsCsv(reportData);
@@ -80,12 +83,11 @@ export default class Committers extends Command {
             this.error(`Failed to save CSV report: ${getErrorMessage(error)}`);
           }
         } else {
-          this.log(csvOutput);
+          this.log(textOutput);
         }
         return csvOutput;
       }
-      // Text mode
-      const textOutput = formatAsText(reportData);
+
       if (save) {
         try {
           fs.writeFileSync(path.resolve('nes.committers.txt'), textOutput);
