@@ -77,6 +77,7 @@ export default class ScanEol extends Command {
 
   private async getScan(flags: Record<string, string>, config: Command['config']): Promise<ScanResult> {
     if (flags.purls) {
+      ux.action.start(`Scanning purls from ${flags.purls}`);
       const purls = this.getPurlsFromFile(flags.purls);
       return batchSubmitPurls(purls);
     }
