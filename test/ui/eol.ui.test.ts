@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { getColorForStatus, truncatePurl } from '../../src/ui/eol.ui.ts';
+import { truncatePurl } from '../../src/ui/eol.ui.ts';
 
 describe('EOL UI', () => {
   describe('truncatePurl', () => {
@@ -25,52 +25,6 @@ describe('EOL UI', () => {
 
       // Assert
       assert.strictEqual(result, expected);
-    });
-  });
-
-  describe('getColorForStatus', () => {
-    it('returns red for EOL status', () => {
-      // Arrange
-      const status = 'EOL';
-
-      // Act
-      const result = getColorForStatus(status);
-
-      // Assert
-      assert.strictEqual(result, 'red');
-    });
-
-    it('returns yellow for LTS status', () => {
-      // Arrange
-      const status = 'LTS';
-
-      // Act
-      const result = getColorForStatus(status);
-
-      // Assert
-      assert.strictEqual(result, 'yellow');
-    });
-
-    it('returns green for OK status', () => {
-      // Arrange
-      const status = 'OK';
-
-      // Act
-      const result = getColorForStatus(status);
-
-      // Assert
-      assert.strictEqual(result, 'green');
-    });
-
-    it('returns default for UNKNOWN status', () => {
-      // Arrange
-      const status = 'UNKNOWN';
-
-      // Act
-      const result = getColorForStatus(status);
-
-      // Assert
-      assert.strictEqual(result, 'default');
     });
   });
 });

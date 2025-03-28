@@ -6,6 +6,7 @@ import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
 import { createStatusDisplay, initializeStatusCounts } from '../../ui/eol.ui.ts';
+import { INDICATORS, STATUS_COLORS } from '../../ui/shared.us.ts';
 import ScanSbom from './sbom.ts';
 
 export default class ScanEol extends Command {
@@ -90,16 +91,38 @@ export default class ScanEol extends Command {
     const componentsToDisplay = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
     if (componentsToDisplay === 0) {
       if (!all) {
-        this.log('No End-of-Life or Long Term Support components found in scan.');
-        this.log('Use --all flag to view all components.');
+        this.log(ux.colorize('yellow', 'No End-of-Life or Long Term Support components found in scan.'));
+        this.log(ux.colorize('yellow', 'Use --all flag to view all components.'));
       } else {
-        this.log('No components found in scan.');
+        this.log(ux.colorize('yellow', 'No components found in scan.'));
       }
       return;
     }
 
-    const display = createStatusDisplay(scan.components, all);
-    this.log(display);
+    const [regularOutput, criticalOutput] = createStatusDisplay(scan.components, all);
+
+    this.log(ux.colorize('bold', 'Here are the results of the scan:'));
+    this.logLine();
+
+    if (regularOutput.length > 0) {
+      this.log(regularOutput.join('\n'));
+    }
+    if (criticalOutput.length > 0) {
+      this.log(criticalOutput.join('\n'));
+    }
+    this.logLine();
+    this.logLegend();
+  }
+
+  private logLine(): void {
+    this.log(ux.colorize('bold', '-'.repeat(50)));
+  }
+
+  private logLegend(): void {
+    this.log(ux.colorize(`${STATUS_COLORS.UNKNOWN}`, `${INDICATORS.UNKNOWN} = N/A`));
+    this.log(ux.colorize(`${STATUS_COLORS.OK}`, `${INDICATORS.OK} = OK`));
+    this.log(ux.colorize(`${STATUS_COLORS.LTS}`, `${INDICATORS.LTS}= Long Term Support (LTS)`));
+    this.log(ux.colorize(`${STATUS_COLORS.EOL}`, `${INDICATORS.EOL} = End of Life (EOL)`));
   }
 
   private async saveReport(scan: ScanResult, all: boolean): Promise<void> {
