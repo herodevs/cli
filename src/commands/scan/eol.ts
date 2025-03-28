@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import { Command, Flags, ux } from '@oclif/core';
-import { submitScan } from '../../api/nes/nes.client.ts';
+import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
@@ -78,7 +78,7 @@ export default class ScanEol extends Command {
   private async getScan(flags: Record<string, string>, config: Command['config']): Promise<ScanResult> {
     if (flags.purls) {
       const purls = this.getPurlsFromFile(flags.purls);
-      return submitScan(purls);
+      return batchSubmitPurls(purls);
     }
 
     const sbom = await ScanSbom.loadSbom(flags, config);
@@ -106,7 +106,7 @@ export default class ScanEol extends Command {
       this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
     }
     try {
-      scan = await submitScan(purls);
+      scan = await batchSubmitPurls(purls);
     } catch (error) {
       this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
     }
