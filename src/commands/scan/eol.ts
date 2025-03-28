@@ -1,21 +1,11 @@
 import fs from 'node:fs';
 import { Command, Flags, ux } from '@oclif/core';
 import { submitScan } from '../../api/nes/nes.client.ts';
-import {
-  type ComponentStatus,
-  type ScanResult,
-  VALID_STATUSES,
-  validateComponentStatuses,
-} from '../../api/types/nes.types.ts';
+import type { ScanResult } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
-import {
-  createStatusDisplay,
-  initializeStatusCounts,
-  promptForContinue,
-  promptStatusSelection,
-} from '../../ui/eol.ui.ts';
+import { createStatusDisplay, initializeStatusCounts } from '../../ui/eol.ui.ts';
 import ScanSbom from './sbom.ts';
 
 export default class ScanEol extends Command {
@@ -67,7 +57,7 @@ export default class ScanEol extends Command {
       return scan;
     }
 
-    await this.displayInteractiveResults(scan, flags.all);
+    await this.displayResults(scan, flags.all);
 
     return scan;
   }
@@ -94,13 +84,11 @@ export default class ScanEol extends Command {
     return scan;
   }
 
-  private async displayInteractiveResults(scan: ScanResult, all: boolean): Promise<void> {
-    const statusCounts = initializeStatusCounts(scan, all);
-
+  private async displayResults(scan: ScanResult, all: boolean): Promise<void> {
     // Check if there are any components to display
-    const totalComponents = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
-
-    if (totalComponents === 0) {
+    const statusCounts = initializeStatusCounts(scan, all);
+    const componentsToDisplay = Object.values(statusCounts).reduce((sum, count) => sum + count, 0);
+    if (componentsToDisplay === 0) {
       if (!all) {
         this.log('No End-of-Life or Long Term Support components found in scan.');
         this.log('Use --all flag to view all components.');
@@ -110,14 +98,8 @@ export default class ScanEol extends Command {
       return;
     }
 
-    while (true) {
-      const selectedStatus = await promptStatusSelection(statusCounts);
-      if (selectedStatus === 'exit') break;
-
-      const output = createStatusDisplay(scan.components, selectedStatus);
-      this.log(output);
-      await promptForContinue();
-    }
+    const display = createStatusDisplay(scan.components, all);
+    this.log(display);
   }
 
   private async saveReport(scan: ScanResult, all: boolean): Promise<void> {

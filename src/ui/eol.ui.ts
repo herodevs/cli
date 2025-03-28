@@ -1,15 +1,9 @@
 import { ux } from '@oclif/core';
-import inquirer from 'inquirer';
-import type {
-  ComponentStatus,
-  ScanResult,
-  ScanResultComponent,
-  ScanResultComponentsMap,
-} from '../api/types/nes.types.ts';
+import type { ComponentStatus, ScanResult, ScanResultComponentsMap } from '../api/types/nes.types.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
 
 export function truncatePurl(purl: string): string {
-  return purl.length > 50 ? `${purl.slice(0, 47)}...` : purl;
+  return purl.length > 60 ? `${purl.slice(0, 57)}...` : purl;
 }
 
 export function getColorForStatus(status: ComponentStatus): string {
@@ -21,8 +15,8 @@ export function colorizeStatus(status: ComponentStatus): string {
 }
 
 function formatSimpleComponent(purl: string, status: ComponentStatus): string {
-  const unknownIndicator = status === 'UNKNOWN' ? ux.colorize('blue', ' *') : '';
-  return `  • ${truncatePurl(purl)}${unknownIndicator}`;
+  const indicator = status === 'UNKNOWN' ? ux.colorize('blue', '*') : '•';
+  return `  ${indicator} ${truncatePurl(purl)}`;
 }
 
 function formatDetailedComponent(
@@ -33,73 +27,35 @@ function formatDetailedComponent(
 ): string {
   const eolAtString = parseMomentToSimpleDate(eolAt);
   const daysEolString = daysEol ? `${daysEol} days` : '';
+  const statusColor = getColorForStatus(status);
   const statusText = colorizeStatus(status);
 
   return [
-    `  • ${ux.colorize('bold', truncatePurl(purl))}`,
+    `  • ${ux.colorize(`${statusColor}`, truncatePurl(purl))}`,
     `    ⮑  Status: ${statusText}`,
     `    ⮑  EOL Date: ${eolAtString}`,
-    daysEolString && `    ⮑  Time Elapsed: ${ux.colorize('red', daysEolString)}`,
+    daysEolString && `    ⮑  Time Elapsed: ${daysEolString}`,
   ]
     .filter(Boolean)
     .join('\n');
 }
 
-function getMatchingComponents(
-  components: ScanResultComponentsMap,
-  status: ComponentStatus | 'OTHER',
-): Array<[string, ScanResultComponent]> {
-  return Array.from(components.entries()).filter(([_, component]) => {
-    if (status === 'OTHER') {
-      return component.info.status === 'OK' || component.info.status === 'UNKNOWN';
-    }
-    return component.info.status === status;
-  });
-}
+export function createStatusDisplay(components: ScanResultComponentsMap, all: boolean): string {
+  const matchingComponents: string[] = [];
 
-function formatComponentList(components: string[], status: ComponentStatus | 'OTHER'): string {
-  const separator = status === 'EOL' || status === 'LTS' ? '\n\n' : '\n';
-  const header = ux.colorize('bold', `${status} Components (${components.length} found):`);
-  const line = '─'.repeat(50);
-  const separatorLine = `\n${ux.colorize('dim', `  ${line}`)}`;
-
-  return `${header}${separatorLine}\n${components.join(separator)}`;
-}
-
-export function createStatusDisplay(components: ScanResultComponentsMap, status: ComponentStatus | 'OTHER'): string {
-  const matchingComponents = getMatchingComponents(components, status).map(([purl, component]) => {
+  Array.from(components.entries()).map(([purl, component]) => {
     // For EOL and LTS, keep detailed view
     if (component.info.status === 'EOL' || component.info.status === 'LTS') {
       const { eolAt, daysEol } = component.info;
-      return formatDetailedComponent(purl, eolAt, daysEol, component.info.status);
+      matchingComponents.push(formatDetailedComponent(purl, eolAt, daysEol, component.info.status));
     }
     // For others (OK, UNKNOWN), use simple view with potential unknown indicator
-    return formatSimpleComponent(purl, component.info.status);
+    else if (all) {
+      matchingComponents.push(formatSimpleComponent(purl, component.info.status));
+    }
   });
 
-  return formatComponentList(matchingComponents, status);
-}
-
-export async function promptStatusSelection(
-  statusCounts: Record<ComponentStatus, number>,
-): Promise<ComponentStatus | 'exit'> {
-  const { selection } = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'selection',
-      message: 'Select status to view:',
-      choices: [
-        ...Object.entries(statusCounts)
-          .filter(([_, count]) => count > 0)
-          .map(([status, count]) => ({
-            name: `${colorizeStatus(status as ComponentStatus)} (${count} components)`,
-            value: status,
-          })),
-        { name: 'Exit', value: 'exit' },
-      ],
-    },
-  ]);
-  return selection;
+  return matchingComponents.join('\n');
 }
 
 export function initializeStatusCounts(scan: ScanResult, all: boolean): Record<string, number> {
@@ -137,14 +93,4 @@ export function initializeStatusCounts(scan: ScanResult, all: boolean): Record<s
   }
 
   return counts;
-}
-
-export async function promptForContinue(): Promise<void> {
-  await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'continue',
-      message: 'Press enter to continue...',
-    },
-  ]);
 }

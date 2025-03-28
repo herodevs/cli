@@ -40,8 +40,7 @@
     "@cyclonedx/cdxgen": "^11.2.2",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
-    "graphql": "^16.8.1",
-    "inquirer": "^12.5.0"
+    "graphql": "^16.8.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
