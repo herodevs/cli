@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { Command, Flags, ux } from '@oclif/core';
 import { submitScan } from '../../api/nes/nes.client.ts';
-import type { ScanResult } from '../../api/types/nes.types.ts';
+import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
@@ -43,24 +43,26 @@ export default class ScanEol extends Command {
     }),
   };
 
-  public async run(): Promise<ScanResult | { components: [] }> {
+  public async run(): Promise<{ components: ScanResultComponent[] }> {
     const { flags } = await this.parse(ScanEol);
     const sbom = await ScanSbom.loadSbom(flags, this.config);
     const scan = await this.scanSbom(sbom);
 
     ux.action.stop('\nScan completed');
 
+    const filteredComponents = this.getFilteredComponents(scan, flags.all);
+
     if (flags.save) {
-      await this.saveReport(scan, flags.all);
+      await this.saveReport(filteredComponents);
     }
 
     if (this.jsonEnabled()) {
-      return scan;
+      return { components: filteredComponents };
     }
 
     await this.displayResults(scan, flags.all);
 
-    return scan;
+    return { components: filteredComponents };
   }
 
   private async scanSbom(sbom: Sbom): Promise<ScanResult> {
@@ -85,16 +87,15 @@ export default class ScanEol extends Command {
     return scan;
   }
 
-  private async saveReport(scan: ScanResult, all: boolean): Promise<void> {
-    try {
-      const filteredComponents = Array.from(scan.components.entries())
-        .filter(([_, component]) => {
-          const status = component.info.status;
-          return all ? true : status === 'EOL' || status === 'LTS';
-        })
-        .map(([_, component]) => component);
+  private getFilteredComponents(scan: ScanResult, all: boolean) {
+    return Array.from(scan.components.entries())
+      .filter(([_, component]) => all || ['EOL', 'LTS'].includes(component.info.status))
+      .map(([_, component]) => component);
+  }
 
-      fs.writeFileSync('nes.eol.json', JSON.stringify({ components: filteredComponents }, null, 2));
+  private async saveReport(components: ScanResultComponent[]): Promise<void> {
+    try {
+      fs.writeFileSync('nes.eol.json', JSON.stringify({ components }, null, 2));
       this.log('Report saved to nes.eol.json');
     } catch (error) {
       if (isErrnoException(error)) {
