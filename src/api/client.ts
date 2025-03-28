@@ -1,4 +1,3 @@
-import { lookup } from 'node:dns/promises';
 import http from 'node:http';
 import https from 'node:https';
 import * as apollo from '@apollo/client/core/index.js';
@@ -18,62 +17,88 @@ export interface ApolloHelper {
 
 const isNode18 = process.versions.node.startsWith('18');
 
-const createCustomFetch = () => {
+const createNode18Fetch = () => {
   return async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
     const uri = input instanceof Request ? input.url : input.toString();
-    debugLogger('Making fetch request to: %s', uri);
-    debugLogger('Fetch options: %O', {
-      method: init?.method,
-      headers: init?.headers,
-      body: init?.body ? JSON.parse(init.body as string) : undefined,
-    });
-    try {
-      const urlObj = new URL(uri);
-      const ipv4 = await lookup(urlObj.hostname, { family: 4 });
-      debugLogger('Resolved to IPv4: %s', ipv4.address);
+    debugLogger('Making Node18-compatible fetch request to: %s', uri);
 
+    try {
+      const url = new URL(uri);
+
+      // Skip custom handling for localhost
+      if (url.hostname === 'localhost' || url.hostname.includes('127.0.0.1')) {
+        return fetch(uri, init);
+      }
+
+      // Use a simplified approach that works around both IPv6 and certificate issues
       return new Promise((resolve, reject) => {
-        const headers = init?.headers as Record<string, string> | undefined;
-        const isHttps = urlObj.protocol === 'https:';
+        // Choose http or https module
+        const isHttps = url.protocol === 'https:';
         const client = isHttps ? https : http;
 
-        const req = client.request(
-          {
-            host: ipv4.address,
-            port: urlObj.port || (isHttps ? '443' : '80'),
-            path: '/graphql',
-            method: init?.method,
-            headers: {
-              ...headers,
-              Host: urlObj.hostname,
-            },
-            ...(isHttps ? { servername: urlObj.hostname } : {}),
+        // Set up the proper options for the request
+        const options = {
+          method: init?.method || 'GET',
+          headers: {
+            ...((init?.headers as Record<string, string>) || {}),
+            Host: url.hostname, // Important for SNI
           },
-          (res) => {
-            const chunks: Buffer[] = [];
-            res.on('data', (chunk) => chunks.push(chunk));
-            res.on('end', () => {
-              const response = new Response(Buffer.concat(chunks), {
-                status: res.statusCode,
-                statusText: res.statusMessage,
-                headers: res.headers as Record<string, string>,
-              });
-              resolve(response);
-            });
-          },
-        );
+          // For HTTPS: ensure proper hostname is used for cert validation
+          ...(isHttps
+            ? {
+                servername: url.hostname, // Important for SNI
+                rejectUnauthorized: true,
+                family: 4, // Force IPv4
+              }
+            : {
+                family: 4, // Force IPv4
+              }),
+        };
 
+        // Create the request
+        const req = client.request(url, options, (res) => {
+          const chunks: Buffer[] = [];
+          res.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
+          res.on('end', () => {
+            const responseBody = Buffer.concat(chunks);
+            const responseHeaders = new Headers();
+
+            // Convert Node.js headers to fetch Headers
+            for (const [key, values] of Object.entries(res.headers)) {
+              if (values) {
+                if (Array.isArray(values)) {
+                  for (const value of values) {
+                    responseHeaders.append(key, value);
+                  }
+                } else {
+                  responseHeaders.set(key, values);
+                }
+              }
+            }
+
+            // Create a Response object that matches the fetch API
+            const response = new Response(responseBody, {
+              status: res.statusCode || 200,
+              statusText: res.statusMessage || '',
+              headers: responseHeaders,
+            });
+
+            resolve(response);
+          });
+        });
+
+        // Handle errors
         req.on('error', (error) => {
           debugLogger('Request error: %O', error);
           reject(error);
         });
 
+        // Send body if provided
         if (init?.body) {
           req.write(init.body);
-          req.end();
-        } else {
-          req.end();
         }
+
+        req.end();
       });
     } catch (error) {
       debugLogger('Fetch error: %O', error);
@@ -94,7 +119,7 @@ export const createApollo = (url: string) => {
     link: apollo.ApolloLink.from([
       new apollo.HttpLink({
         uri: url,
-        fetch: isNode18 ? createCustomFetch() : undefined,
+        fetch: isNode18 ? createNode18Fetch() : undefined,
         credentials: 'same-origin',
       }),
     ]),
