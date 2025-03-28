@@ -52,7 +52,7 @@ export default class Committers extends Command {
 
     try {
       // Generate structured report data
-      const entries = await this.fetchGitCommitData(sinceDate);
+      const entries = this.fetchGitCommitData(sinceDate);
       this.log('Fetched %d commit entries', entries.length);
       const reportData = this.generateReportData(entries);
 

@@ -16,6 +16,22 @@ function formatSimpleComponent(purl: string, status: ComponentStatus): string {
   return `  ${INDICATORS[status]} ${ux.colorize(color, truncatePurl(purl))}`;
 }
 
+function getDaysEolString(daysEol: number | null): string {
+  // UNKNOWN || OK
+  if (daysEol === null) {
+    return '';
+  }
+  // LTS
+  if (daysEol < 0) {
+    return `${Math.abs(daysEol)} days from now`;
+  }
+  // EOL
+  if (daysEol === 0) {
+    return 'today';
+  }
+  return `${daysEol} days ago`;
+}
+
 function formatDetailedComponent(
   purl: string,
   eolAt: Date | null,
@@ -24,17 +40,13 @@ function formatDetailedComponent(
 ): string {
   const simpleComponent = formatSimpleComponent(purl, status);
   const eolAtString = parseMomentToSimpleDate(eolAt);
-  const daysEolString = daysEol ? `${daysEol} days` : '';
-  const statusText = colorizeStatus(status);
+  const daysEolString = getDaysEolString(daysEol);
 
-  return [
-    `${simpleComponent}`,
-    `    ⮑  Status: ${statusText}`,
-    `    ⮑  EOL Date: ${eolAtString}`,
-    daysEolString && `    ⮑  Time Elapsed: ${daysEolString}`,
-  ]
+  const output = [`${simpleComponent}`, `    ⮑  EOL Date: ${eolAtString} (${daysEolString})`]
     .filter(Boolean)
     .join('\n');
+
+  return output;
 }
 
 export function createStatusDisplay(

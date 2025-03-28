@@ -160,7 +160,7 @@ export default class ScanEol extends Command {
   }
 
   private logLegend(): void {
-    this.log(ux.colorize(`${STATUS_COLORS.UNKNOWN}`, `${INDICATORS.UNKNOWN} = N/A`));
+    this.log(ux.colorize(`${STATUS_COLORS.UNKNOWN}`, `${INDICATORS.UNKNOWN} = No Known Issues`));
     this.log(ux.colorize(`${STATUS_COLORS.OK}`, `${INDICATORS.OK} = OK`));
     this.log(ux.colorize(`${STATUS_COLORS.LTS}`, `${INDICATORS.LTS}= Long Term Support (LTS)`));
     this.log(ux.colorize(`${STATUS_COLORS.EOL}`, `${INDICATORS.EOL} = End of Life (EOL)`));
