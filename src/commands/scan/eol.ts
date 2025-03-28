@@ -1,9 +1,13 @@
+import fs from 'node:fs';
 import { Command, Flags, ux } from '@oclif/core';
-
-import { type ScanResult, VALID_STATUSES } from '../../api/types/nes.types.ts';
-import { prepareRows, scanForEol } from '../../service/eol/eol.svc.ts';
-import { promptComponentDetails } from '../../ui/eol.ui.ts';
-import SbomScan from './sbom.ts';
+import { submitScan } from '../../api/nes/nes.client.ts';
+import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
+import type { Sbom } from '../../service/eol/cdx.svc.ts';
+import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
+import { extractPurls } from '../../service/purls.svc.ts';
+import { createStatusDisplay } from '../../ui/eol.ui.ts';
+import { INDICATORS, STATUS_COLORS } from '../../ui/shared.us.ts';
+import ScanSbom from './sbom.ts';
 
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
@@ -11,7 +15,7 @@ export default class ScanEol extends Command {
   static override examples = [
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
     '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
-    '<%= config.bin %> <%= command.id %> -w EOL,UNKNOWN --dir=./my-project',
+    '<%= config.bin %> <%= command.id %> -a --dir=./my-project',
   ];
   static override flags = {
     file: Flags.string({
@@ -27,72 +31,138 @@ export default class ScanEol extends Command {
       default: false,
       description: 'Save the generated SBOM as nes.sbom.json in the scanned directory',
     }),
-    withStatus: Flags.string({
-      char: 'w',
-      description: `Show components with specific statuses (comma-separated). Valid values: ${VALID_STATUSES.join(
-        ', ',
-      )}`,
-      options: VALID_STATUSES,
-      multiple: true,
-      delimiter: ',',
-      default: ['EOL'],
+    all: Flags.boolean({
+      char: 'a',
+      description: 'Show all components (default is EOL and LTS only)',
+      default: false,
+    }),
+    getCustomerSupport: Flags.boolean({
+      char: 'c',
+      description: 'Get Never-Ending Support for End-of-Life components',
+      default: false,
     }),
   };
 
-  public async run(): Promise<ScanResult | { components: [] }> {
-    this.checkEolScanDisabled();
-
+  public async run(): Promise<{ components: ScanResultComponent[] }> {
     const { flags } = await this.parse(ScanEol);
-    const { dir: _dirFlag, file: _fileFlag, withStatus } = flags;
 
-    // Load the SBOM: Only pass the file, dir, and save flags to SbomScan
-    const sbomArgs = SbomScan.getSbomArgs(flags);
-    const sbomCommand = new SbomScan(sbomArgs, this.config);
-    const sbom = await sbomCommand.run();
-    if (!sbom) {
-      throw new Error('SBOM not generated');
-    }
-    // Scan the SBOM for EOL information
-    const { purls, scan } = await scanForEol(sbom);
-
-    ux.action.stop('Scan completed');
-
-    if (!scan?.components) {
-      if (_fileFlag) {
-        throw new Error(`Scan failed to generate for file path: ${_fileFlag}`);
-      }
-      if (_dirFlag) {
-        throw new Error(`Scan failed to generate for dir: ${_dirFlag}`);
-      }
-      throw new Error('Scan failed to generate components.');
+    if (flags.getCustomerSupport) {
+      this.log(ux.colorize('yellow', 'Never-Ending Support is on the way. Please stay tuned for this feature.'));
     }
 
-    const lines = await prepareRows(purls, scan, withStatus);
-    if (lines?.length === 0) {
-      this.log('No dependencies found');
-      return { components: [] };
+    const sbom = await ScanSbom.loadSbom(flags, this.config);
+    const scan = await this.scanSbom(sbom);
+
+    ux.action.stop('\nScan completed');
+
+    const filteredComponents = this.getFilteredComponents(scan, flags.all);
+
+    if (flags.save) {
+      await this.saveReport(filteredComponents);
     }
 
-    const r = await promptComponentDetails(lines);
-    this.log('What now %o', r);
+    if (this.jsonEnabled()) {
+      return { components: filteredComponents };
+    }
+
+    await this.displayResults(scan, flags.all);
+
+    return { components: filteredComponents };
+  }
+
+  private async scanSbom(sbom: Sbom): Promise<ScanResult> {
+    let scan: ScanResult;
+    let purls: string[];
+
+    try {
+      purls = await extractPurls(sbom);
+    } catch (error) {
+      this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
+    }
+    try {
+      scan = await submitScan(purls);
+    } catch (error) {
+      this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
+    }
+
+    if (scan.components.size === 0) {
+      this.warn('No components found in scan');
+    }
 
     return scan;
   }
 
-  private checkEolScanDisabled(override = true) {
-    // Check if running in beta version or pre v1.0.0
-    const version = this.config.version;
-    const [major] = version.split('.').map(Number);
+  private getFilteredComponents(scan: ScanResult, all: boolean) {
+    return Array.from(scan.components.entries())
+      .filter(([_, component]) => all || ['EOL', 'LTS'].includes(component.info.status))
+      .map(([_, component]) => component);
+  }
 
-    if (version.includes('beta') || major < 1) {
-      this.log(`VERSION=${version}`);
-      throw new Error('The EOL scan feature is not available in beta releases. Please wait for the stable release.');
+  private async saveReport(components: ScanResultComponent[]): Promise<void> {
+    try {
+      fs.writeFileSync('nes.eol.json', JSON.stringify({ components }, null, 2));
+      this.log('Report saved to nes.eol.json');
+    } catch (error) {
+      if (isErrnoException(error)) {
+        switch (error.code) {
+          case 'EACCES':
+            this.error('Permission denied. Unable to save report to nes.eol.json');
+            break;
+          case 'ENOSPC':
+            this.error('No space left on device. Unable to save report to nes.eol.json');
+            break;
+          default:
+            this.error(`Failed to save report: ${getErrorMessage(error)}`);
+        }
+      } else {
+        this.error(`Failed to save report: ${getErrorMessage(error)}`);
+      }
     }
-    // Just in case the beta check fails
-    if (override) {
-      this.log(`VERSION=${version}`);
-      this.log('EOL scan is disabled');
-      return { components: [] };
+  }
+
+  private async displayResults(scan: ScanResult, all: boolean): Promise<void> {
+    const { UNKNOWN, OK, LTS, EOL } = createStatusDisplay(scan.components, all);
+
+    if (!UNKNOWN.length && !OK.length && !LTS.length && !EOL.length) {
+      this.displayNoComponentsMessage(all);
+      return;
     }
+
+    this.log(ux.colorize('bold', 'Here are the results of the scan:'));
+    this.logLine();
+
+    // Display sections in order of increasing severity
+    for (const components of [UNKNOWN, OK, LTS, EOL]) {
+      this.displayStatusSection(components);
+    }
+
+    this.logLegend();
+  }
+
+  private displayNoComponentsMessage(all: boolean): void {
+    if (!all) {
+      this.log(ux.colorize('yellow', 'No End-of-Life or Long Term Support components found in scan.'));
+      this.log(ux.colorize('yellow', 'Use --all flag to view all components.'));
+    } else {
+      this.log(ux.colorize('yellow', 'No components found in scan.'));
+    }
+  }
+
+  private logLine(): void {
+    this.log(ux.colorize('bold', '-'.repeat(50)));
+  }
+
+  private displayStatusSection(components: string[]): void {
+    if (components.length > 0) {
+      this.log(components.join('\n'));
+      this.logLine();
+    }
+  }
+
+  private logLegend(): void {
+    this.log(ux.colorize(`${STATUS_COLORS.UNKNOWN}`, `${INDICATORS.UNKNOWN} = No Known Issues`));
+    this.log(ux.colorize(`${STATUS_COLORS.OK}`, `${INDICATORS.OK} = OK`));
+    this.log(ux.colorize(`${STATUS_COLORS.LTS}`, `${INDICATORS.LTS}= Long Term Support (LTS)`));
+    this.log(ux.colorize(`${STATUS_COLORS.EOL}`, `${INDICATORS.EOL} = End of Life (EOL)`));
   }
 }

@@ -1,20 +1,78 @@
-import inquirer from 'inquirer';
-import type { Answers } from 'inquirer';
-import { type Line, formatLine } from '../service/line.svc.ts';
+import { ux } from '@oclif/core';
+import type { ComponentStatus, ScanResult, ScanResultComponentsMap } from '../api/types/nes.types.ts';
+import { parseMomentToSimpleDate } from './date.ui.ts';
+import { INDICATORS, STATUS_COLORS } from './shared.us.ts';
 
-export function promptComponentDetails(lines: Line[]): Promise<Answers> {
-  const context = {
-    longest: lines.map((l) => l.purl.length).reduce((a, l) => Math.max(a, l), 0),
-    total: lines.length,
+export function truncatePurl(purl: string): string {
+  return purl.length > 60 ? `${purl.slice(0, 57)}...` : purl;
+}
+
+export function colorizeStatus(status: ComponentStatus): string {
+  return ux.colorize(STATUS_COLORS[status], status);
+}
+
+function formatSimpleComponent(purl: string, status: ComponentStatus): string {
+  const color = STATUS_COLORS[status];
+  return `  ${INDICATORS[status]} ${ux.colorize(color, truncatePurl(purl))}`;
+}
+
+function getDaysEolString(daysEol: number | null): string {
+  // UNKNOWN || OK
+  if (daysEol === null) {
+    return '';
+  }
+  // LTS
+  if (daysEol < 0) {
+    return `${Math.abs(daysEol)} days from now`;
+  }
+  // EOL
+  if (daysEol === 0) {
+    return 'today';
+  }
+  return `${daysEol} days ago`;
+}
+
+function formatDetailedComponent(
+  purl: string,
+  eolAt: Date | null,
+  daysEol: number | null,
+  status: ComponentStatus,
+): string {
+  const simpleComponent = formatSimpleComponent(purl, status);
+  const eolAtString = parseMomentToSimpleDate(eolAt);
+  const daysEolString = getDaysEolString(daysEol);
+
+  const output = [`${simpleComponent}`, `    ⮑  EOL Date: ${eolAtString} (${daysEolString})`]
+    .filter(Boolean)
+    .join('\n');
+
+  return output;
+}
+
+export function createStatusDisplay(
+  components: ScanResultComponentsMap,
+  all: boolean,
+): Record<ComponentStatus, string[]> {
+  const statusOutput: Record<ComponentStatus, string[]> = {
+    UNKNOWN: [],
+    OK: [],
+    LTS: [],
+    EOL: [],
   };
 
-  return inquirer.prompt([
-    {
-      choices: lines.map((l, idx) => formatLine(l, idx, context)),
-      message: 'Which components',
-      name: 'selected',
-      pageSize: 20,
-      type: 'checkbox',
-    },
-  ]);
+  // Single loop to separate and format components
+  for (const [purl, component] of components.entries()) {
+    const { status, eolAt, daysEol } = component.info;
+
+    if (all) {
+      if (status === 'UNKNOWN' || status === 'OK') {
+        statusOutput[status].push(formatSimpleComponent(purl, status));
+      }
+    }
+    if (status === 'LTS' || status === 'EOL') {
+      statusOutput[status].push(formatDetailedComponent(purl, eolAt, daysEol, status));
+    }
+  }
+
+  return statusOutput;
 }

@@ -1,6 +1,6 @@
 {
   "name": "@herodevs/cli",
-  "version": "1.1.0-beta.1",
+  "version": "1.2.0-beta.1",
   "author": "HeroDevs, Inc",
   "bin": {
     "hd": "./bin/run.js"
@@ -40,9 +40,7 @@
     "@cyclonedx/cdxgen": "^11.2.2",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
-    "@oclif/plugin-plugins": "^5",
-    "graphql": "^16.8.1",
-    "inquirer": "^12.5.0"
+    "graphql": "^16.8.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
