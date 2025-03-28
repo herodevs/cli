@@ -31,3 +31,33 @@ export async function extractPurls(sbom: Sbom): Promise<string[]> {
   const { components: comps } = sbom;
   return comps.map((c) => c.purl) ?? [];
 }
+
+/**
+ * Parse a purls file in either JSON or text format, including the format of
+ * nes.purls.json - { purls: [ 'pkg:npm/express@4.18.2', 'pkg:npm/react@18.3.1' ] }
+ * or a text file with one purl per line.
+ */
+export function parsePurlsFile(purlsFileString: string): string[] {
+  try {
+    const parsed = JSON.parse(purlsFileString);
+
+    if (parsed && Array.isArray(parsed.purls)) {
+      return parsed.purls;
+    }
+
+    if (Array.isArray(parsed)) {
+      return parsed;
+    }
+  } catch {
+    const lines = purlsFileString
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && line.startsWith('pkg:'));
+
+    if (lines.length > 0) {
+      return lines;
+    }
+  }
+
+  throw new Error('Invalid purls file: must be either JSON with purls array or text file with one purl per line');
+}

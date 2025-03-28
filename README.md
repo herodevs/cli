@@ -122,13 +122,14 @@ Scan a given sbom for EOL data
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value>] [-d <value>] [-s] [-a] [-c]
+  $ hd scan eol [--json] [-f <value>] [-p <value>] [-d <value>] [-s] [-a] [-c]
 
 FLAGS
   -a, --all                 Show all components (default is EOL and LTS only)
   -c, --getCustomerSupport  Get Never-Ending Support for End-of-Life components
   -d, --dir=<value>         The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>        The file path of an existing cyclonedx sbom to scan for EOL
+  -p, --purls=<value>       The file path of a list of purls to scan for EOL
   -s, --save                Save the generated SBOM as nes.sbom.json in the scanned directory
 
 GLOBAL FLAGS
@@ -141,6 +142,8 @@ EXAMPLES
   $ hd scan eol --dir=./my-project
 
   $ hd scan eol --file=path/to/sbom.json
+
+  $ hd scan eol --purls=path/to/purls.json
 
   $ hd scan eol -a --dir=./my-project
 ```
