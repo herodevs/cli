@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
@@ -127,7 +128,9 @@ export default class ScanEol extends Command {
 
   private async saveReport(components: ScanResultComponent[]): Promise<void> {
     try {
-      fs.writeFileSync('nes.eol.json', JSON.stringify({ components }, null, 2));
+      const { flags } = await this.parse(ScanEol);
+      const reportPath = path.join(flags.dir || process.cwd(), 'nes.eol.json');
+      fs.writeFileSync(reportPath, JSON.stringify({ components }, null, 2));
       this.log('Report saved to nes.eol.json');
     } catch (error) {
       if (isErrnoException(error)) {

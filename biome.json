@@ -31,7 +31,7 @@
       "lib/**",
       "node_modules/**",
       "test/snapshot/**",
-      "test/fixtures/**",
+      "e2e/fixtures/**",
       "types/cdxgen.d.ts"
     ]
   }
