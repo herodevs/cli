@@ -19,7 +19,9 @@
     "clean": "shx rm -rf dist && npm run clean:files && shx rm -rf node_modules",
     "clean:files": "shx rm -f nes.**.csv nes.**.json nes.**.text",
     "dev": "npm run build && ./bin/dev.js",
+    "dev:fresh": "npm run build && npm run dev:purge && ./bin/dev.js",
     "dev:debug": "npm run build && DEBUG=* ./bin/dev.js",
+    "dev:purge": "rm -rf ~/.config/hd/",
     "format": "biome format --write",
     "lint": "biome lint --write",
     "postpack": "shx rm -f oclif.manifest.json",
@@ -42,13 +44,16 @@
     "@cyclonedx/cdxgen": "^11.2.2",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
-    "graphql": "^16.8.1"
+    "graphql": "^16.8.1",
+    "inquirer": "^12.5.0",
+    "semver": "^7.7.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
     "@oclif/test": "^4",
     "@types/inquirer": "^9.0.7",
     "@types/node": "^22",
+    "@types/semver": "^7.7.0",
     "@types/sinon": "^17.0.4",
     "globstar": "^1.0.0",
     "oclif": "^4",

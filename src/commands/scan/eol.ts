@@ -10,8 +10,12 @@ import { parsePurlsFile } from '../../service/purls.svc.ts';
 import { createStatusDisplay } from '../../ui/eol.ui.ts';
 import { INDICATORS, STATUS_COLORS } from '../../ui/shared.us.ts';
 import ScanSbom from './sbom.ts';
+import { BaseCommand } from '../../base/base-command.ts';
+import inquirer from 'inquirer';
+import { EOL_SCAN_ACCEPTANCE } from '../../config/constants.ts';
 
-export default class ScanEol extends Command {
+
+export default class ScanEol extends BaseCommand<typeof ScanEol> {
   static override description = 'Scan a given sbom for EOL data';
   static enableJsonFlag = true;
   static override examples = [
@@ -52,6 +56,32 @@ export default class ScanEol extends Command {
 
   public async run(): Promise<{ components: ScanResultComponent[] }> {
     const { flags } = await this.parse(ScanEol);
+
+    // verify they're okay sending
+    if (!this.settings.eolAcceptance || this.settings.eolAcceptance.compare(EOL_SCAN_ACCEPTANCE) < 0) {
+      this.log(ux.colorize('red', 'You need to accept'))
+
+      const message = `The EOL scanner requires transmitting a list of purls for analysis. 
+        This information will be stored but not associated with you. Yay.
+      `
+      const answer = await inquirer.prompt([
+        {
+          message,
+          type: 'list',
+          choices: [
+            { value: 'always', name: 'Always send' },
+            { value: 'ask', name: 'Ask before sending' },
+            { value: 'cancel', name: 'Cancel' },
+          ]
+        }
+      ])
+
+      this.log('%0', answer)
+
+      return { components: [] }
+    }
+
+
 
     if (flags.getCustomerSupport) {
       this.log(ux.colorize('yellow', 'Never-Ending Support is on the way. Please stay tuned for this feature.'));
