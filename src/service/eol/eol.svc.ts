@@ -1,3 +1,4 @@
+import type { ScanInputOptions } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { type Sbom, createBomFromDir } from './cdx.svc.ts';
 
@@ -39,3 +40,17 @@ export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
 }
 
 export { cdxgen } from './cdx.svc.ts';
+
+export const getScanInputOptionsFromFlags = (flags: Record<string, unknown>): ScanInputOptions => {
+  const { 'no-data-retention': noDataRetentionFlag } = flags;
+  let noDataRetention = false;
+
+  if (typeof noDataRetentionFlag === 'boolean') {
+    noDataRetention = noDataRetentionFlag;
+  }
+
+  return {
+    noDataRetention,
+    type: 'SBOM', // default to SBOM, potentially in the future we will support other formats
+  } satisfies ScanInputOptions;
+};
