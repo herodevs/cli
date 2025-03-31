@@ -18,6 +18,7 @@ export default class ScanEol extends Command {
     '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
     '<%= config.bin %> <%= command.id %> --purls=path/to/purls.json',
     '<%= config.bin %> <%= command.id %> -a --dir=./my-project',
+    '<%= config.bin %> <%= command.id %> --no-data-retention',
   ];
   static override flags = {
     file: Flags.string({
@@ -42,10 +43,11 @@ export default class ScanEol extends Command {
       description: 'Show all components (default is EOL and LTS only)',
       default: false,
     }),
-    noDataRetention: Flags.boolean({
+    'no-data-retention': Flags.boolean({
       char: 'n',
       description: 'Do not retain PURL data',
       default: false,
+      required: false,
     }),
   };
 
@@ -72,10 +74,10 @@ export default class ScanEol extends Command {
   }
 
   getScanInputOptionsFromFlags(flags: Record<string, unknown>): ScanInputOptions {
-    const { noDataRetention } = flags;
+    const { 'no-data-retention': noDataRetention } = flags;
 
     if (typeof noDataRetention !== 'boolean') {
-      this.error(`Invalid value passed to --noDataRetention: typeof ${noDataRetention} is ${typeof noDataRetention}`);
+      this.error(`Invalid value passed to --no-data-retention: typeof ${noDataRetention} is ${typeof noDataRetention}`);
     }
 
     return {
