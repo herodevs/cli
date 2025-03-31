@@ -1,8 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { Command, Flags, ux } from '@oclif/core';
+import { type Command, Flags, ux } from '@oclif/core';
+import inquirer from 'inquirer';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
+import { BaseCommand } from '../../base/base-command.ts';
+import { EOL_SCAN_ACCEPTANCE } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
@@ -10,10 +13,6 @@ import { parsePurlsFile } from '../../service/purls.svc.ts';
 import { createStatusDisplay } from '../../ui/eol.ui.ts';
 import { INDICATORS, STATUS_COLORS } from '../../ui/shared.us.ts';
 import ScanSbom from './sbom.ts';
-import { BaseCommand } from '../../base/base-command.ts';
-import inquirer from 'inquirer';
-import { EOL_SCAN_ACCEPTANCE } from '../../config/constants.ts';
-
 
 export default class ScanEol extends BaseCommand<typeof ScanEol> {
   static override description = 'Scan a given sbom for EOL data';
@@ -58,12 +57,15 @@ export default class ScanEol extends BaseCommand<typeof ScanEol> {
     const { flags } = await this.parse(ScanEol);
 
     // verify they're okay sending
-    if (!this.settings.eolAcceptance || this.settings.eolAcceptance.compare(EOL_SCAN_ACCEPTANCE) < 0) {
-      this.log(ux.colorize('red', 'You need to accept'))
-
+    if (
+      !this.settings ||
+      !this.settings.eolAcceptance ||
+      !EOL_SCAN_ACCEPTANCE ||
+      this.settings.eolAcceptance.compare(EOL_SCAN_ACCEPTANCE) < 0
+    ) {
       const message = `The EOL scanner requires transmitting a list of purls for analysis. 
-        This information will be stored but not associated with you. Yay.
-      `
+        This information will be stored but not associated with you.
+      `;
       const answer = await inquirer.prompt([
         {
           message,
@@ -72,16 +74,14 @@ export default class ScanEol extends BaseCommand<typeof ScanEol> {
             { value: 'always', name: 'Always send' },
             { value: 'ask', name: 'Ask before sending' },
             { value: 'cancel', name: 'Cancel' },
-          ]
-        }
-      ])
+          ],
+        },
+      ]);
 
-      this.log('%0', answer)
+      this.log('%0', answer);
 
-      return { components: [] }
+      return { components: [] };
     }
-
-
 
     if (flags.getCustomerSupport) {
       this.log(ux.colorize('yellow', 'Never-Ending Support is on the way. Please stay tuned for this feature.'));
