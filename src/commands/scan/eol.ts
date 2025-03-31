@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import { Command, Flags, ux } from '@oclif/core';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
-import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
+import type { ScanInputOptions, ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
@@ -42,19 +42,15 @@ export default class ScanEol extends Command {
       description: 'Show all components (default is EOL and LTS only)',
       default: false,
     }),
-    getCustomerSupport: Flags.boolean({
-      char: 'c',
-      description: 'Get Never-Ending Support for End-of-Life components',
+    noDataRetention: Flags.boolean({
+      char: 'n',
+      description: 'Do not retain PURL data',
       default: false,
     }),
   };
 
   public async run(): Promise<{ components: ScanResultComponent[] }> {
     const { flags } = await this.parse(ScanEol);
-
-    if (flags.getCustomerSupport) {
-      this.log(ux.colorize('yellow', 'Never-Ending Support is on the way. Please stay tuned for this feature.'));
-    }
 
     const scan = await this.getScan(flags, this.config);
 
@@ -75,20 +71,37 @@ export default class ScanEol extends Command {
     return { components: filteredComponents };
   }
 
+  getScanInputOptionsFromFlags(flags: Record<string, unknown>): ScanInputOptions {
+    const { noDataRetention } = flags;
+
+    if (typeof noDataRetention !== 'boolean') {
+      this.error(`Invalid value passed to --noDataRetention: typeof ${noDataRetention} is ${typeof noDataRetention}`);
+    }
+
+    return {
+      noDataRetention,
+      type: 'SBOM', // default to SBOM, potentially in the future we will support other formats
+    } satisfies ScanInputOptions;
+  }
+
   private async getScan(flags: Record<string, string>, config: Command['config']): Promise<ScanResult> {
     if (flags.purls) {
       ux.action.start(`Scanning purls from ${flags.purls}`);
       const purls = this.getPurlsFromFile(flags.purls);
-      return batchSubmitPurls(purls);
+      const options = this.getScanInputOptionsFromFlags(flags);
+      return batchSubmitPurls(purls, options);
     }
 
     const sbom = await ScanSbom.loadSbom(flags, config);
-    const scan = this.scanSbom(sbom);
+    const scan = this.scanSbom(sbom, flags);
 
     return scan;
   }
 
-  private getPurlsFromFile(filePath: string): string[] {
+  private getPurlsFromFile(filePath: unknown): string[] {
+    if (typeof filePath !== 'string') {
+      this.error(`Failed to parse file path: ${filePath}`);
+    }
     try {
       const purlsFileString = fs.readFileSync(filePath, 'utf8');
       return parsePurlsFile(purlsFileString);
@@ -97,7 +110,7 @@ export default class ScanEol extends Command {
     }
   }
 
-  private async scanSbom(sbom: Sbom): Promise<ScanResult> {
+  private async scanSbom(sbom: Sbom, flags: Record<string, unknown>): Promise<ScanResult> {
     let scan: ScanResult;
     let purls: string[];
 
@@ -107,7 +120,8 @@ export default class ScanEol extends Command {
       this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
     }
     try {
-      scan = await batchSubmitPurls(purls);
+      const options = this.getScanInputOptionsFromFlags(flags);
+      scan = await batchSubmitPurls(purls, options);
     } catch (error) {
       this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
     }

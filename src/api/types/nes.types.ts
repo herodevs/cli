@@ -1,4 +1,12 @@
-export type ScanInput = { components: string[]; type: 'SBOM' } | { type: 'OTHER' };
+export type ScanInput = {
+  components: string[];
+  options: ScanInputOptions;
+};
+
+export interface ScanInputOptions {
+  noDataRetention: boolean;
+  type: 'SBOM' | 'OTHER';
+}
 
 export interface ScanResponse {
   insights: {
