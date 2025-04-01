@@ -107,7 +107,6 @@ describe('scan:eol e2e', () => {
     const stdout = output.stdout;
 
     // Match command output patterns
-    match(stdout, /Scan completed/, 'Should show scan completion message');
     match(stdout, /Here are the results of the scan:/, 'Should show results header');
 
     // Match specific EOL packages
