@@ -1,7 +1,7 @@
 import type * as apollo from '@apollo/client/core/index.js';
 
 import { ApolloClient } from '../../api/client.ts';
-import type { ScanInputOptions, ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
+import type { InsightsEolScanInput, ScanInputOptions, ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { SbomScanner } from '../../service/nes/nes.svc.ts';
 
@@ -80,6 +80,17 @@ export const createBatches = (items: string[], batchSize: number): string[][] =>
   Array.from({ length: Math.ceil(items.length / batchSize) }, (_, i) =>
     items.slice(i * batchSize, (i + 1) * batchSize),
   );
+
+export const buildInsightsEolScanInput = (purls: string[], options: ScanInputOptions): InsightsEolScanInput => {
+  const { type, page, totalPages } = options;
+
+  return {
+    components: purls,
+    type,
+    page,
+    totalPages,
+  } satisfies InsightsEolScanInput;
+};
 
 const submitScan = async (purls: string[], options: ScanInputOptions): Promise<ScanResult> => {
   // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests

@@ -5,6 +5,23 @@ export type ScanInput = {
 
 export interface ScanInputOptions {
   type: 'SBOM' | 'OTHER';
+  page: number;
+  totalPages: number;
+}
+
+/**
+ * Input parameters for the EOL scan operation
+ */
+export interface InsightsEolScanInput {
+  scanId?: string;
+  /** Array of package URLs in purl format to scan */
+  components: string[];
+  /** The type of scan being performed (e.g. 'SBOM') */
+  type: string;
+
+  // if it's chunked
+  page: number
+  totalPages: number
 }
 
 export interface ScanResponse {
