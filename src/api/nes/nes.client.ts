@@ -8,7 +8,7 @@ import type {
 } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { SbomScanner, buildScanResult } from '../../service/nes/nes.svc.ts';
-import type { ScanInputOptions, ScanResult } from '../types/hd-cli.types.ts';
+import type { ProcessBatchOptions, ScanInputOptions, ScanResult } from '../types/hd-cli.types.ts';
 
 export interface NesClient {
   scan: {
@@ -44,7 +44,6 @@ export const batchSubmitPurls = async (
     const batches = createBatches(purls, batchSize);
     debugLogger('Processing %d batches', batches.length);
 
-    // if batches.length === 0, return empty scan result
     if (batches.length < 0) {
       throw new Error('No batches to process');
     }
@@ -54,42 +53,11 @@ export const batchSubmitPurls = async (
         message: 'No batches to process',
         success: true,
         warnings: [],
-      };
+      } satisfies ScanResult;
     }
 
-    if (batches.length === 1) {
-      debugLogger('One batch to process, returning result');
-      const result = await submitScan(batches[0], options);
-      return buildScanResult(result);
-    }
-
-    const totalPages = batches.length;
-    const results: InsightsEolScanResult[] = [];
-
-    for (const [index, batch] of batches.entries()) {
-      const page = index + 1;
-
-      if (page > totalPages) {
-        throw new Error('Total pages exceeded');
-      }
-
-      debugLogger('Processing batch %d of %d', page, totalPages);
-      let scanId: string | undefined;
-      if (index > 0) {
-        scanId = results[index - 1].scanId;
-      }
-      const result = await submitScan(batch, {
-        ...options,
-        page,
-        totalPages,
-        scanId,
-      });
-      results.push(result);
-    }
-
-    const finalResult = results[results.length - 1];
-
-    return buildScanResult(finalResult);
+    const results = await processBatches(batches, options);
+    return handleBatchResults(results);
   } catch (error) {
     debugLogger('Fatal error in batchSubmitPurls: %s', error);
     throw new Error(`Failed to process purls: ${error instanceof Error ? error.message : String(error)}`);
@@ -100,6 +68,59 @@ export const createBatches = (items: string[], batchSize: number): string[][] =>
   Array.from({ length: Math.ceil(items.length / batchSize) }, (_, i) =>
     items.slice(i * batchSize, (i + 1) * batchSize),
   );
+
+export const processBatch = async ({
+  batch,
+  index,
+  totalPages,
+  scanOptions,
+  previousScanId,
+}: ProcessBatchOptions): Promise<InsightsEolScanResult> => {
+  const page = index + 1;
+  if (page > totalPages) {
+    throw new Error('Total pages exceeded');
+  }
+
+  debugLogger('Processing batch %d of %d', page, totalPages);
+  const result = await submitScan(batch, {
+    ...scanOptions,
+    page,
+    totalPages,
+    scanId: previousScanId,
+  });
+  return result;
+};
+
+export const processBatches = async (
+  batches: string[][],
+  scanOptions: ScanInputOptions,
+): Promise<InsightsEolScanResult[]> => {
+  const totalPages = batches.length;
+  const results: InsightsEolScanResult[] = [];
+
+  for (const [index, batch] of batches.entries()) {
+    const previousScanId = index > 0 ? results[index - 1].scanId : undefined;
+    const result = await processBatch({
+      batch,
+      index,
+      totalPages,
+      scanOptions,
+      previousScanId,
+    });
+    results.push(result);
+  }
+
+  return results;
+};
+
+export const handleBatchResults = (results: InsightsEolScanResult[]): ScanResult => {
+  if (results.length === 0) {
+    throw new Error('No results to process');
+  }
+  // The API returns placeholders for each batch except the last one.
+  const finalResult = results[results.length - 1];
+  return buildScanResult(finalResult);
+};
 
 export const buildInsightsEolScanInput = (purls: string[], options: ScanInputOptions): InsightsEolScanInput => {
   const { type, page, totalPages } = options;
