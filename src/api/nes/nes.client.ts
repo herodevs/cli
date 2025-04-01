@@ -63,7 +63,7 @@ export const batchSubmitPurls = async (
       return buildScanResult(result);
     }
 
-    const totalPages = batches.length + 1;
+    const totalPages = batches.length;
     const results: InsightsEolScanResult[] = [];
 
     for (const [index, batch] of batches.entries()) {
@@ -75,10 +75,15 @@ export const batchSubmitPurls = async (
 
       debugLogger('Processing batch %d of %d', page, totalPages);
       let scanId: string | undefined;
-      if (index > 1) {
+      if (index > 0) {
         scanId = results[index - 1].scanId;
       }
-      const result = await submitScan(batch, { ...options, page, totalPages, scanId });
+      const result = await submitScan(batch, {
+        ...options,
+        page,
+        totalPages,
+        scanId,
+      });
       results.push(result);
     }
 

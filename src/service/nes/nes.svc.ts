@@ -1,7 +1,12 @@
 import type { NesApolloClient } from '../../api/nes/nes.client.ts';
 import { M_SCAN } from '../../api/queries/nes/sbom.ts';
-import type { ScanInput, ScanInputOptions, ScanResult } from '../../api/types/hd-cli.types.ts';
-import type { InsightsEolScanComponent, InsightsEolScanResult, ScanResponse } from '../../api/types/nes.types.ts';
+import type { ScanInputOptions, ScanResult } from '../../api/types/hd-cli.types.ts';
+import type {
+  InsightsEolScanComponent,
+  InsightsEolScanInput,
+  InsightsEolScanResult,
+  ScanResponse,
+} from '../../api/types/nes.types.ts';
 import { debugLogger } from '../log.svc.ts';
 
 export const buildScanResult = (scan: InsightsEolScanResult): ScanResult => {
@@ -21,8 +26,9 @@ export const buildScanResult = (scan: InsightsEolScanResult): ScanResult => {
 export const SbomScanner =
   (client: NesApolloClient) =>
   async (purls: string[], options: ScanInputOptions): Promise<InsightsEolScanResult> => {
-    const input: ScanInput = { components: purls, options };
-    const res = await client.mutate<ScanResponse, { input: ScanInput }>(M_SCAN.gql, { input });
+    const { type, page, totalPages, scanId } = options;
+    const input: InsightsEolScanInput = { components: purls, type, page, totalPages, scanId };
+    const res = await client.mutate<ScanResponse, { input: InsightsEolScanInput }>(M_SCAN.gql, { input });
 
     const scan = res.data?.insights?.scan?.eol;
     if (!scan?.success) {
