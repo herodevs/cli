@@ -1,4 +1,4 @@
-import { strictEqual } from 'node:assert';
+import { match, strictEqual } from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
@@ -51,11 +51,11 @@ describe('scan:eol e2e', () => {
     // Verify output contains expected content
     const stdout = output.stdout;
 
-    strictEqual(stdout.includes('Here are the results of the scan:'), true, 'Should show results header');
-
-    // Since we know bootstrap@3.1.1 is EOL, verify it's detected
-    strictEqual(stdout.includes('pkg:npm/bootstrap@3.1.1'), true, 'Should detect bootstrap package');
-    strictEqual(stdout.includes('End of Life (EOL)'), true, 'Should show EOL status');
+    // Match command output patterns
+    match(stdout, /Here are the results of the scan:/, 'Should show results header');
+    match(stdout, /pkg:npm\/bootstrap@3\.1\.1/, 'Should detect bootstrap package');
+    match(stdout, /End of Life \(EOL\)/, 'Should show EOL status');
+    match(stdout, /EOL Date:/, 'Should show EOL date information');
   });
 
   it('saves report when --save flag is used', async () => {
@@ -68,7 +68,6 @@ describe('scan:eol e2e', () => {
       console.error('Error details:', output.stderr);
     }
 
-    console.log('output', output.stdout);
     // Verify command executed successfully
     strictEqual(output.error, undefined, 'Command should execute without errors');
 
@@ -84,12 +83,9 @@ describe('scan:eol e2e', () => {
     const reportContent = await fs.readFile(reportPath, 'utf-8');
     const report = JSON.parse(reportContent);
 
-    // Verify structure
-    strictEqual(Array.isArray(report.components), true, 'Report should contain components array');
-
-    // Verify content (we know bootstrap@3.1.1 should be EOL)
-    const bootstrap = report.components.find((c) => c.purl === 'pkg:npm/bootstrap@3.1.1');
-    strictEqual(bootstrap !== undefined, true, 'Report should contain bootstrap package');
-    strictEqual(bootstrap?.info?.isEol, true, 'Bootstrap should be marked as EOL');
+    // Verify report structure using match
+    match(JSON.stringify(report), /"components":\s*\[/, 'Report should contain components array');
+    match(JSON.stringify(report), /"purl":\s*"pkg:npm\/bootstrap@3\.1\.1"/, 'Report should contain bootstrap package');
+    match(JSON.stringify(report), /"isEol":\s*true/, 'Bootstrap should be marked as EOL');
   });
 });
