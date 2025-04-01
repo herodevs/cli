@@ -3,20 +3,20 @@ import type { ComponentStatus, ScanResult, ScanResultComponentsMap } from '../ap
 import { parseMomentToSimpleDate } from './date.ui.ts';
 import { INDICATORS, STATUS_COLORS } from './shared.us.ts';
 
-export function truncatePurl(purl: string): string {
+export const truncatePurl = (purl: string): string => {
   return purl.length > 60 ? `${purl.slice(0, 57)}...` : purl;
-}
+};
 
-export function colorizeStatus(status: ComponentStatus): string {
+export const colorizeStatus = (status: ComponentStatus): string => {
   return ux.colorize(STATUS_COLORS[status], status);
-}
+};
 
-function formatSimpleComponent(purl: string, status: ComponentStatus): string {
+const formatSimpleComponent = (purl: string, status: ComponentStatus): string => {
   const color = STATUS_COLORS[status];
   return `  ${INDICATORS[status]} ${ux.colorize(color, truncatePurl(purl))}`;
-}
+};
 
-function getDaysEolString(daysEol: number | null): string {
+const getDaysEolString = (daysEol: number | null): string => {
   // UNKNOWN || OK
   if (daysEol === null) {
     return '';
@@ -30,7 +30,7 @@ function getDaysEolString(daysEol: number | null): string {
     return 'today';
   }
   return `${daysEol} days ago`;
-}
+};
 
 function formatDetailedComponent(
   purl: string,
@@ -49,10 +49,10 @@ function formatDetailedComponent(
   return output;
 }
 
-export function createStatusDisplay(
+export const createStatusDisplay = (
   components: ScanResultComponentsMap,
   all: boolean,
-): Record<ComponentStatus, string[]> {
+): Record<ComponentStatus, string[]> => {
   const statusOutput: Record<ComponentStatus, string[]> = {
     UNKNOWN: [],
     OK: [],
@@ -75,4 +75,4 @@ export function createStatusDisplay(
   }
 
   return statusOutput;
-}
+};

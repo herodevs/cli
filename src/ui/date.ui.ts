@@ -1,4 +1,4 @@
-export function parseMomentToSimpleDate(momentDate: string | Date | number | null): string {
+export const parseMomentToSimpleDate = (momentDate: string | Date | number | null): string => {
   // Only return empty string for null
   if (momentDate === null) return '';
 
@@ -11,4 +11,4 @@ export function parseMomentToSimpleDate(momentDate: string | Date | number | nul
   } catch {
     throw new Error('Invalid date');
   }
-}
+};

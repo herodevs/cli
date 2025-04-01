@@ -73,8 +73,8 @@ export const SBOM_DEFAULT__OPTIONS = {
  * Lazy loads cdxgen (for ESM purposes), scans
  * `directory`, and returns the `bomJson` property.
  */
-export async function createBomFromDir(directory: string, opts: CdxGenOptions = {}) {
+export const createBomFromDir = async (directory: string, opts: CdxGenOptions = {}) => {
   const sbom = await createBom(directory, { ...SBOM_DEFAULT__OPTIONS, ...opts });
   debugLogger('Successfully generated SBOM');
   return sbom?.bomJson;
-}
+};

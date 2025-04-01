@@ -10,14 +10,14 @@ export interface ScanOptions {
 }
 
 export type CdxCreator = (dir: string, opts: CdxGenOptions) => Promise<{ bomJson: Sbom }>;
-export async function createSbom(directory: string, opts: ScanOptions = {}) {
+export const createSbom = async (directory: string, opts: ScanOptions = {}) => {
   const sbom = await createBomFromDir(directory, opts.cdxgen || {});
   if (!sbom) throw new Error('SBOM not generated');
   debugLogger('SBOM generated');
   return sbom;
-}
+};
 
-export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
+export const validateIsCycloneDxSbom = (sbom: unknown) => {
   if (!sbom || typeof sbom !== 'object') {
     throw new Error('SBOM must be an object');
   }

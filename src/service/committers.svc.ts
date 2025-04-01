@@ -29,7 +29,7 @@ export interface ReportData {
  * @param output - Git log command output
  * @returns Parsed commit entries
  */
-export function parseGitLogOutput(output: string): CommitEntry[] {
+export const parseGitLogOutput = (output: string): CommitEntry[] => {
   return output
     .split('\n')
     .filter(Boolean)
@@ -38,14 +38,14 @@ export function parseGitLogOutput(output: string): CommitEntry[] {
       const [month, author] = line.replace(/^"(.*)"$/, '$1').split('|');
       return { month, author };
     });
-}
+};
 
 /**
  * Groups commit data by month
  * @param entries - Commit entries
  * @returns Object with months as keys and author commit counts as values
  */
-export function groupCommitsByMonth(entries: CommitEntry[]): MonthlyData {
+export const groupCommitsByMonth = (entries: CommitEntry[]): MonthlyData => {
   const result: MonthlyData = {};
 
   // Group commits by month
@@ -91,14 +91,14 @@ export function groupCommitsByMonth(entries: CommitEntry[]): MonthlyData {
   }
 
   return result;
-}
+};
 
 /**
  * Calculates overall commit statistics by author
  * @param entries - Commit entries
  * @returns Object with authors as keys and total commit counts as values
  */
-export function calculateOverallStats(entries: CommitEntry[]): AuthorCommitCounts {
+export const calculateOverallStats = (entries: CommitEntry[]): AuthorCommitCounts => {
   const commitsByAuthor = entries.reduce<Record<string, CommitEntry[]>>((acc, entry) => {
     const authorKey = entry.author;
 
@@ -118,14 +118,14 @@ export function calculateOverallStats(entries: CommitEntry[]): AuthorCommitCount
   }
 
   return result;
-}
+};
 
 /**
  * Formats monthly report sections
  * @param monthlyData - Grouped commit data by month
  * @returns Formatted monthly report sections
  */
-export function formatMonthlyReport(monthlyData: MonthlyData): string {
+export const formatMonthlyReport = (monthlyData: MonthlyData): string => {
   const sortedMonths = Object.keys(monthlyData).sort();
   let report = '';
 
@@ -143,7 +143,7 @@ export function formatMonthlyReport(monthlyData: MonthlyData): string {
   }
 
   return report;
-}
+};
 
 /**
  * Formats overall statistics section
@@ -151,7 +151,7 @@ export function formatMonthlyReport(monthlyData: MonthlyData): string {
  * @param grandTotal - Total number of commits
  * @returns Formatted overall statistics section
  */
-export function formatOverallStats(overallStats: AuthorCommitCounts, grandTotal: number): string {
+export const formatOverallStats = (overallStats: AuthorCommitCounts, grandTotal: number): string => {
   let report = '\n## Overall Statistics\n';
 
   const sortedStats = Object.entries(overallStats).sort((a, b) => b[1] - a[1]);
@@ -163,13 +163,13 @@ export function formatOverallStats(overallStats: AuthorCommitCounts, grandTotal:
   report += `${grandTotal.toString().padStart(6)}  GRAND TOTAL\n`;
 
   return report;
-}
+};
 
 /**
  * Formats the report data as CSV
  * @param data - The structured report data
  */
-export function formatAsCsv(data: ReportData): string {
+export const formatAsCsv = (data: ReportData): string => {
   // First prepare all author names (for columns)
   const allAuthors = new Set<string>();
 
@@ -210,13 +210,13 @@ export function formatAsCsv(data: ReportData): string {
   csv += `,${data.overall.total}\n`;
 
   return csv;
-}
+};
 
 /**
  * Formats the report data as text
  * @param data - The structured report data
  */
-export function formatAsText(data: ReportData): string {
+export const formatAsText = (data: ReportData): string => {
   let report = 'Monthly Commit Report\n';
 
   // Monthly sections
@@ -248,7 +248,7 @@ export function formatAsText(data: ReportData): string {
   report += `${data.overall.total.toString().padStart(6)}  GRAND TOTAL\n`;
 
   return report;
-}
+};
 
 /**
  * Format output based on user preference
@@ -256,7 +256,7 @@ export function formatAsText(data: ReportData): string {
  * @param reportData
  * @returns
  */
-export function formatOutputBasedOnFlag(output: string, reportData: ReportData) {
+export const formatOutputBasedOnFlag = (output: string, reportData: ReportData): string => {
   let formattedOutput: string;
   switch (output) {
     case 'json':
@@ -269,4 +269,4 @@ export function formatOutputBasedOnFlag(output: string, reportData: ReportData) 
       formattedOutput = formatAsText(reportData);
   }
   return formattedOutput;
-}
+};
