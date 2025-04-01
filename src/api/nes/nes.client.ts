@@ -1,9 +1,10 @@
 import type * as apollo from '@apollo/client/core/index.js';
 
 import { ApolloClient } from '../../api/client.ts';
-import type { InsightsEolScanInput, ScanInputOptions, ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
+import type { InsightsEolScanComponent, InsightsEolScanInput } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { SbomScanner } from '../../service/nes/nes.svc.ts';
+import type { ScanInputOptions, ScanResult } from '../types/hd-cli.types.ts';
 
 export interface NesClient {
   scan: {
@@ -103,7 +104,7 @@ const submitScan = async (purls: string[], options: ScanInputOptions): Promise<S
 
 const combineScanResults = (results: ScanResult[]): ScanResult => {
   const combinedResults: ScanResult = {
-    components: new Map<string, ScanResultComponent>(),
+    components: new Map<string, InsightsEolScanComponent>(),
     message: '',
     success: true,
     warnings: [],

@@ -1,4 +1,4 @@
-import type { ScanInputOptions } from '../../api/types/nes.types.ts';
+import type { ScanInputOptions } from '../../api/types/hd-cli.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { type Sbom, createBomFromDir } from './cdx.svc.ts';
 
@@ -42,5 +42,7 @@ export const validateIsCycloneDxSbom = (sbom: unknown) => {
 export const getScanInputOptionsFromFlags = (flags: Record<string, unknown>): ScanInputOptions => {
   return {
     type: 'SBOM', // default to SBOM, potentially in the future we will support other formats
+    page: 1,
+    totalPages: 1,
   } satisfies ScanInputOptions;
 };
