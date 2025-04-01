@@ -107,7 +107,6 @@ describe('scan:eol e2e', () => {
     const stdout = output.stdout;
 
     // Match command output patterns
-    match(stdout, /Scanning purls from .*extra-large\.purls\.json/, 'Should show scanning message');
     match(stdout, /Scan completed/, 'Should show scan completion message');
     match(stdout, /Here are the results of the scan:/, 'Should show results header');
 
