@@ -1,5 +1,5 @@
-import type { InsightsEolScanComponent } from '../../../src/api/types/nes.types.ts';
 import type { ScanResult } from '../../../src/api/types/hd-cli.types.ts';
+import type { InsightsEolScanComponent } from '../../../src/api/types/nes.types.ts';
 
 export const createMockComponent = (
   purl: string,

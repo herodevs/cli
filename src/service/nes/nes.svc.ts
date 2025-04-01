@@ -20,7 +20,7 @@ export const buildScanResult = (scan: InsightsEolScanResult): ScanResult => {
 
 export const SbomScanner =
   (client: NesApolloClient) =>
-  async (purls: string[], options: ScanInputOptions): Promise<ScanResult> => {
+  async (purls: string[], options: ScanInputOptions): Promise<InsightsEolScanResult> => {
     const input: ScanInput = { components: purls, options };
     const res = await client.mutate<ScanResponse, { input: ScanInput }>(M_SCAN.gql, { input });
 
@@ -32,7 +32,5 @@ export const SbomScanner =
       throw new Error('Failed to provide scan: ');
     }
 
-    const result = buildScanResult(scan);
-
-    return result;
+    return scan;
   };

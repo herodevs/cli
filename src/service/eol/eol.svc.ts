@@ -38,11 +38,3 @@ export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
     throw new Error('Invalid SBOM: missing or invalid components array');
   }
 };
-
-export const getScanInputOptionsFromFlags = (flags: Record<string, unknown>): ScanInputOptions => {
-  return {
-    type: 'SBOM', // default to SBOM, potentially in the future we will support other formats
-    page: 1,
-    totalPages: 1,
-  } satisfies ScanInputOptions;
-};
