@@ -1,3 +1,4 @@
+import type { ScanInputOptions } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { type Sbom, createBomFromDir } from './cdx.svc.ts';
 
@@ -36,4 +37,10 @@ export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
   if (!('components' in s) || !Array.isArray(s.components)) {
     throw new Error('Invalid SBOM: missing or invalid components array');
   }
-}
+};
+
+export const getScanInputOptionsFromFlags = (flags: Record<string, unknown>): ScanInputOptions => {
+  return {
+    type: 'SBOM', // default to SBOM, potentially in the future we will support other formats
+  } satisfies ScanInputOptions;
+};
