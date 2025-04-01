@@ -38,3 +38,11 @@ export interface ScanResult {
   success: boolean;
   warnings: ScanWarning[];
 }
+
+export interface ProcessBatchOptions {
+  batch: string[];
+  index: number;
+  totalPages: number;
+  scanOptions: ScanInputOptions;
+  previousScanId?: string;
+}
