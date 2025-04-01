@@ -1,6 +1,5 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-// @ts-expect-error
 import { createBom } from '@cyclonedx/cdxgen';
 import { SBOM_DEFAULT__OPTIONS } from './cdx.svc.ts';
 

@@ -37,5 +37,3 @@ export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
     throw new Error('Invalid SBOM: missing or invalid components array');
   }
 }
-
-export { cdxgen } from './cdx.svc.ts';
