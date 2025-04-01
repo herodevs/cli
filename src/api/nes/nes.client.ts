@@ -1,13 +1,13 @@
 import type * as apollo from '@apollo/client/core/index.js';
 
 import { ApolloClient } from '../../api/client.ts';
-import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
+import type { ScanInputOptions, ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { SbomScanner } from '../../service/nes/nes.svc.ts';
 
 export interface NesClient {
   scan: {
-    sbom: (purls: string[]) => Promise<ScanResult>;
+    sbom: (purls: string[], options: ScanInputOptions) => Promise<ScanResult>;
   };
 }
 
@@ -30,15 +30,14 @@ export class NesApolloClient implements NesClient {
   }
 }
 
-async function submitScan(purls: string[]): Promise<ScanResult> {
+async function submitScan(purls: string[], options: ScanInputOptions): Promise<ScanResult> {
   // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
   const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com';
   const path = process.env.GRAPHQL_PATH || '/graphql';
   const url = host + path;
   const client = new NesApolloClient(url);
-  return client.scan.sbom(purls);
+  return client.scan.sbom(purls, options);
 }
-
 function combineScanResults(results: ScanResult[]): ScanResult {
   const combinedResults: ScanResult = {
     components: new Map<string, ScanResultComponent>(),
@@ -58,13 +57,16 @@ function combineScanResults(results: ScanResult[]): ScanResult {
   return combinedResults;
 }
 
-export function createBatches(items: string[], batchSize: number): string[][] {
-  return Array.from({ length: Math.ceil(items.length / batchSize) }, (_, i) =>
+export const createBatches = (items: string[], batchSize: number): string[][] =>
+  Array.from({ length: Math.ceil(items.length / batchSize) }, (_, i) =>
     items.slice(i * batchSize, (i + 1) * batchSize),
   );
-}
 
-export async function batchSubmitPurls(purls: string[], batchSize = 1000): Promise<ScanResult> {
+export const batchSubmitPurls = async (
+  purls: string[],
+  options: ScanInputOptions,
+  batchSize = 1000,
+): Promise<ScanResult> => {
   try {
     const batches = createBatches(purls, batchSize);
     debugLogger('Processing %d batches', batches.length);
@@ -72,7 +74,7 @@ export async function batchSubmitPurls(purls: string[], batchSize = 1000): Promi
     const results = await Promise.allSettled(
       batches.map((batch, index) => {
         debugLogger('Starting batch %d', index + 1);
-        return submitScan(batch);
+        return submitScan(batch, options);
       }),
     );
 
@@ -104,4 +106,4 @@ export async function batchSubmitPurls(purls: string[], batchSize = 1000): Promi
     debugLogger('Fatal error in batchSubmitPurls: %s', error);
     throw new Error(`Failed to process purls: ${error instanceof Error ? error.message : String(error)}`);
   }
-}
+};

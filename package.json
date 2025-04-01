@@ -19,7 +19,7 @@
     "clean": "shx rm -rf dist && npm run clean:files && shx rm -rf node_modules",
     "clean:files": "shx rm -f nes.**.csv nes.**.json nes.**.text",
     "dev": "npm run build && ./bin/dev.js",
-    "dev:debug": "npm run build && DEBUG=* ./bin/dev.js",
+    "dev:debug": "npm run build && DEBUG=oclif:* ./bin/dev.js",
     "format": "biome format --write",
     "lint": "biome lint --write",
     "postpack": "shx rm -f oclif.manifest.json",

@@ -2,6 +2,7 @@ import type { NesApolloClient } from '../../api/nes/nes.client.ts';
 import { M_SCAN } from '../../api/queries/nes/sbom.ts';
 import type {
   ScanInput,
+  ScanInputOptions,
   ScanResponse,
   ScanResponseReport,
   ScanResult,
@@ -25,8 +26,8 @@ export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
 
 export const SbomScanner =
   (client: NesApolloClient) =>
-  async (purls: string[]): Promise<ScanResult> => {
-    const input: ScanInput = { components: purls, type: 'SBOM' };
+  async (purls: string[], options: ScanInputOptions): Promise<ScanResult> => {
+    const input: ScanInput = { components: purls, options };
     const res = await client.mutate<ScanResponse, { input: ScanInput }>(M_SCAN.gql, { input });
 
     const scan = res.data?.insights?.scan?.eol;

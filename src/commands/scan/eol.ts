@@ -4,6 +4,7 @@ import { Command, Flags, ux } from '@oclif/core';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
+import { getScanInputOptionsFromFlags } from '../../service/eol/eol.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
 import { parsePurlsFile } from '../../service/purls.svc.ts';
@@ -80,16 +81,20 @@ export default class ScanEol extends Command {
     if (flags.purls) {
       ux.action.start(`Scanning purls from ${flags.purls}`);
       const purls = this.getPurlsFromFile(flags.purls);
-      return batchSubmitPurls(purls);
+      const options = getScanInputOptionsFromFlags(flags);
+      return batchSubmitPurls(purls, options);
     }
 
     const sbom = await ScanSbom.loadSbom(flags, config);
-    const scan = this.scanSbom(sbom);
+    const scan = this.scanSbom(sbom, flags);
 
     return scan;
   }
 
-  private getPurlsFromFile(filePath: string): string[] {
+  private getPurlsFromFile(filePath: unknown): string[] {
+    if (typeof filePath !== 'string') {
+      this.error(`Failed to parse file path: ${filePath}`);
+    }
     try {
       const purlsFileString = fs.readFileSync(filePath, 'utf8');
       return parsePurlsFile(purlsFileString);
@@ -98,7 +103,7 @@ export default class ScanEol extends Command {
     }
   }
 
-  private async scanSbom(sbom: Sbom): Promise<ScanResult> {
+  private async scanSbom(sbom: Sbom, flags: Record<string, unknown>): Promise<ScanResult> {
     let scan: ScanResult;
     let purls: string[];
 
@@ -108,7 +113,8 @@ export default class ScanEol extends Command {
       this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
     }
     try {
-      scan = await batchSubmitPurls(purls);
+      const options = getScanInputOptionsFromFlags(flags);
+      scan = await batchSubmitPurls(purls, options);
     } catch (error) {
       this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
     }
