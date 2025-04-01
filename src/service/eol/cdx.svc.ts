@@ -1,5 +1,6 @@
+import { createBom } from '@cyclonedx/cdxgen';
 import { debugLogger } from '../../service/log.svc.ts';
-import type { CdxCreator, CdxGenOptions } from './eol.svc.ts';
+import type { CdxGenOptions } from './eol.svc.ts';
 
 export interface SbomEntry {
   group: string;
@@ -73,29 +74,7 @@ export const SBOM_DEFAULT__OPTIONS = {
  * `directory`, and returns the `bomJson` property.
  */
 export async function createBomFromDir(directory: string, opts: CdxGenOptions = {}) {
-  const { createBom } = await getCdxGen();
-  const sbom = await createBom?.(directory, { ...SBOM_DEFAULT__OPTIONS, ...opts });
+  const sbom = await createBom(directory, { ...SBOM_DEFAULT__OPTIONS, ...opts });
   debugLogger('Successfully generated SBOM');
   return sbom?.bomJson;
-}
-
-// use a value holder, for easier mocking
-export const cdxgen: {
-  createBom: CdxCreator | undefined;
-} = { createBom: undefined };
-export async function getCdxGen() {
-  if (cdxgen.createBom) {
-    return cdxgen;
-  }
-
-  const ogEnv = process.env.NODE_ENV;
-  process.env.NODE_ENV = undefined;
-  try {
-    // @ts-expect-error
-    cdxgen.createBom = (await import('@cyclonedx/cdxgen')).createBom;
-  } finally {
-    process.env.NODE_ENV = ogEnv;
-  }
-
-  return cdxgen;
 }
