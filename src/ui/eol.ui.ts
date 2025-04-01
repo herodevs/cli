@@ -1,5 +1,6 @@
 import { ux } from '@oclif/core';
-import type { ComponentStatus, ScanResult, ScanResultComponentsMap } from '../api/types/nes.types.ts';
+import type { ScanResultComponentsMap } from '../api/types/hd-cli.types.ts';
+import type { ComponentStatus } from '../api/types/nes.types.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
 import { INDICATORS, STATUS_COLORS } from './shared.us.ts';
 

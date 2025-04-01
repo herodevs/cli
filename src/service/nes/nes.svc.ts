@@ -1,17 +1,11 @@
 import type { NesApolloClient } from '../../api/nes/nes.client.ts';
 import { M_SCAN } from '../../api/queries/nes/sbom.ts';
-import type {
-  ScanInput,
-  ScanInputOptions,
-  ScanResponse,
-  ScanResponseReport,
-  ScanResult,
-  ScanResultComponent,
-} from '../../api/types/nes.types.ts';
+import type { ScanInput, ScanInputOptions, ScanResult } from '../../api/types/hd-cli.types.ts';
+import type { InsightsEolScanComponent, InsightsEolScanResult, ScanResponse } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../log.svc.ts';
 
-export const buildScanResult = (scan: ScanResponseReport): ScanResult => {
-  const components = new Map<string, ScanResultComponent>();
+export const buildScanResult = (scan: InsightsEolScanResult): ScanResult => {
+  const components = new Map<string, InsightsEolScanComponent>();
   for (const c of scan.components) {
     components.set(c.purl, c);
   }

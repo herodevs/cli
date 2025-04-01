@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
-import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
+import type { ScanResult } from '../../api/types/hd-cli.types.ts';
+import type { InsightsEolScanComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getScanInputOptionsFromFlags } from '../../service/eol/eol.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
@@ -51,7 +52,7 @@ export default class ScanEol extends Command {
     }),
   };
 
-  public async run(): Promise<{ components: ScanResultComponent[] }> {
+  public async run(): Promise<{ components: InsightsEolScanComponent[] }> {
     const { flags } = await this.parse(ScanEol);
 
     if (flags.getCustomerSupport) {
@@ -132,7 +133,7 @@ export default class ScanEol extends Command {
       .map(([_, component]) => component);
   }
 
-  private async saveReport(components: ScanResultComponent[]): Promise<void> {
+  private async saveReport(components: InsightsEolScanComponent[]): Promise<void> {
     try {
       const { flags } = await this.parse(ScanEol);
       const reportPath = path.join(flags.dir || process.cwd(), 'nes.eol.json');
