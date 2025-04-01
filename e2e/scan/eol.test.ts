@@ -20,14 +20,8 @@ describe('scan:eol e2e', () => {
   }
 
   beforeEach(async () => {
-    // Skip tests if no backend URL is provided
-    if (!process.env.E2E_BACKEND_URL) {
-      console.log('Skipping E2E tests: No backend URL provided');
-      return;
-    }
-
     // Set up environment
-    process.env.GRAPHQL_HOST = process.env.E2E_BACKEND_URL;
+    process.env.GRAPHQL_HOST = 'https://api.nes.herodevs.com';
 
     // Ensure test directory exists and is clean
     await fs.mkdir(testDir, { recursive: true });
