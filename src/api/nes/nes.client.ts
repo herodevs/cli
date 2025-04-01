@@ -35,6 +35,18 @@ export class NesApolloClient implements NesClient {
   }
 }
 
+/**
+ * Submit a scan for a list of purls after they've been batched by batchSubmitPurls
+ */
+const submitScan = async (purls: string[], options: ScanInputOptions): Promise<InsightsEolScanResult> => {
+  // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
+  const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com';
+  const path = process.env.GRAPHQL_PATH || '/graphql';
+  const url = host + path;
+  const client = new NesApolloClient(url);
+  return client.scan.purls(purls, options);
+};
+
 export const batchSubmitPurls = async (
   purls: string[],
   options: ScanInputOptions,
@@ -131,13 +143,4 @@ export const buildInsightsEolScanInput = (purls: string[], options: ScanInputOpt
     page,
     totalPages,
   } satisfies InsightsEolScanInput;
-};
-
-const submitScan = async (purls: string[], options: ScanInputOptions): Promise<InsightsEolScanResult> => {
-  // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
-  const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com';
-  const path = process.env.GRAPHQL_PATH || '/graphql';
-  const url = host + path;
-  const client = new NesApolloClient(url);
-  return client.scan.purls(purls, options);
 };
