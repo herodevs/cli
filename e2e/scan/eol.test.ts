@@ -21,7 +21,7 @@ describe('scan:eol e2e', () => {
 
   beforeEach(async () => {
     // Set up environment
-    process.env.GRAPHQL_HOST = 'https://api.nes.herodevs.com';
+    process.env.GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
 
     // Ensure test directory exists and is clean
     await fs.mkdir(testDir, { recursive: true });
