@@ -29,8 +29,7 @@
     "test": "globstar -- node --import tsx --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "version": "oclif readme && git add README.md",
-    "test:e2e": "E2E_BACKEND_URL=${E2E_BACKEND_URL:-https://api.nes.herodevs.com} globstar -- node --import tsx --test \"e2e/**/*.test.ts\"",
-    "test:e2e:local": "E2E_BACKEND_URL=http://localhost:3000 npm run test:e2e"
+    "test:e2e": "globstar -- node --import tsx --test \"e2e/**/*.test.ts\""
   },
   "keywords": [
     "herodevs",
@@ -59,7 +58,7 @@
     "typescript": "^5.8.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "files": [
     "./bin",
