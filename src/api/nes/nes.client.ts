@@ -30,38 +30,6 @@ export class NesApolloClient implements NesClient {
   }
 }
 
-async function submitScan(purls: string[], options: ScanInputOptions): Promise<ScanResult> {
-  // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
-  const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com';
-  const path = process.env.GRAPHQL_PATH || '/graphql';
-  const url = host + path;
-  const client = new NesApolloClient(url);
-  return client.scan.sbom(purls, options);
-}
-function combineScanResults(results: ScanResult[]): ScanResult {
-  const combinedResults: ScanResult = {
-    components: new Map<string, ScanResultComponent>(),
-    message: '',
-    success: true,
-    warnings: [],
-  };
-
-  for (const result of results) {
-    for (const component of result.components.values()) {
-      combinedResults.components.set(component.purl, component);
-    }
-    combinedResults.warnings.push(...result.warnings);
-    combinedResults.success = combinedResults.success && result.success;
-  }
-
-  return combinedResults;
-}
-
-export const createBatches = (items: string[], batchSize: number): string[][] =>
-  Array.from({ length: Math.ceil(items.length / batchSize) }, (_, i) =>
-    items.slice(i * batchSize, (i + 1) * batchSize),
-  );
-
 export const batchSubmitPurls = async (
   purls: string[],
   options: ScanInputOptions,
@@ -106,4 +74,37 @@ export const batchSubmitPurls = async (
     debugLogger('Fatal error in batchSubmitPurls: %s', error);
     throw new Error(`Failed to process purls: ${error instanceof Error ? error.message : String(error)}`);
   }
+};
+
+export const createBatches = (items: string[], batchSize: number): string[][] =>
+  Array.from({ length: Math.ceil(items.length / batchSize) }, (_, i) =>
+    items.slice(i * batchSize, (i + 1) * batchSize),
+  );
+
+const submitScan = async (purls: string[], options: ScanInputOptions): Promise<ScanResult> => {
+  // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
+  const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com';
+  const path = process.env.GRAPHQL_PATH || '/graphql';
+  const url = host + path;
+  const client = new NesApolloClient(url);
+  return client.scan.sbom(purls, options);
+};
+
+const combineScanResults = (results: ScanResult[]): ScanResult => {
+  const combinedResults: ScanResult = {
+    components: new Map<string, ScanResultComponent>(),
+    message: '',
+    success: true,
+    warnings: [],
+  };
+
+  for (const result of results) {
+    for (const component of result.components.values()) {
+      combinedResults.components.set(component.purl, component);
+    }
+    combinedResults.warnings.push(...result.warnings);
+    combinedResults.success = combinedResults.success && result.success;
+  }
+
+  return combinedResults;
 };
