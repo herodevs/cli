@@ -16,7 +16,14 @@ export interface ScanInputOptions {
   type: 'SBOM' | 'OTHER';
   page: number;
   totalPages: number;
+  scanId?: string;
 }
+
+export const DEFAULT_SCAN_INPUT_OPTIONS: ScanInputOptions = {
+  type: 'SBOM',
+  page: 1,
+  totalPages: 1,
+} satisfies ScanInputOptions;
 
 export type ScanResultComponentsMap = Map<string, InsightsEolScanComponent>;
 

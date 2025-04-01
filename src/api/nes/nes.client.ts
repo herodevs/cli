@@ -1,20 +1,24 @@
 import type * as apollo from '@apollo/client/core/index.js';
 
 import { ApolloClient } from '../../api/client.ts';
-import type { InsightsEolScanComponent, InsightsEolScanInput } from '../../api/types/nes.types.ts';
+import type {
+  InsightsEolScanComponent,
+  InsightsEolScanInput,
+  InsightsEolScanResult,
+} from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
-import { SbomScanner } from '../../service/nes/nes.svc.ts';
+import { SbomScanner, buildScanResult } from '../../service/nes/nes.svc.ts';
 import type { ScanInputOptions, ScanResult } from '../types/hd-cli.types.ts';
 
 export interface NesClient {
   scan: {
-    sbom: (purls: string[], options: ScanInputOptions) => Promise<ScanResult>;
+    purls: (purls: string[], options: ScanInputOptions) => Promise<InsightsEolScanResult>;
   };
 }
 
 export class NesApolloClient implements NesClient {
   scan = {
-    sbom: SbomScanner(this),
+    purls: SbomScanner(this),
   };
   #apollo: ApolloClient;
 
@@ -40,37 +44,47 @@ export const batchSubmitPurls = async (
     const batches = createBatches(purls, batchSize);
     debugLogger('Processing %d batches', batches.length);
 
-    const results = await Promise.allSettled(
-      batches.map((batch, index) => {
-        debugLogger('Starting batch %d', index + 1);
-        return submitScan(batch, options);
-      }),
-    );
+    // if batches.length === 0, return empty scan result
+    if (batches.length < 0) {
+      throw new Error('No batches to process');
+    }
+    if (batches.length === 0) {
+      return {
+        components: new Map<string, InsightsEolScanComponent>(),
+        message: 'No batches to process',
+        success: true,
+        warnings: [],
+      };
+    }
 
-    const successfulResults: ScanResult[] = [];
-    const errors: string[] = [];
+    if (batches.length === 1) {
+      debugLogger('One batch to process, returning result');
+      const result = await submitScan(batches[0], options);
+      return buildScanResult(result);
+    }
 
-    for (const [index, result] of results.entries()) {
-      if (result.status === 'fulfilled') {
-        debugLogger('Batch %d completed successfully', index + 1);
-        successfulResults.push(result.value);
-      } else {
-        debugLogger('Batch %d failed: %s', index + 1, result.reason);
-        errors.push(`Batch ${index + 1}: ${result.reason}`);
+    const totalPages = batches.length + 1;
+    const results: InsightsEolScanResult[] = [];
+
+    for (const [index, batch] of batches.entries()) {
+      const page = index + 1;
+
+      if (page > totalPages) {
+        throw new Error('Total pages exceeded');
       }
+
+      debugLogger('Processing batch %d of %d', page, totalPages);
+      let scanId: string | undefined;
+      if (index > 1) {
+        scanId = results[index - 1].scanId;
+      }
+      const result = await submitScan(batch, { ...options, page, totalPages, scanId });
+      results.push(result);
     }
 
-    if (successfulResults.length === 0) {
-      throw new Error(`All batches failed:\n${errors.join('\n')}`);
-    }
+    const finalResult = results[results.length - 1];
 
-    const combinedResults = combineScanResults(successfulResults);
-    if (errors.length > 0) {
-      combinedResults.success = false;
-      combinedResults.message = `Errors encountered:\n${errors.join('\n')}`;
-    }
-
-    return combinedResults;
+    return buildScanResult(finalResult);
   } catch (error) {
     debugLogger('Fatal error in batchSubmitPurls: %s', error);
     throw new Error(`Failed to process purls: ${error instanceof Error ? error.message : String(error)}`);
@@ -93,30 +107,11 @@ export const buildInsightsEolScanInput = (purls: string[], options: ScanInputOpt
   } satisfies InsightsEolScanInput;
 };
 
-const submitScan = async (purls: string[], options: ScanInputOptions): Promise<ScanResult> => {
+const submitScan = async (purls: string[], options: ScanInputOptions): Promise<InsightsEolScanResult> => {
   // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
   const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com';
   const path = process.env.GRAPHQL_PATH || '/graphql';
   const url = host + path;
   const client = new NesApolloClient(url);
-  return client.scan.sbom(purls, options);
-};
-
-const combineScanResults = (results: ScanResult[]): ScanResult => {
-  const combinedResults: ScanResult = {
-    components: new Map<string, InsightsEolScanComponent>(),
-    message: '',
-    success: true,
-    warnings: [],
-  };
-
-  for (const result of results) {
-    for (const component of result.components.values()) {
-      combinedResults.components.set(component.purl, component);
-    }
-    combinedResults.warnings.push(...result.warnings);
-    combinedResults.success = combinedResults.success && result.success;
-  }
-
-  return combinedResults;
+  return client.scan.purls(purls, options);
 };
