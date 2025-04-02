@@ -73,7 +73,7 @@ jobs:
           elif [ "${{ matrix.code-target }}" = "linux-x64" ]; then
             npx oclif pack tarballs --targets=linux-x64 --no-xz
           else
-            npx oclif pack tarballs --targets=darwin-arm64 --no-xz"
+            npx oclif pack tarballs --targets=darwin-arm64 --no-xz
           fi
       - name: Upload binary artifact
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
