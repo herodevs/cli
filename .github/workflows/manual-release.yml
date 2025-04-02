@@ -72,7 +72,7 @@ jobs:
           # Install oclif CLI globally
           npm install -g oclif
           # Run oclif pack with direct target specification
-          oclif pack tarballs --targets=win32-x64 --no-xz
+          oclif pack tarballs --targets=win32-x64
       - name: Build binary (Linux)
         if: matrix.code-target == 'linux-x64'
         shell: bash
