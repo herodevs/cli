@@ -71,8 +71,8 @@ jobs:
       - name: Upload binary artifact
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
-          name: cli-${{ matrix.code-target }}
-          path: ./dist/hd-*
+          name: cli-binaries
+          path: dist/hd-*
           if-no-files-found: error
   release:
     runs-on: ubuntu-latest
@@ -94,3 +94,41 @@ jobs:
         run: npm publish --tag ${{ inputs.channel }} --provenance --access public ${{ inputs.dry-run == true && '--dry-run' || '' }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+      - name: Create Git Tag
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git tag -a v${{ needs.check.outputs.version }} -m "Release v${{ needs.check.outputs.version }}"
+          git push origin v${{ needs.check.outputs.version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        id: create_release
+        with:
+          tag_name: v${{ needs.check.outputs.version }}
+          name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
+          body: |
+            ## Changes
+            
+            This release includes the following platform-specific binaries:
+            - macOS (ARM64)
+            - Windows (x64)
+            - Linux (x64)
+          draft: false
+          prerelease: ${{ inputs.channel != 'latest' }}
+          discussion_category_name: Announcements
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download CLI artifacts
+        uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
+        with:
+          name: cli-binaries
+          path: artifacts
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/hd-*
+          asset_name: hdcli-${{ matrix.code-target }}.zip
+          asset_content_type: application/zip
