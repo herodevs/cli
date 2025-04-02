@@ -66,16 +66,10 @@ jobs:
           echo "C:\Program Files (x86)\GnuWin32\bin" >> $GITHUB_PATH
       - name: Install npm dependencies
         run: npm ci
-      - name: Create tarball
-        if: matrix.code-target == 'win32-x64'
-        shell: pwsh
-        run: |
-          $tarball = (npm pack).Trim()
-          echo "TARBALL=$tarball" >> $env:GITHUB_ENV
       - name: Build binaries (Windows)
         if: matrix.code-target == 'win32-x64'
         shell: pwsh
-        run: npx oclif pack win --targets=win32-x64 --tarball="$env:TARBALL"
+        run: npx oclif pack win -r .
       - name: Build binaries (Linux)
         if: matrix.code-target == 'linux-x64'
         shell: bash
