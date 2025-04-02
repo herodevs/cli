@@ -68,11 +68,14 @@ jobs:
         run: npm ci
       - name: Create tarball
         if: matrix.code-target == 'win32-x64'
-        run: npm pack
+        shell: pwsh
+        run: |
+          $tarball = (npm pack)
+          echo "TARBALL=$tarball" >> $env:GITHUB_ENV
       - name: Build binaries (Windows)
         if: matrix.code-target == 'win32-x64'
         shell: pwsh
-        run: npx oclif pack win --targets=win32-x64 --tarball=herodevs-cli-*.tgz
+        run: npx oclif pack win --targets=win32-x64 --tarball=$env:TARBALL
       - name: Build binaries (Linux)
         if: matrix.code-target == 'linux-x64'
         shell: bash
