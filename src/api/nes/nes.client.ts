@@ -38,27 +38,24 @@ export class NesApolloClient implements NesClient {
 /**
  * Submit a scan for a list of purls after they've been batched by batchSubmitPurls
  */
-const submitScan = async (purls: string[], options: ScanInputOptions): Promise<InsightsEolScanResult> => {
+function submitScan(purls: string[], options: ScanInputOptions): Promise<InsightsEolScanResult> {
   // NOTE: GRAPHQL_HOST is set in `./bin/dev.js` or tests
   const host = process.env.GRAPHQL_HOST || 'https://api.nes.herodevs.com';
   const path = process.env.GRAPHQL_PATH || '/graphql';
   const url = host + path;
   const client = new NesApolloClient(url);
   return client.scan.purls(purls, options);
-};
+}
 
 export const batchSubmitPurls = async (
   purls: string[],
   options: ScanInputOptions,
-  batchSize = 1000,
+  batchSize: number,
 ): Promise<ScanResult> => {
   try {
     const batches = createBatches(purls, batchSize);
     debugLogger('Processing %d batches', batches.length);
 
-    if (batches.length < 0) {
-      throw new Error('No batches to process');
-    }
     if (batches.length === 0) {
       return {
         components: new Map<string, InsightsEolScanComponent>(),
@@ -76,10 +73,15 @@ export const batchSubmitPurls = async (
   }
 };
 
-export const createBatches = (items: string[], batchSize: number): string[][] =>
-  Array.from({ length: Math.ceil(items.length / batchSize) }, (_, i) =>
-    items.slice(i * batchSize, (i + 1) * batchSize),
-  );
+export const createBatches = (items: string[], batchSize: number): string[][] => {
+  const numberOfBatches = Math.ceil(items.length / batchSize);
+
+  return Array.from({ length: numberOfBatches }, (_, index) => {
+    const startIndex = index * batchSize;
+    const endIndex = startIndex + batchSize;
+    return items.slice(startIndex, endIndex);
+  });
+};
 
 export const processBatch = async ({
   batch,
@@ -111,7 +113,7 @@ export const processBatches = async (
   const results: InsightsEolScanResult[] = [];
 
   for (const [index, batch] of batches.entries()) {
-    const previousScanId = index > 0 ? results[index - 1].scanId : undefined;
+    const previousScanId = results[index - 1]?.scanId;
     const result = await processBatch({
       batch,
       index,

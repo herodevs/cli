@@ -4,20 +4,14 @@ export const isValidComponentStatus = (status: string): status is ComponentStatu
   return VALID_STATUSES.includes(status as ComponentStatus);
 };
 
-export const validateComponentStatuses = (statuses: string[]): ComponentStatus[] => {
-  const validStatuses = statuses.filter(isValidComponentStatus);
-  if (validStatuses.length !== statuses.length) {
-    throw new Error('Invalid component status provided');
-  }
-  return validStatuses;
-};
-
 export interface ScanInputOptions {
   type: 'SBOM' | 'OTHER';
   page: number;
   totalPages: number;
   scanId?: string;
 }
+
+export const DEFAULT_SCAN_BATCH_SIZE = 1000;
 
 export const DEFAULT_SCAN_INPUT_OPTIONS: ScanInputOptions = {
   type: 'SBOM',

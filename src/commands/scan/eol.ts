@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
-import { DEFAULT_SCAN_INPUT_OPTIONS, type ScanResult } from '../../api/types/hd-cli.types.js';
+import { DEFAULT_SCAN_BATCH_SIZE, DEFAULT_SCAN_INPUT_OPTIONS, type ScanResult } from '../../api/types/hd-cli.types.js';
 import type { InsightsEolScanComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
@@ -81,7 +81,7 @@ export default class ScanEol extends Command {
     if (flags.purls) {
       ux.action.start(`Scanning purls from ${flags.purls}`);
       const purls = this.getPurlsFromFile(flags.purls);
-      return batchSubmitPurls(purls, DEFAULT_SCAN_INPUT_OPTIONS);
+      return batchSubmitPurls(purls, DEFAULT_SCAN_INPUT_OPTIONS, DEFAULT_SCAN_BATCH_SIZE);
     }
 
     const sbom = await ScanSbom.loadSbom(flags, config);
@@ -112,7 +112,7 @@ export default class ScanEol extends Command {
       this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
     }
     try {
-      scan = await batchSubmitPurls(purls, DEFAULT_SCAN_INPUT_OPTIONS);
+      scan = await batchSubmitPurls(purls, DEFAULT_SCAN_INPUT_OPTIONS, DEFAULT_SCAN_BATCH_SIZE);
     } catch (error) {
       this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
     }

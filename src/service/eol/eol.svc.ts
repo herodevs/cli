@@ -37,4 +37,4 @@ export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
   if (!('components' in s) || !Array.isArray(s.components)) {
     throw new Error('Invalid SBOM: missing or invalid components array');
   }
-};
+}
