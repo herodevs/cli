@@ -23,7 +23,6 @@
     "format": "biome format --write",
     "lint": "biome lint --write",
     "prepack": "oclif manifest && oclif readme",
-    "pack": "oclif pack tarballs --targets=darwin-arm64,linux-x64,win32-x64 --no-xz",
     "postpack": "shx rm -f oclif.manifest.json",
     "pretest": "npm run lint && npm run typecheck",
     "readme": "npm run ci:fix && npm run build && npm exec oclif readme",
