@@ -69,7 +69,7 @@ jobs:
       - name: Build binaries (Windows)
         if: matrix.code-target == 'win32-x64'
         shell: pwsh
-        run: npx oclif pack win -r .
+        run: npx oclif pack tarballs --targets=win32-x64 --no-xz
       - name: Build binaries (Linux)
         if: matrix.code-target == 'linux-x64'
         shell: bash
