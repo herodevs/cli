@@ -70,12 +70,12 @@ jobs:
         if: matrix.code-target == 'win32-x64'
         shell: pwsh
         run: |
-          $tarball = (npm pack)
+          $tarball = (npm pack).Trim()
           echo "TARBALL=$tarball" >> $env:GITHUB_ENV
       - name: Build binaries (Windows)
         if: matrix.code-target == 'win32-x64'
         shell: pwsh
-        run: npx oclif pack win --targets=win32-x64 --tarball=$env:TARBALL
+        run: npx oclif pack win --targets=win32-x64 --tarball="$env:TARBALL"
       - name: Build binaries (Linux)
         if: matrix.code-target == 'linux-x64'
         shell: bash
@@ -128,7 +128,7 @@ jobs:
           name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
           body: |
             ## Changes
-            
+
             This release includes the following platform-specific binaries:
             - macOS (ARM64)
             - Windows (x64)
