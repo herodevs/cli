@@ -73,22 +73,14 @@ jobs:
           npm install -g oclif
           # Run oclif pack with direct target specification
           oclif pack win32-x64 -r .
-      - name: Build binaries (Linux)
+      - name: Build binary (Linux)
         if: matrix.code-target == 'linux-x64'
         shell: bash
-        run: |
-          # Install oclif CLI globally
-          npm install -g oclif
-          # Run oclif pack with direct target specification
-          oclif pack linux-x64 -r .
-      - name: Build binaries (macOS)
+        run: npx oclif pack tarballs --targets=linux-x64 --no-xz
+      - name: Build binary (macOS)
         if: matrix.code-target == 'darwin-arm64'
         shell: bash
-        run: |
-          # Install oclif CLI globally
-          npm install -g oclif
-          # Run oclif pack with direct target specification
-          oclif pack darwin-arm64 -r .
+        run: npx oclif pack tarballs --targets=darwin-arm64 --no-xz
       - name: Upload binary artifact
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
