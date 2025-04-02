@@ -16,7 +16,7 @@ on:
       dry-run:
         description: 'Dry run the release'
         type: boolean
-        default: false
+        default: true
 permissions:
   contents: read
 
