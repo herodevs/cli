@@ -16,7 +16,7 @@ on:
       dry-run:
         description: 'Dry run the release'
         type: boolean
-        default: false
+        default: true
 permissions:
   contents: read
 
@@ -63,15 +63,32 @@ jobs:
         if: matrix.code-target == 'win32-x64'
         run: |
           choco install 7zip nsis grep -y
+          # Install GNU tar for Windows
+          choco install gnuwin32-coreutils.install -y
+          # Add GNU tar to PATH (before Windows tar)
           echo "C:\Program Files (x86)\GnuWin32\bin" >> $GITHUB_PATH
       - name: Install npm dependencies
         run: npm ci
-      - name: Build binaries
-        run: npm run pack
+      - name: Build binary (Windows)
+        if: matrix.code-target == 'win32-x64'
+        shell: pwsh
+        run: |
+          # Show which tar is being used
+          Get-Command tar | Format-List
+          # Run the oclif pack command
+          npx oclif pack tarballs --targets=win32-x64 --no-xz
+      - name: Build binary (Linux)
+        if: matrix.code-target == 'linux-x64'
+        shell: bash
+        run: npx oclif pack tarballs --targets=linux-x64 --no-xz
+      - name: Build binary (macOS)
+        if: matrix.code-target == 'darwin-arm64'
+        shell: bash
+        run: npx oclif pack tarballs --targets=darwin-arm64 --no-xz
       - name: Upload binary artifact
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
         with:
-          name: cli-binaries
+          name: cli-binaries-${{ matrix.code-target }}
           path: dist/hd-*
           if-no-files-found: error
   release:
@@ -95,6 +112,7 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
       - name: Create Git Tag
+        if: ${{ !inputs.dry-run }}
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
@@ -103,6 +121,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create GitHub Release
+        if: ${{ !inputs.dry-run }}
         uses: softprops/action-gh-release@v1
         id: create_release
         with:
@@ -110,7 +129,7 @@ jobs:
           name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
           body: |
             ## Changes
-            
+
             This release includes the following platform-specific binaries:
             - macOS (ARM64)
             - Windows (x64)
@@ -123,12 +142,36 @@ jobs:
       - name: Download CLI artifacts
         uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
-          name: cli-binaries
+          pattern: 'cli-binaries-*'
           path: artifacts
-      - name: Upload Release Assets
+          merge-multiple: true
+      - name: Upload Release Assets (Windows)
+        if: ${{ !inputs.dry-run }}
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/hd-*
-          asset_name: hdcli-${{ matrix.code-target }}.zip
-          asset_content_type: application/zip
+          asset_path: ./artifacts/hd-v${{ needs.check.outputs.version }}-*-win32-x64.tar.gz
+          asset_name: hdcli-win32-x64.tar.gz
+          asset_content_type: application/gzip
+      - name: Upload Release Assets (Linux)
+        if: ${{ !inputs.dry-run }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/hd-v${{ needs.check.outputs.version }}-*-linux-x64.tar.gz
+          asset_name: hdcli-linux-x64.tar.gz
+          asset_content_type: application/gzip
+      - name: Upload Release Assets (macOS)
+        if: ${{ !inputs.dry-run }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/hd-v${{ needs.check.outputs.version }}-*-darwin-arm64.tar.gz
+          asset_name: hdcli-darwin-arm64.tar.gz
+          asset_content_type: application/gzip
