@@ -67,7 +67,12 @@ jobs:
         run: npm ci
       - name: Build binaries (Windows)
         if: matrix.code-target == 'win32-x64'
-        run: npm run build && npx oclif pack tarballs --targets=win32-x64
+        shell: pwsh
+        run: |
+          # Add the scripts directory to PATH to override system tar
+          $env:PATH = "$pwd\.github\scripts;$env:PATH"
+          
+          npx oclif pack tarballs --targets=win32-x64 --no-xz
       - name: Build binaries (Linux)
         if: matrix.code-target == 'linux-x64'
         run: npm run build && npx oclif pack tarballs --targets=linux-x64 --no-xz
