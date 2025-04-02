@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
-import type { ScanResult, ScanResultComponent } from '../../api/types/nes.types.ts';
+import { DEFAULT_SCAN_BATCH_SIZE, DEFAULT_SCAN_INPUT_OPTIONS, type ScanResult } from '../../api/types/hd-cli.types.js';
+import type { InsightsEolScanComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls } from '../../service/purls.svc.ts';
@@ -50,7 +51,7 @@ export default class ScanEol extends Command {
     }),
   };
 
-  public async run(): Promise<{ components: ScanResultComponent[] }> {
+  public async run(): Promise<{ components: InsightsEolScanComponent[] }> {
     const { flags } = await this.parse(ScanEol);
 
     if (flags.getCustomerSupport) {
@@ -80,16 +81,19 @@ export default class ScanEol extends Command {
     if (flags.purls) {
       ux.action.start(`Scanning purls from ${flags.purls}`);
       const purls = this.getPurlsFromFile(flags.purls);
-      return batchSubmitPurls(purls);
+      return batchSubmitPurls(purls, DEFAULT_SCAN_INPUT_OPTIONS, DEFAULT_SCAN_BATCH_SIZE);
     }
 
     const sbom = await ScanSbom.loadSbom(flags, config);
-    const scan = this.scanSbom(sbom);
+    const scan = this.scanSbom(sbom, flags);
 
     return scan;
   }
 
-  private getPurlsFromFile(filePath: string): string[] {
+  private getPurlsFromFile(filePath: unknown): string[] {
+    if (typeof filePath !== 'string') {
+      this.error(`Failed to parse file path: ${filePath}`);
+    }
     try {
       const purlsFileString = fs.readFileSync(filePath, 'utf8');
       return parsePurlsFile(purlsFileString);
@@ -98,7 +102,7 @@ export default class ScanEol extends Command {
     }
   }
 
-  private async scanSbom(sbom: Sbom): Promise<ScanResult> {
+  private async scanSbom(sbom: Sbom, flags: Record<string, unknown>): Promise<ScanResult> {
     let scan: ScanResult;
     let purls: string[];
 
@@ -108,7 +112,7 @@ export default class ScanEol extends Command {
       this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
     }
     try {
-      scan = await batchSubmitPurls(purls);
+      scan = await batchSubmitPurls(purls, DEFAULT_SCAN_INPUT_OPTIONS, DEFAULT_SCAN_BATCH_SIZE);
     } catch (error) {
       this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
     }
@@ -126,7 +130,7 @@ export default class ScanEol extends Command {
       .map(([_, component]) => component);
   }
 
-  private async saveReport(components: ScanResultComponent[]): Promise<void> {
+  private async saveReport(components: InsightsEolScanComponent[]): Promise<void> {
     try {
       const { flags } = await this.parse(ScanEol);
       const reportPath = path.join(flags.dir || process.cwd(), 'nes.eol.json');

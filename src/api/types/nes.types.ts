@@ -1,44 +1,50 @@
-export type ScanInput = { components: string[]; type: 'SBOM' } | { type: 'OTHER' };
+/**
+ * Input parameters for the EOL scan operation
+ */
+export interface InsightsEolScanInput {
+  scanId?: string;
+  /** Array of package URLs in purl format to scan */
+  components: string[];
+  /** The type of scan being performed (e.g. 'SBOM') */
+  type: string;
+
+  // if it's chunked
+  page: number;
+  totalPages: number;
+}
 
 export interface ScanResponse {
   insights: {
     scan: {
-      eol: ScanResponseReport;
+      eol: InsightsEolScanResult;
     };
   };
 }
 
-export interface ScanResponseReport {
-  components: ScanResultComponent[];
-  diagnostics?: Record<string, unknown>;
-  message: string;
+/**
+ * Result of the EOL scan operation
+ */
+export interface InsightsEolScanResult {
+  scanId?: string;
   success: boolean;
-  warnings?: ScanWarning[];
+  message: string;
+  components: InsightsEolScanComponent[];
+  warnings: ScanWarning[];
 }
 
-export const VALID_STATUSES = ['UNKNOWN', 'OK', 'EOL', 'LTS'] as const;
-export type ComponentStatus = (typeof VALID_STATUSES)[number];
+/**
+ * Information about a component's EOL status
+ */
+export interface InsightsEolScanComponentInfo {
+  isEol: boolean;
+  isUnsafe: boolean;
+  eolAt: Date | null;
+  status: ComponentStatus;
+  daysEol: number | null;
+}
 
-export const isValidComponentStatus = (status: string): status is ComponentStatus => {
-  return VALID_STATUSES.includes(status as ComponentStatus);
-};
-
-export const validateComponentStatuses = (statuses: string[]): ComponentStatus[] => {
-  const validStatuses = statuses.filter(isValidComponentStatus);
-  if (validStatuses.length !== statuses.length) {
-    throw new Error('Invalid component status provided');
-  }
-  return validStatuses;
-};
-
-export interface ScanResultComponent {
-  info: {
-    eolAt: Date | null;
-    isEol: boolean;
-    daysEol: number | null;
-    isUnsafe: boolean;
-    status: ComponentStatus;
-  };
+export interface InsightsEolScanComponent {
+  info: InsightsEolScanComponentInfo;
   purl: string;
 }
 
@@ -50,12 +56,5 @@ export interface ScanWarning {
   diagnostics?: Record<string, unknown>;
 }
 
-export type ScanResultComponentsMap = Map<string, ScanResultComponent>;
-
-export interface ScanResult {
-  components: ScanResultComponentsMap;
-  diagnostics?: Record<string, unknown>;
-  message: string;
-  success: boolean;
-  warnings: ScanWarning[];
-}
+export type ComponentStatus = (typeof VALID_STATUSES)[number];
+export const VALID_STATUSES = ['UNKNOWN', 'OK', 'EOL', 'LTS'] as const;
