@@ -69,11 +69,11 @@ jobs:
       - name: Build binaries
         run: |
           if [ "${{ matrix.code-target }}" = "win32-x64" ]; then
-            npx oclif pack tarballs --targets=win32-x64
+            npx oclif pack tarballs --targets=win32-x64 --no-xz
           elif [ "${{ matrix.code-target }}" = "linux-x64" ]; then
-            npx oclif pack tarballs --targets=linux-x64
+            npx oclif pack tarballs --targets=linux-x64 --no-xz
           else
-            npx oclif pack tarballs --targets=darwin-arm64
+            npx oclif pack tarballs --targets=darwin-arm64 --no-xz"
           fi
       - name: Upload binary artifact
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
@@ -132,13 +132,36 @@ jobs:
       - name: Download CLI artifacts
         uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
-          name: cli-binaries-${{ matrix.code-target }}
+          pattern: 'cli-binaries-*'
           path: artifacts
-      - name: Upload Release Assets
+          merge-multiple: true
+      - name: Upload Release Assets (Windows)
         if: ${{ !inputs.dry-run }}
         uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/hd-*
-          asset_name: hdcli-${{ matrix.code-target }}.zip
-          asset_content_type: application/zip
+          asset_path: ./artifacts/hd-v${{ needs.check.outputs.version }}-*-win32-x64.tar.gz
+          asset_name: hdcli-win32-x64.tar.gz
+          asset_content_type: application/gzip
+      - name: Upload Release Assets (Linux)
+        if: ${{ !inputs.dry-run }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/hd-v${{ needs.check.outputs.version }}-*-linux-x64.tar.gz
+          asset_name: hdcli-linux-x64.tar.gz
+          asset_content_type: application/gzip
+      - name: Upload Release Assets (macOS)
+        if: ${{ !inputs.dry-run }}
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/hd-v${{ needs.check.outputs.version }}-*-darwin-arm64.tar.gz
+          asset_name: hdcli-darwin-arm64.tar.gz
+          asset_content_type: application/gzip
