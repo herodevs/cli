@@ -83,35 +83,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
 
       # GitHub Release (only if not dry-run)
-      - name: Create Git Tag
+      - name: Create Release
         if: ${{ !inputs.dry-run }}
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git tag -a v${{ needs.check.outputs.version }} -m "Release v${{ needs.check.outputs.version }}"
-          git push origin v${{ needs.check.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
-      - name: Create GitHub Release
-        if: ${{ !inputs.dry-run }}
-        uses: softprops/action-gh-release@v1
-        id: create_release
+        uses: ./.github/actions/create-release
         with:
-          tag_name: v${{ needs.check.outputs.version }}
-          name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
-          body: |
-            ## Changes
-
-            This release includes the following platform-specific binaries:
-            - macOS (ARM64)
-            - Windows (x64)
-            - Linux (x64)
-          draft: false
-          prerelease: ${{ inputs.channel != 'latest' }}
-          discussion_category_name: Announcements
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ needs.check.outputs.version }}
+          channel: ${{ inputs.channel }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # S3 Binary Distribution (only if not dry-run)
       - name: Download CLI artifacts
