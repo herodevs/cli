@@ -55,36 +55,10 @@ jobs:
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version-file: '.nvmrc'
-      - name: Install linux toolchain
-        if: matrix.code-target == 'linux-x64'
-        run: |
-          sudo apt install nsis p7zip-full p7zip-rar -y
-      - name: Install win32 toolchain
-        if: matrix.code-target == 'win32-x64'
-        run: |
-          choco install 7zip nsis grep -y
-      - name: Install npm dependencies
-        run: npm ci
-      - name: Build binaries (Windows)
-        if: matrix.code-target == 'win32-x64'
-        shell: pwsh
-        run: |
-          # Add the scripts directory to PATH to override system tar
-          $env:PATH = "$pwd\.github\scripts;$env:PATH"
-
-          npx oclif pack tarballs --targets=win32-x64 --no-xz
-      - name: Build binaries (Linux)
-        if: matrix.code-target == 'linux-x64'
-        run: npm run build && npx oclif pack tarballs --targets=linux-x64 --no-xz
-      - name: Build binaries (macOS)
-        if: matrix.code-target == 'darwin-arm64'
-        run: npm run build && npx oclif pack tarballs --targets=darwin-arm64 --no-xz
-      - name: Upload binary artifact
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      - name: Build tarballs
+        uses: ./.github/actions/build-tarballs
         with:
-          name: cli-binaries-${{ matrix.code-target }}
-          path: dist/hd-*
-          if-no-files-found: error
+          code-target: ${{ matrix.code-target }}
   release:
     runs-on: ubuntu-latest
     needs: [check, build-binaries]
@@ -109,34 +83,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
 
       # GitHub Release (only if not dry-run)
-      - name: Create Git Tag
+      - name: Create Release
         if: ${{ !inputs.dry-run }}
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git tag -a v${{ needs.check.outputs.version }} -m "Release v${{ needs.check.outputs.version }}"
-          git push origin v${{ needs.check.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create GitHub Release
-        if: ${{ !inputs.dry-run }}
-        uses: softprops/action-gh-release@v1
-        id: create_release
+        uses: ./.github/actions/create-release
         with:
-          tag_name: v${{ needs.check.outputs.version }}
-          name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
-          body: |
-            ## Changes
-
-            This release includes the following platform-specific binaries:
-            - macOS (ARM64)
-            - Windows (x64)
-            - Linux (x64)
-          draft: false
-          prerelease: ${{ inputs.channel != 'latest' }}
-          discussion_category_name: Announcements
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ needs.check.outputs.version }}
+          channel: ${{ inputs.channel }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # S3 Binary Distribution (only if not dry-run)
       - name: Download CLI artifacts
@@ -146,62 +99,15 @@ jobs:
           pattern: 'cli-binaries-*'
           path: dist
           merge-multiple: true
-      - name: Debug downloaded artifacts
+
+      - name: Distribute binaries to S3
         if: ${{ !inputs.dry-run }}
-        run: |
-          echo "=== Debugging downloaded artifacts ==="
-          echo "Current directory: $(pwd)"
-          echo "Contents of dist directory:"
-          ls -la dist/
-          echo "Total size of dist:"
-          du -sh dist/
-      - name: Configure AWS credentials
-        if: ${{ !inputs.dry-run }}
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: ./.github/actions/s3-distribution
         with:
+          version: ${{ needs.check.outputs.version }}
+          channel: ${{ inputs.channel }}
+          bucket: end-of-life-dataset-cli-releases
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-      - name: Verify AWS credentials
-        if: ${{ !inputs.dry-run }}
-        run: |
-          echo "=== Verifying AWS credentials ==="
-          aws sts get-caller-identity
-          echo "Checking S3 bucket access:"
-          aws s3 ls s3://end-of-life-dataset-cli-releases/ || echo "Warning: Could not list bucket contents"
-      - name: Upload to S3
-        if: ${{ !inputs.dry-run }}
-        run: |
-          echo "=== Starting upload to S3 ==="
-          echo "Version: ${{ needs.check.outputs.version }}"
-          echo "Working directory: $(pwd)"
-
-          # Enable oclif debug logging
-          export DEBUG=oclif:*
-
-          # Ensure we're in the project root
-          cd ${{ github.workspace }}
-
-          echo "Contents of dist before upload:"
-          ls -la dist/
-
-          echo "Uploading tarballs to S3..."
-          npx oclif upload tarballs --bucket=end-of-life-dataset-cli-releases --version=${{ needs.check.outputs.version }}
-
-          echo "Verifying uploaded files in S3:"
-          aws s3 ls s3://end-of-life-dataset-cli-releases/versions/${{ needs.check.outputs.version }}/
-      - name: Promote to channel
-        if: ${{ !inputs.dry-run }}
-        run: |
-          echo "=== Starting channel promotion ==="
-          echo "Version: ${{ needs.check.outputs.version }}"
-          echo "Channel: ${{ inputs.channel }}"
-
-          # Enable oclif debug logging
-          export DEBUG=oclif:*
-
-          echo "Promoting version to channel..."
-          npx oclif promote --bucket=end-of-life-dataset-cli-releases --version=${{ needs.check.outputs.version }} --channel=${{ inputs.channel }}
-
-          echo "Verifying channel promotion in S3:"
-          aws s3 ls s3://end-of-life-dataset-cli-releases/channels/${{ inputs.channel }}/
+          artifacts-path: dist
