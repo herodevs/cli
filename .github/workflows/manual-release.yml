@@ -71,7 +71,7 @@ jobs:
         run: |
           # Add the scripts directory to PATH to override system tar
           $env:PATH = "$pwd\.github\scripts;$env:PATH"
-          
+
           npx oclif pack tarballs --targets=win32-x64 --no-xz
       - name: Build binaries (Linux)
         if: matrix.code-target == 'linux-x64'
@@ -175,19 +175,19 @@ jobs:
           echo "=== Starting upload to S3 ==="
           echo "Version: ${{ needs.check.outputs.version }}"
           echo "Working directory: $(pwd)"
-          
+
           # Enable oclif debug logging
           export DEBUG=oclif:*
-          
+
           # Ensure we're in the project root
           cd ${{ github.workspace }}
-          
+
           echo "Contents of dist before upload:"
           ls -la dist/
-          
+
           echo "Uploading tarballs to S3..."
           npx oclif upload tarballs --bucket=end-of-life-dataset-cli-releases --version=${{ needs.check.outputs.version }}
-          
+
           echo "Verifying uploaded files in S3:"
           aws s3 ls s3://end-of-life-dataset-cli-releases/versions/${{ needs.check.outputs.version }}/
       - name: Promote to channel
@@ -196,12 +196,12 @@ jobs:
           echo "=== Starting channel promotion ==="
           echo "Version: ${{ needs.check.outputs.version }}"
           echo "Channel: ${{ inputs.channel }}"
-          
+
           # Enable oclif debug logging
           export DEBUG=oclif:*
-          
+
           echo "Promoting version to channel..."
           npx oclif promote --bucket=end-of-life-dataset-cli-releases --version=${{ needs.check.outputs.version }} --channel=${{ inputs.channel }}
-          
+
           echo "Verifying channel promotion in S3:"
           aws s3 ls s3://end-of-life-dataset-cli-releases/channels/${{ inputs.channel }}/
