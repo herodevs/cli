@@ -69,47 +69,9 @@ jobs:
         if: matrix.code-target == 'win32-x64'
         shell: pwsh
         run: |
-          # Create tar wrapper script that removes --force-local
-          $tarWrapperContent = @'
-          # tar-wrapper.ps1
-          # This script intercepts tar commands and removes the --force-local flag
-
-          param (
-              [Parameter(ValueFromRemainingArguments=$true)]
-              $args
-          )
-
-          # Process arguments and remove --force-local if present
-          $cleanArgs = @()
-          foreach ($arg in $args) {
-              if ($arg -ne "--force-local") {
-                  $cleanArgs += $arg
-              }
-          }
-
-          # Call the real tar with cleaned arguments
-          & "C:\Windows\system32\tar.exe" $cleanArgs
-
-          # Preserve the exit code from the tar command
-          exit $LASTEXITCODE
-          '@
+          # Add the scripts directory to PATH to override system tar
+          $env:PATH = "$pwd\.github\scripts;$env:PATH"
           
-          # Write the wrapper script to a file
-          Set-Content -Path tar-wrapper.ps1 -Value $tarWrapperContent
-          
-          # Create a .cmd file that calls the PowerShell script
-          $tarCmdContent = '@echo off
-          powershell.exe -ExecutionPolicy Bypass -File "%~dp0\tar-wrapper.ps1" %*'
-          Set-Content -Path tar.cmd -Value $tarCmdContent
-          
-          # Add the current directory to the beginning of PATH to override system tar
-          $env:PATH = "$pwd;$env:PATH"
-          
-          # Test the wrapper
-          Write-Host "Testing tar wrapper..."
-          ./tar.cmd --version
-          
-          # Run the oclif pack command
           npx oclif pack tarballs --targets=win32-x64 --no-xz
       - name: Build binaries (Linux)
         if: matrix.code-target == 'linux-x64'
