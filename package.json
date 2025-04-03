@@ -83,8 +83,12 @@
     "win": {
       "icon": "assets/icon.ico"
     },
-    "tarballs": {
-      "host": "https://github.com/herodevs/cli/releases/download"
+    "update": {
+      "s3": {
+        "bucket": "end-of-life-dataset-cli-releases",
+        "host": "https://end-of-life-dataset-cli-releases.s3.amazonaws.com",
+        "acl": "public-read"
+      }
     }
   },
   "types": "dist/index.d.ts"
