@@ -22,6 +22,8 @@
     "dev:debug": "npm run build && DEBUG=oclif:* ./bin/dev.js",
     "format": "biome format --write",
     "lint": "biome lint --write",
+    "postpack": "shx rm -f oclif.manifest.json",
+    "prepack": "oclif manifest && oclif readme",
     "pretest": "npm run lint && npm run typecheck",
     "readme": "npm run ci:fix && npm run build && npm exec oclif readme",
     "test": "globstar -- node --import tsx --test \"test/**/*.test.ts\"",
@@ -39,6 +41,7 @@
     "@cyclonedx/cdxgen": "^11.2.3",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
+    "@oclif/plugin-update": "^4",
     "graphql": "^16.8.1"
   },
   "devDependencies": {
@@ -71,7 +74,8 @@
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
+      "@oclif/plugin-plugins",
+      "@oclif/plugin-update"
     ],
     "hooks": {
       "prerun": "./dist/hooks/prerun.js"

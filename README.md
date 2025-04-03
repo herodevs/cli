@@ -30,6 +30,7 @@ USAGE
 * [`hd report purls`](#hd-report-purls)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd scan sbom`](#hd-scan-sbom)
+* [`hd update [CHANNEL]`](#hd-update-channel)
 
 ## `hd help [COMMAND]`
 
@@ -177,4 +178,42 @@ EXAMPLES
 ```
 
 _See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v1.3.0-beta.1/src/commands/scan/sbom.ts)_
+
+## `hd update [CHANNEL]`
+
+update the hd CLI
+
+```
+USAGE
+  $ hd update [CHANNEL] [--force |  | [-a | -v <value> | -i]] [-b ]
+
+FLAGS
+  -a, --available        See available versions.
+  -b, --verbose          Show more details about the available versions.
+  -i, --interactive      Interactively select version to install. This is ignored if a channel is provided.
+  -v, --version=<value>  Install a specific version.
+      --force            Force a re-download of the requested version.
+
+DESCRIPTION
+  update the hd CLI
+
+EXAMPLES
+  Update to the stable channel:
+
+    $ hd update stable
+
+  Update to a specific version:
+
+    $ hd update --version 1.0.0
+
+  Interactively select version:
+
+    $ hd update --interactive
+
+  See available versions:
+
+    $ hd update --available
+```
+
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.6.36/src/commands/update.ts)_
 <!-- commandsstop -->
