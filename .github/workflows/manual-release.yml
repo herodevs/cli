@@ -55,36 +55,10 @@ jobs:
         uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version-file: '.nvmrc'
-      - name: Install linux toolchain
-        if: matrix.code-target == 'linux-x64'
-        run: |
-          sudo apt install nsis p7zip-full p7zip-rar -y
-      - name: Install win32 toolchain
-        if: matrix.code-target == 'win32-x64'
-        run: |
-          choco install 7zip nsis grep -y
-      - name: Install npm dependencies
-        run: npm ci
-      - name: Build binaries (Windows)
-        if: matrix.code-target == 'win32-x64'
-        shell: pwsh
-        run: |
-          # Add the scripts directory to PATH to override system tar
-          $env:PATH = "$pwd\.github\scripts;$env:PATH"
-
-          npx oclif pack tarballs --targets=win32-x64 --no-xz
-      - name: Build binaries (Linux)
-        if: matrix.code-target == 'linux-x64'
-        run: npm run build && npx oclif pack tarballs --targets=linux-x64 --no-xz
-      - name: Build binaries (macOS)
-        if: matrix.code-target == 'darwin-arm64'
-        run: npm run build && npx oclif pack tarballs --targets=darwin-arm64 --no-xz
-      - name: Upload binary artifact
-        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      - name: Build tarballs
+        uses: ./.github/actions/build-tarballs
         with:
-          name: cli-binaries-${{ matrix.code-target }}
-          path: dist/hd-*
-          if-no-files-found: error
+          code-target: ${{ matrix.code-target }}
   release:
     runs-on: ubuntu-latest
     needs: [check, build-binaries]
@@ -118,6 +92,7 @@ jobs:
           git push origin v${{ needs.check.outputs.version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
       - name: Create GitHub Release
         if: ${{ !inputs.dry-run }}
         uses: softprops/action-gh-release@v1
