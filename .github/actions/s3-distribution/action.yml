@@ -70,7 +70,7 @@ runs:
         ls -la "${{ inputs.artifacts-path }}"
 
         echo "Uploading tarballs to S3..."
-        npx oclif upload tarballs --bucket=${{ inputs.bucket }} --version=${{ inputs.version }}
+        npx oclif upload tarballs --root=${{ inputs.artifacts-path }}
 
         echo "Verifying uploaded files in S3:"
         aws s3 ls s3://${{ inputs.bucket }}/versions/${{ inputs.version }}/
@@ -86,7 +86,12 @@ runs:
         export DEBUG=oclif:*
 
         echo "Promoting version to channel..."
-        npx oclif promote --bucket=${{ inputs.bucket }} --version=${{ inputs.version }} --channel=${{ inputs.channel }}
+        npx oclif promote \
+          --root=${{ inputs.artifacts-path }} \
+          --channel=${{ inputs.channel }} \
+          --version=${{ inputs.version }} \
+          --sha=${{ github.sha }} \
+          --indexes
 
         echo "Verifying channel promotion in S3:"
         aws s3 ls s3://${{ inputs.bucket }}/channels/${{ inputs.channel }}/ 
