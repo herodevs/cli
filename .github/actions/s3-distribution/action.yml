@@ -24,7 +24,7 @@ inputs:
   artifacts-path:
     description: 'Path to the artifacts directory'
     required: true
-    default: 'dist'
+    default: ${{ github.workspace }}/dist
 
 runs:
   using: "composite"

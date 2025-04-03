@@ -30,7 +30,7 @@ runs:
       shell: pwsh
       run: |
         # Add the scripts directory to PATH to override system tar
-        $env:PATH = "$pwd\.github\scripts;$env:PATH"
+        $env:PATH = "$pwd\..\..\scripts;$env:PATH"
         npx oclif pack tarballs --targets=win32-x64 --no-xz
 
     - name: Build tarballs (Linux)
@@ -51,5 +51,5 @@ runs:
       uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
         name: cli-tarballs-${{ inputs.code-target }}
-        path: dist/hd-*
+        path: ${{ github.workspace }}/dist/hd-*
         if-no-files-found: error 
