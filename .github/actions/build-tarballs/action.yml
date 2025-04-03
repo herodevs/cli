@@ -51,10 +51,15 @@ runs:
         npx oclif pack tarballs --targets=darwin-arm64 --no-xz
 
     - name: Debug tarball contents
-      shell: bash
+      shell: ${{ inputs.code-target == 'win32-x64' && 'pwsh' || 'bash' }}
       run: |
-        echo "=== Tarball contents ==="
-        ls -la ${{ github.workspace }}/dist
+        if (${{ inputs.code-target == 'win32-x64' }}) {
+          Write-Host "=== Tarball contents ==="
+          Get-ChildItem "${{ github.workspace }}\dist"
+        } else {
+          echo "=== Tarball contents ==="
+          ls -la ${{ github.workspace }}/dist
+        }
 
     - name: Upload tarball artifact
       uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
