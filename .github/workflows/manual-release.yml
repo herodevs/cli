@@ -30,7 +30,7 @@ jobs:
           echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
     outputs:
       version: ${{ steps.version.outputs.version }}
-  build-binaries:
+  build-platform-tarballs:
     strategy:
       matrix:
         include:
@@ -61,7 +61,7 @@ jobs:
           code-target: ${{ matrix.code-target }}
   release:
     runs-on: ubuntu-latest
-    needs: [check, build-binaries]
+    needs: [check, build-platform-tarballs]
     permissions:
       contents: write
       id-token: write
@@ -96,9 +96,18 @@ jobs:
         if: ${{ !inputs.dry-run }}
         uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
-          pattern: 'cli-binaries-*'
-          path: dist
+          pattern: 'cli-tarballs-*'
+          path: ${{ github.workspace }}/dist
           merge-multiple: true
+
+      - name: Debug downloaded artifacts
+        if: ${{ !inputs.dry-run }}
+        shell: bash
+        run: |
+          echo "=== Downloaded artifacts ==="
+          ls -la ${{ github.workspace }}/dist
+          echo "=== Contents of dist directory ==="
+          find ${{ github.workspace }}/dist -type f
 
       - name: Distribute binaries to S3
         if: ${{ !inputs.dry-run }}
@@ -110,4 +119,4 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          artifacts-path: dist
+          artifacts-path: ${{ github.workspace }}/dist
