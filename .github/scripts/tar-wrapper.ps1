@@ -16,8 +16,21 @@ foreach ($arg in $args) {
     }
 }
 
+# Find the real tar executable
+try {
+    $tarPath = (Get-Command tar.exe -ErrorAction Stop).Path
+} catch {
+    Write-Error "Could not find tar.exe in PATH. Error: $_"
+    exit 1
+}
+
+Write-Host "Using tar from: $tarPath"
+Write-Host "Running command: $tarPath $cleanArgs"
+
 # Call the real tar with cleaned arguments
-& "C:\Windows\system32\tar.exe" $cleanArgs
+& $tarPath $cleanArgs
 
 # Preserve the exit code from the tar command
-exit $LASTEXITCODE 
+$exitCode = $LASTEXITCODE
+Write-Host "tar exited with code: $exitCode"
+exit $exitCode 
