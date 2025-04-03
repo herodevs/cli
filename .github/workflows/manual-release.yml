@@ -137,17 +137,20 @@ jobs:
         uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           pattern: 'cli-binaries-*'
-          path: artifacts
+          path: dist
           merge-multiple: true
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsRole
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
       - name: Upload to S3
         if: ${{ !inputs.dry-run }}
         run: |
-          npx oclif upload --bucket=end-of-life-dataset-cli-releases --version=${{ needs.check.outputs.version }} ./artifacts/hd-*
+          # Ensure we're in the project root
+          cd ${{ github.workspace }}
+          npx oclif upload tarballs --bucket=end-of-life-dataset-cli-releases --version=${{ needs.check.outputs.version }}
       - name: Promote to channel
         if: ${{ !inputs.dry-run }}
         run: |
