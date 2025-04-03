@@ -139,33 +139,16 @@ jobs:
           pattern: 'cli-binaries-*'
           path: artifacts
           merge-multiple: true
-      - name: Upload Release Assets (Windows)
-        if: ${{ !inputs.dry-run }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/hd-v${{ needs.check.outputs.version }}-*-win32-x64.tar.gz
-          asset_name: hdcli-win32-x64.tar.gz
-          asset_content_type: application/gzip
-      - name: Upload Release Assets (Linux)
+          role-to-assume: arn:aws:iam::123456789012:role/GitHubActionsRole
+          aws-region: us-east-1
+      - name: Upload to S3
         if: ${{ !inputs.dry-run }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/hd-v${{ needs.check.outputs.version }}-*-linux-x64.tar.gz
-          asset_name: hdcli-linux-x64.tar.gz
-          asset_content_type: application/gzip
-      - name: Upload Release Assets (macOS)
+        run: |
+          npx oclif upload --bucket=end-of-life-dataset-cli-releases --version=${{ needs.check.outputs.version }} ./artifacts/hd-*
+      - name: Promote to channel
         if: ${{ !inputs.dry-run }}
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/hd-v${{ needs.check.outputs.version }}-*-darwin-arm64.tar.gz
-          asset_name: hdcli-darwin-arm64.tar.gz
-          asset_content_type: application/gzip
+        run: |
+          npx oclif promote --bucket=end-of-life-dataset-cli-releases --version=${{ needs.check.outputs.version }} --channel=${{ inputs.channel }}
