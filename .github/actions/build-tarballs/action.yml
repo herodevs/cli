@@ -29,6 +29,7 @@ runs:
       if: ${{ inputs.code-target == 'win32-x64' }}
       shell: bash
       run: |
+        npm run build
         npx oclif pack tarballs --targets=win32-x64 --no-xz
 
     - name: Build tarballs (Linux)
