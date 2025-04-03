@@ -27,13 +27,8 @@ runs:
 
     - name: Build tarballs (Windows)
       if: ${{ inputs.code-target == 'win32-x64' }}
-      shell: pwsh
+      shell: bash
       run: |
-        # Add the scripts directory to PATH to override system tar
-        $env:PATH = "${{ github.workspace }}\.github\scripts;$env:PATH"
-        Write-Host "PATH is now: $env:PATH"
-        Write-Host "Checking for tar-wrapper.ps1:"
-        Get-ChildItem "${{ github.workspace }}\.github\scripts"
         npx oclif pack tarballs --targets=win32-x64 --no-xz
 
     - name: Build tarballs (Linux)
@@ -49,20 +44,6 @@ runs:
       run: |
         npm run build
         npx oclif pack tarballs --targets=darwin-arm64 --no-xz
-
-    - name: Debug tarball contents (Windows)
-      if: ${{ inputs.code-target == 'win32-x64' }}
-      shell: pwsh
-      run: |
-        Write-Host "=== Tarball contents ==="
-        Get-ChildItem "${{ github.workspace }}\dist"
-
-    - name: Debug tarball contents (Unix)
-      if: ${{ inputs.code-target != 'win32-x64' }}
-      shell: bash
-      run: |
-        echo "=== Tarball contents ==="
-        ls -la ${{ github.workspace }}/dist
 
     - name: Upload tarball artifact
       uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
