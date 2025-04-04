@@ -55,68 +55,68 @@ jobs:
       - run: npm run test:e2e
 
       # Create GitHub Release
-      # - name: Create Release
-      #   if: ${{ !inputs.dry-run }}
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     tag_name: v${{ needs.check.outputs.version }}
-      #     name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
-      #     body: |
-      #       ## Changes
-
-      #       This release includes the following platform-specific binaries:
-      #       - macOS (ARM64)
-      #       - Windows (x64)
-      #       - Linux (x64)
-      #     draft: false
-      #     prerelease: ${{ inputs.channel != 'latest' }}
-      #     discussion_category_name: Announcements
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Build platform-specific tarballs
-      - name: Install linux toolchain
-        run: |
-          sudo apt update
-          sudo apt install nsis p7zip-full p7zip-rar -y
-
-      - name: Build linux-x64 tarball
-        run: npx oclif pack tarballs --targets=linux-x64 --no-xz
-
-      - name: Build win32-x64 tarball
-        run: npx oclif pack tarballs --targets=win32-x64 --no-xz
-
-      - name: Build darwin-arm64 tarball
-        run: npx oclif pack tarballs --targets=darwin-arm64 --no-xz
-
-      # S3 Distribution
-      - name: Configure AWS credentials
+      - name: Create Release
         if: ${{ !inputs.dry-run }}
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: softprops/action-gh-release@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
+          tag_name: v${{ needs.check.outputs.version }}
+          name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
+          body: |
+            ## Changes
 
-      - name: Upload and promote to S3
-        if: ${{ !inputs.dry-run }}
-        run: |
-          # Enable oclif debug logging
-          export DEBUG=oclif:*
+            This release includes the following platform-specific binaries:
+            - macOS (ARM64)
+            - Windows (x64)
+            - Linux (x64)
+          draft: false
+          prerelease: ${{ inputs.channel != 'latest' }}
+          discussion_category_name: Announcements
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-          # Upload tarballs
-          npx oclif upload tarballs \
-            --targets=linux-x64,win32-x64,darwin-arm64 \
-            --no-xz
+      # # Build platform-specific tarballs
+      # - name: Install linux toolchain
+      #   run: |
+      #     sudo apt update
+      #     sudo apt install nsis p7zip-full p7zip-rar -y
 
-          # Promote to channel
-          npx oclif promote \
-            --channel=${{ inputs.channel }} \
-            --version=${{ needs.check.outputs.version }} \
-            --sha=${{ github.sha }} \
-            --indexes \
-            --targets=linux-x64,win32-x64,darwin-arm64 \
-            --ignore-missing
+      # - name: Build linux-x64 tarball
+      #   run: npx oclif pack tarballs --targets=linux-x64 --no-xz
+
+      # - name: Build win32-x64 tarball
+      #   run: npx oclif pack tarballs --targets=win32-x64 --no-xz
+
+      # - name: Build darwin-arm64 tarball
+      #   run: npx oclif pack tarballs --targets=darwin-arm64 --no-xz
+
+      # # S3 Distribution
+      # - name: Configure AWS credentials
+      #   if: ${{ !inputs.dry-run }}
+      #   uses: aws-actions/configure-aws-credentials@v4
+      #   with:
+      #     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #     aws-region: us-east-1
+
+      # - name: Upload and promote to S3
+      #   if: ${{ !inputs.dry-run }}
+      #   run: |
+      #     # Enable oclif debug logging
+      #     export DEBUG=oclif:*
+
+      #     # Upload tarballs
+      #     npx oclif upload tarballs \
+      #       --targets=linux-x64,win32-x64,darwin-arm64 \
+      #       --no-xz
+
+      #     # Promote to channel
+      #     npx oclif promote \
+      #       --channel=${{ inputs.channel }} \
+      #       --version=${{ needs.check.outputs.version }} \
+      #       --sha=${{ github.sha }} \
+      #       --indexes \
+      #       --targets=linux-x64,win32-x64,darwin-arm64 \
+      #       --ignore-missing
 
       # NPM Release
       # - name: Create NPM release
