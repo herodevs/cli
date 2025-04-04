@@ -31,8 +31,20 @@ jobs:
       - name: Get version
         id: version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      - name: Determine Oclif channel
+        id: oclif-channel
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *"-beta"* ]]; then
+            echo "oclif_channel=beta" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-alpha"* ]]; then
+            echo "oclif_channel=alpha" >> $GITHUB_OUTPUT
+          else
+            echo "oclif_channel=stable" >> $GITHUB_OUTPUT
+          fi
     outputs:
       version: ${{ steps.version.outputs.version }}
+      oclif_channel: ${{ steps.oclif-channel.outputs.oclif_channel }}
 
   test:
     runs-on: ubuntu-latest
@@ -101,8 +113,8 @@ jobs:
 
           # Promote to channel
           npx oclif promote \
-            --channel=${{ inputs.channel }} \
-            --version=${{ needs.check.outputs.version }} \
+            --channel=${{ needs.check-version.outputs.oclif_channel }} \
+            --version=${{ needs.check-version.outputs.version }} \
             --sha=${{ github.sha }} \
             --indexes \
             --targets=linux-x64,win32-x64,darwin-arm64 \
@@ -132,8 +144,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
   
       # NPM Release
-      - name: Create NPM release
-        if: ${{ !inputs.dry-run }}
-        run: npm publish --tag ${{ inputs.channel }} --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+      # - name: Create NPM release
+      #   if: ${{ !inputs.dry-run }}
+      #   run: npm publish --tag ${{ inputs.channel }} --provenance --access public
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
