@@ -92,7 +92,8 @@ runs:
           --version=${{ inputs.version }} \
           --sha=${{ github.sha }} \
           --indexes \
-          --targets=linux-x64,win32-x64,darwin-arm64
+          --targets=linux-x64,win32-x64,darwin-arm64 \
+          --ignore-missing
 
         echo "Verifying channel promotion in S3:"
         aws s3 ls s3://${{ inputs.bucket }}/channels/${{ inputs.channel }}/ 
