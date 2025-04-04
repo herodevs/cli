@@ -1,0 +1,55 @@
+name: 'Build Tarballs'
+description: 'Build platform-specific tarballs using oclif'
+inputs:
+  code-target:
+    description: 'Target platform for building (win32-x64, linux-x64, or darwin-arm64)'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install linux toolchain
+      if: ${{ inputs.code-target == 'linux-x64' }}
+      shell: bash
+      run: |
+        sudo apt update
+        sudo apt install nsis p7zip-full p7zip-rar -y
+
+    - name: Install win32 toolchain
+      if: ${{ inputs.code-target == 'win32-x64' }}
+      shell: pwsh
+      run: |
+        choco install 7zip nsis grep -y
+
+    - name: Install npm dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Build tarballs (Windows)
+      if: ${{ inputs.code-target == 'win32-x64' }}
+      shell: bash
+      run: |
+        npm run build
+        npx oclif pack tarballs --targets=win32-x64 --no-xz
+
+    - name: Build tarballs (Linux)
+      if: ${{ inputs.code-target == 'linux-x64' }}
+      shell: bash
+      run: |
+        npm run build
+        npx oclif pack tarballs --targets=linux-x64 --no-xz
+
+    - name: Build tarballs (macOS)
+      if: ${{ inputs.code-target == 'darwin-arm64' }}
+      shell: bash
+      run: |
+        npm run build
+        npx oclif pack tarballs --targets=darwin-arm64 --no-xz
+
+    - name: Upload tarball artifact
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
+      with:
+        name: cli-tarballs-${{ inputs.code-target }}
+        path: ${{ github.workspace }}/dist/hd-*.tar.gz
+        if-no-files-found: error
+        compression-level: 0  # Disable compression to preserve the tarballs 

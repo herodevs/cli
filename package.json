@@ -41,6 +41,7 @@
     "@cyclonedx/cdxgen": "^11.2.3",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
+    "@oclif/plugin-update": "^4",
     "graphql": "^16.8.1"
   },
   "devDependencies": {
@@ -73,12 +74,26 @@
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-plugins"
+      "@oclif/plugin-plugins",
+      "@oclif/plugin-update"
     ],
     "hooks": {
       "prerun": "./dist/hooks/prerun.js"
     },
-    "topicSeparator": " "
+    "topicSeparator": " ",
+    "macos": {
+      "identifier": "com.herodevs.cli"
+    },
+    "win": {
+      "icon": "assets/icon.ico"
+    },
+    "update": {
+      "s3": {
+        "bucket": "end-of-life-dataset-cli-releases",
+        "host": "https://end-of-life-dataset-cli-releases.s3.amazonaws.com",
+        "acl": "public-read"
+      }
+    }
   },
   "types": "dist/index.d.ts"
 }
