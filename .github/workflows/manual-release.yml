@@ -101,7 +101,7 @@ jobs:
         uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
         with:
           pattern: 'cli-tarballs-*'
-          path: ${{ github.workspace }}/dist
+          path: ${{ github.workspace }}/tarballs
           merge-multiple: true
 
       - name: Debug downloaded artifacts
@@ -109,9 +109,9 @@ jobs:
         shell: bash
         run: |
           echo "=== Downloaded artifacts ==="
-          ls -la ${{ github.workspace }}/dist
-          echo "=== Contents of dist directory ==="
-          find ${{ github.workspace }}/dist -type f
+          ls -la ${{ github.workspace }}/tarballs
+          echo "=== Contents of tarballs directory ==="
+          find ${{ github.workspace }}/tarballs -type f
 
       - name: Distribute binaries to S3
         if: ${{ !inputs.dry-run }}
@@ -123,4 +123,4 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
-          artifacts-path: ${{ github.workspace }}/dist
+          artifacts-path: ${{ github.workspace }}/tarballs
