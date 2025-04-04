@@ -69,30 +69,6 @@ jobs:
       - name: Build darwin-arm64 tarball
         run: npx oclif pack tarballs --targets=darwin-arm64 --no-xz
 
-      # Create GitHub Release with assets
-      - name: Create Release
-        if: ${{ !inputs.dry-run }}
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ needs.check.outputs.version }}
-          name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
-          body: |
-            ## Changes
-
-            This release includes the following platform-specific binaries:
-            - macOS (ARM64)
-            - Windows (x64)
-            - Linux (x64)
-          draft: false
-          prerelease: ${{ inputs.channel != 'latest' }}
-          discussion_category_name: Announcements
-          files: |
-            dist/hd-*-linux-x64.tar.gz
-            dist/hd-*-win32-x64.tar.gz
-            dist/hd-*-darwin-arm64.tar.gz
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       # S3 Distribution
       - name: Configure AWS credentials
         if: ${{ !inputs.dry-run }}
@@ -123,7 +99,7 @@ jobs:
             --ignore-missing
 
       # # NPM Release
-      # - name: Create NPM release
-      #   run: npm publish --tag ${{ inputs.channel }} --provenance --access public ${{ inputs.dry-run == true && '--dry-run' || '' }}
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+      - name: Create NPM release
+        run: npm publish --tag ${{ inputs.channel }} --provenance --access public ${{ inputs.dry-run == true && '--dry-run' || '' }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
