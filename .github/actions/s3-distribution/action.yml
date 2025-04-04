@@ -70,7 +70,7 @@ runs:
         ls -la "${{ inputs.artifacts-path }}"
 
         echo "Uploading tarballs to S3..."
-        npx oclif upload tarballs --root=${{ inputs.artifacts-path }} --targets=linux-x64,win32-x64,darwin-arm64 --no-xz
+        npx oclif upload tarballs --targets=linux-x64,win32-x64,darwin-arm64 --no-xz
 
         echo "Verifying uploaded files in S3:"
         aws s3 ls s3://${{ inputs.bucket }}/versions/${{ inputs.version }}/
