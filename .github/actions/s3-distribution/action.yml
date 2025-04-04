@@ -91,7 +91,8 @@ runs:
           --channel=${{ inputs.channel }} \
           --version=${{ inputs.version }} \
           --sha=${{ github.sha }} \
-          --indexes
+          --indexes \
+          --targets=linux-x64,win32-x64,darwin-arm64
 
         echo "Verifying channel promotion in S3:"
         aws s3 ls s3://${{ inputs.bucket }}/channels/${{ inputs.channel }}/ 
