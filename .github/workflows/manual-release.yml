@@ -86,22 +86,22 @@ jobs:
         run: |
           mkdir -p dist/linux
           npx oclif pack tarballs --targets=linux-x64 --no-xz
-          mv dist/*linux*.tar.gz dist/linux/
-          mv dist/*linux*.buildmanifest dist/linux/
+          mv dist/hd-v*-linux-x64.tar.gz dist/linux/
+          mv dist/hd-v*-linux-x64-buildmanifest dist/linux/
 
       - name: Build win32-x64 tarball
         run: |
           mkdir -p dist/windows
           npx oclif pack tarballs --targets=win32-x64 --no-xz
-          mv dist/*win32*.tar.gz dist/windows/
-          mv dist/*win32*.buildmanifest dist/windows/
+          mv dist/hd-v*-win32-x64.tar.gz dist/windows/
+          mv dist/hd-v*-win32-x64-buildmanifest dist/windows/
 
       - name: Build darwin-arm64 tarball
         run: |
           mkdir -p dist/darwin
           npx oclif pack tarballs --targets=darwin-arm64 --no-xz
-          mv dist/*darwin*.tar.gz dist/darwin/
-          mv dist/*darwin*.buildmanifest dist/darwin/
+          mv dist/hd-v*-darwin-arm64.tar.gz dist/darwin/
+          mv dist/hd-v*-darwin-arm64-buildmanifest dist/darwin/
 
       # Move tarballs to dist root
       - name: Consolidate tarballs
