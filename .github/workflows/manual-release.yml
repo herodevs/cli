@@ -106,11 +106,15 @@ jobs:
             --targets=linux-x64,win32-x64,darwin-arm64 \
             --no-xz
 
+          # Get shortened SHA (first 7 characters)
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "Using shortened SHA: $SHORT_SHA"
+
           # Promote to channel
           npx oclif promote \
             --channel=${{ needs.check-version.outputs.oclif_channel }} \
             --version=${{ needs.check-version.outputs.version }} \
-            --sha=${{ github.sha }} \
+            --sha=$SHORT_SHA \
             --indexes \
             --targets=linux-x64,win32-x64,darwin-arm64 \
             --ignore-missing
