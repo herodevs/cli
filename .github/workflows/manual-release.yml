@@ -83,13 +83,33 @@ jobs:
           sudo apt install nsis p7zip-full p7zip-rar -y
 
       - name: Build linux-x64 tarball
-        run: npx oclif pack tarballs --targets=linux-x64 --no-xz
+        run: |
+          mkdir -p dist/linux
+          cd dist/linux
+          npx oclif pack tarballs --targets=linux-x64 --no-xz
+          cd ../..
 
       - name: Build win32-x64 tarball
-        run: npx oclif pack tarballs --targets=win32-x64 --no-xz
+        run: |
+          mkdir -p dist/windows
+          cd dist/windows
+          npx oclif pack tarballs --targets=win32-x64 --no-xz
+          cd ../..
 
       - name: Build darwin-arm64 tarball
-        run: npx oclif pack tarballs --targets=darwin-arm64 --no-xz
+        run: |
+          mkdir -p dist/darwin
+          cd dist/darwin
+          npx oclif pack tarballs --targets=darwin-arm64 --no-xz
+          cd ../..
+
+      # Move tarballs to dist root
+      - name: Consolidate tarballs
+        run: |
+          mv dist/linux/* dist/
+          mv dist/windows/* dist/
+          mv dist/darwin/* dist/
+          rm -rf dist/linux dist/windows dist/darwin
 
       # S3 Distribution
       - name: Configure AWS credentials
