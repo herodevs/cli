@@ -125,8 +125,17 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      # NPM Release
-      - name: Create NPM release
-        run: npm publish --tag ${{ inputs.channel }} --provenance --access public ${{ inputs.dry-run == true && '--dry-run' || '' }}
+      # Dry run NPM publish
+      - name: Dry run NPM publish
+        if: ${{ inputs.dry-run }}
+        run: npm publish --tag ${{ inputs.channel }} --provenance --access public --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+  
+      # NPM Release
+      - name: Create NPM release
+        if: ${{ !inputs.dry-run }}
+        run: npm publish --tag ${{ inputs.channel }} --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+      
