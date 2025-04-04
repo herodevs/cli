@@ -143,8 +143,8 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
   
       # NPM Release
-      # - name: Create NPM release
-      #   if: ${{ !inputs.dry-run }}
-      #   run: npm publish --tag ${{ inputs.channel }} --provenance --access public
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+      - name: Create NPM release
+        if: ${{ !inputs.dry-run }}
+        run: npm publish --tag ${{ inputs.channel }} --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
