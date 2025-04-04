@@ -54,7 +54,22 @@ jobs:
       - run: npm test
       - run: npm run test:e2e
 
-      # Create GitHub Release
+      # Build platform-specific tarballs
+      - name: Install linux toolchain
+        run: |
+          sudo apt update
+          sudo apt install nsis p7zip-full p7zip-rar -y
+
+      - name: Build linux-x64 tarball
+        run: npx oclif pack tarballs --targets=linux-x64 --no-xz
+
+      - name: Build win32-x64 tarball
+        run: npx oclif pack tarballs --targets=win32-x64 --no-xz
+
+      - name: Build darwin-arm64 tarball
+        run: npx oclif pack tarballs --targets=darwin-arm64 --no-xz
+
+      # Create GitHub Release with assets
       - name: Create Release
         if: ${{ !inputs.dry-run }}
         uses: softprops/action-gh-release@v1
@@ -71,23 +86,12 @@ jobs:
           draft: false
           prerelease: ${{ inputs.channel != 'latest' }}
           discussion_category_name: Announcements
+          files: |
+            dist/hd-*-linux-x64.tar.gz
+            dist/hd-*-win32-x64.tar.gz
+            dist/hd-*-darwin-arm64.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Build platform-specific tarballs
-      - name: Install linux toolchain
-        run: |
-          sudo apt update
-          sudo apt install nsis p7zip-full p7zip-rar -y
-
-      - name: Build linux-x64 tarball
-        run: npx oclif pack tarballs --targets=linux-x64 --no-xz
-
-      - name: Build win32-x64 tarball
-        run: npx oclif pack tarballs --targets=win32-x64 --no-xz
-
-      - name: Build darwin-arm64 tarball
-        run: npx oclif pack tarballs --targets=darwin-arm64 --no-xz
 
       # S3 Distribution
       - name: Configure AWS credentials
