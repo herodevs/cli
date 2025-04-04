@@ -81,19 +81,19 @@ jobs:
       - run: npm run test:e2e
 
       # NPM Release (always runs, respects dry-run)
-      - name: Create NPM release
-        run: npm publish --tag ${{ inputs.channel }} --provenance --access public ${{ inputs.dry-run == true && '--dry-run' || '' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+      # - name: Create NPM release
+      #   run: npm publish --tag ${{ inputs.channel }} --provenance --access public ${{ inputs.dry-run == true && '--dry-run' || '' }}
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
 
       # GitHub Release (only if not dry-run)
-      - name: Create Release
-        if: ${{ !inputs.dry-run }}
-        uses: ./.github/actions/create-release
-        with:
-          version: ${{ needs.check.outputs.version }}
-          channel: ${{ inputs.channel }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Create Release
+      #   if: ${{ !inputs.dry-run }}
+      #   uses: ./.github/actions/create-release
+      #   with:
+      #     version: ${{ needs.check.outputs.version }}
+      #     channel: ${{ inputs.channel }}
+      #     github-token: ${{ secrets.GITHUB_TOKEN }}
 
       # S3 Binary Distribution (only if not dry-run)
       - name: Download CLI artifacts
