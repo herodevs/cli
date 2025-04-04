@@ -55,24 +55,24 @@ jobs:
       - run: npm run test:e2e
 
       # Create GitHub Release
-      - name: Create Release
-        if: ${{ !inputs.dry-run }}
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ needs.check.outputs.version }}
-          name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
-          body: |
-            ## Changes
+      # - name: Create Release
+      #   if: ${{ !inputs.dry-run }}
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     tag_name: v${{ needs.check.outputs.version }}
+      #     name: Release v${{ needs.check.outputs.version }} ${{ inputs.channel == 'latest' && 'Latest' || inputs.channel }}
+      #     body: |
+      #       ## Changes
 
-            This release includes the following platform-specific binaries:
-            - macOS (ARM64)
-            - Windows (x64)
-            - Linux (x64)
-          draft: false
-          prerelease: ${{ inputs.channel != 'latest' }}
-          discussion_category_name: Announcements
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #       This release includes the following platform-specific binaries:
+      #       - macOS (ARM64)
+      #       - Windows (x64)
+      #       - Linux (x64)
+      #     draft: false
+      #     prerelease: ${{ inputs.channel != 'latest' }}
+      #     discussion_category_name: Announcements
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # Build platform-specific tarballs
       - name: Install linux toolchain
@@ -119,7 +119,7 @@ jobs:
             --ignore-missing
 
       # NPM Release
-      - name: Create NPM release
-        run: npm publish --tag ${{ inputs.channel }} --provenance --access public ${{ inputs.dry-run == true && '--dry-run' || '' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+      # - name: Create NPM release
+      #   run: npm publish --tag ${{ inputs.channel }} --provenance --access public ${{ inputs.dry-run == true && '--dry-run' || '' }}
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
