@@ -31,8 +31,20 @@ jobs:
       - name: Get version
         id: version
         run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      - name: Determine Oclif channel
+        id: oclif-channel
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *"-beta"* ]]; then
+            echo "oclif_channel=beta" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-alpha"* ]]; then
+            echo "oclif_channel=alpha" >> $GITHUB_OUTPUT
+          else
+            echo "oclif_channel=stable" >> $GITHUB_OUTPUT
+          fi
     outputs:
       version: ${{ steps.version.outputs.version }}
+      oclif_channel: ${{ steps.oclif-channel.outputs.oclif_channel }}
 
   test:
     runs-on: ubuntu-latest
@@ -70,14 +82,9 @@ jobs:
           sudo apt update
           sudo apt install nsis p7zip-full p7zip-rar -y
 
-      - name: Build linux-x64 tarball
-        run: npx oclif pack tarballs --targets=linux-x64 --no-xz
-
-      - name: Build win32-x64 tarball
-        run: npx oclif pack tarballs --targets=win32-x64 --no-xz
-
-      - name: Build darwin-arm64 tarball
-        run: npx oclif pack tarballs --targets=darwin-arm64 --no-xz
+      - name: Build all tarballs in parallel
+        run: |
+          npx oclif pack tarballs --targets=linux-x64,win32-x64,darwin-arm64 --no-xz --parallel
 
       # S3 Distribution
       - name: Configure AWS credentials
@@ -99,11 +106,15 @@ jobs:
             --targets=linux-x64,win32-x64,darwin-arm64 \
             --no-xz
 
+          # Get shortened SHA (first 7 characters)
+          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+          echo "Using shortened SHA: $SHORT_SHA"
+
           # Promote to channel
           npx oclif promote \
-            --channel=${{ inputs.channel }} \
-            --version=${{ needs.check.outputs.version }} \
-            --sha=${{ github.sha }} \
+            --channel=${{ needs.check-version.outputs.oclif_channel }} \
+            --version=${{ needs.check-version.outputs.version }} \
+            --sha=$SHORT_SHA \
             --indexes \
             --targets=linux-x64,win32-x64,darwin-arm64 \
             --ignore-missing
