@@ -37,7 +37,7 @@
     "herodevs cli"
   ],
   "dependencies": {
-    "@apollo/client": "^3.13.1",
+    "@apollo/client": "^3.13.6",
     "@cyclonedx/cdxgen": "^11.2.3",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
