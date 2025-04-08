@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
-import { DEFAULT_SCAN_BATCH_SIZE, DEFAULT_SCAN_INPUT_OPTIONS, type ScanResult } from '../../api/types/hd-cli.types.js';
+import type { ScanResult } from '../../api/types/hd-cli.types.js';
 import type { InsightsEolScanComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
@@ -62,38 +62,31 @@ export default class ScanEol extends Command {
 
     ux.action.stop('\nScan completed');
 
-    const filteredComponents = this.getFilteredComponents(scan, flags.all);
+    const components = this.getFilteredComponents(scan, flags.all);
 
     if (flags.save) {
-      await this.saveReport(filteredComponents);
+      await this.saveReport(components);
     }
 
-    if (this.jsonEnabled()) {
-      return { components: filteredComponents };
+    if (!this.jsonEnabled()) {
+      await this.displayResults(scan, flags.all);
     }
 
-    await this.displayResults(scan, flags.all);
-
-    return { components: filteredComponents };
+    return { components };
   }
 
   private async getScan(flags: Record<string, string>, config: Command['config']): Promise<ScanResult> {
     if (flags.purls) {
       ux.action.start(`Scanning purls from ${flags.purls}`);
       const purls = this.getPurlsFromFile(flags.purls);
-      return batchSubmitPurls(purls, DEFAULT_SCAN_INPUT_OPTIONS, DEFAULT_SCAN_BATCH_SIZE);
+      return batchSubmitPurls(purls);
     }
 
     const sbom = await ScanSbom.loadSbom(flags, config);
-    const scan = this.scanSbom(sbom, flags);
-
-    return scan;
+    return this.scanSbom(sbom);
   }
 
-  private getPurlsFromFile(filePath: unknown): string[] {
-    if (typeof filePath !== 'string') {
-      this.error(`Failed to parse file path: ${filePath}`);
-    }
+  private getPurlsFromFile(filePath: string): string[] {
     try {
       const purlsFileString = fs.readFileSync(filePath, 'utf8');
       return parsePurlsFile(purlsFileString);
@@ -102,7 +95,7 @@ export default class ScanEol extends Command {
     }
   }
 
-  private async scanSbom(sbom: Sbom, flags: Record<string, unknown>): Promise<ScanResult> {
+  private async scanSbom(sbom: Sbom): Promise<ScanResult> {
     let scan: ScanResult;
     let purls: string[];
 
@@ -112,7 +105,7 @@ export default class ScanEol extends Command {
       this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
     }
     try {
-      scan = await batchSubmitPurls(purls, DEFAULT_SCAN_INPUT_OPTIONS, DEFAULT_SCAN_BATCH_SIZE);
+      scan = await batchSubmitPurls(purls);
     } catch (error) {
       this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
     }
@@ -125,31 +118,31 @@ export default class ScanEol extends Command {
   }
 
   private getFilteredComponents(scan: ScanResult, all: boolean) {
-    return Array.from(scan.components.entries())
-      .filter(([_, component]) => all || ['EOL', 'LTS'].includes(component.info.status))
-      .map(([_, component]) => component);
+    return Array.from(scan.components.values()).filter(
+      (component) => all || ['EOL', 'LTS'].includes(component.info.status),
+    );
   }
 
   private async saveReport(components: InsightsEolScanComponent[]): Promise<void> {
+    const { flags } = await this.parse(ScanEol);
+    const reportPath = path.join(flags.dir || process.cwd(), 'nes.eol.json');
+
     try {
-      const { flags } = await this.parse(ScanEol);
-      const reportPath = path.join(flags.dir || process.cwd(), 'nes.eol.json');
       fs.writeFileSync(reportPath, JSON.stringify({ components }, null, 2));
       this.log('Report saved to nes.eol.json');
     } catch (error) {
-      if (isErrnoException(error)) {
-        switch (error.code) {
-          case 'EACCES':
-            this.error('Permission denied. Unable to save report to nes.eol.json');
-            break;
-          case 'ENOSPC':
-            this.error('No space left on device. Unable to save report to nes.eol.json');
-            break;
-          default:
-            this.error(`Failed to save report: ${getErrorMessage(error)}`);
-        }
-      } else {
+      if (!isErrnoException(error)) {
         this.error(`Failed to save report: ${getErrorMessage(error)}`);
+      }
+      switch (error.code) {
+        case 'EACCES':
+          this.error('Permission denied. Unable to save report to nes.eol.json');
+          break;
+        case 'ENOSPC':
+          this.error('No space left on device. Unable to save report to nes.eol.json');
+          break;
+        default:
+          this.error(`Failed to save report: ${getErrorMessage(error)}`);
       }
     }
   }
@@ -194,9 +187,9 @@ export default class ScanEol extends Command {
   }
 
   private logLegend(): void {
-    this.log(ux.colorize(`${STATUS_COLORS.UNKNOWN}`, `${INDICATORS.UNKNOWN} = No Known Issues`));
-    this.log(ux.colorize(`${STATUS_COLORS.OK}`, `${INDICATORS.OK} = OK`));
-    this.log(ux.colorize(`${STATUS_COLORS.LTS}`, `${INDICATORS.LTS}= Long Term Support (LTS)`));
-    this.log(ux.colorize(`${STATUS_COLORS.EOL}`, `${INDICATORS.EOL} = End of Life (EOL)`));
+    this.log(ux.colorize(STATUS_COLORS.UNKNOWN, `${INDICATORS.UNKNOWN} = No Known Issues`));
+    this.log(ux.colorize(STATUS_COLORS.OK, `${INDICATORS.OK} = OK`));
+    this.log(ux.colorize(STATUS_COLORS.LTS, `${INDICATORS.LTS}= Long Term Support (LTS)`));
+    this.log(ux.colorize(STATUS_COLORS.EOL, `${INDICATORS.EOL} = End of Life (EOL)`));
   }
 }

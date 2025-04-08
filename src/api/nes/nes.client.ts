@@ -8,7 +8,13 @@ import type {
 } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { SbomScanner, buildScanResult } from '../../service/nes/nes.svc.ts';
-import type { ProcessBatchOptions, ScanInputOptions, ScanResult } from '../types/hd-cli.types.ts';
+import {
+  DEFAULT_SCAN_BATCH_SIZE,
+  DEFAULT_SCAN_INPUT_OPTIONS,
+  type ProcessBatchOptions,
+  type ScanInputOptions,
+  type ScanResult,
+} from '../types/hd-cli.types.ts';
 
 export interface NesClient {
   scan: {
@@ -49,8 +55,8 @@ function submitScan(purls: string[], options: ScanInputOptions): Promise<Insight
 
 export const batchSubmitPurls = async (
   purls: string[],
-  options: ScanInputOptions,
-  batchSize: number,
+  options = DEFAULT_SCAN_INPUT_OPTIONS,
+  batchSize = DEFAULT_SCAN_BATCH_SIZE,
 ): Promise<ScanResult> => {
   try {
     const batches = createBatches(purls, batchSize);

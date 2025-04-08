@@ -1,37 +1,27 @@
-import { match, strictEqual } from 'node:assert/strict';
-import fs from 'node:fs/promises';
+import { doesNotThrow } from 'node:assert';
+import { doesNotMatch, match, strictEqual } from 'node:assert/strict';
+import { existsSync, readFileSync, unlinkSync } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { afterEach, beforeEach, describe, it } from 'node:test';
+import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { runCommand } from '@oclif/test';
 
 describe('scan:eol e2e', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const testDir = path.resolve(__dirname, '../fixtures/npm/simple');
-  const reportPath = path.join(testDir, 'nes.eol.json');
+  const simpleDir = path.resolve(__dirname, '../fixtures/npm/simple');
+  const upToDateDir = path.resolve(__dirname, '../fixtures/npm/up-to-date');
+  const reportPath = path.join(simpleDir, 'nes.eol.json');
   const extraLargePurlsPath = path.resolve(__dirname, '../fixtures/purls/extra-large.purls.json');
+  const emptyPurlsPath = path.resolve(__dirname, '../fixtures/purls/empty.purls.json');
 
-  async function cleanupReport() {
-    try {
-      await fs.unlink(reportPath);
-    } catch {
-      // Ignore if file doesn't exist
-    }
-  }
-
-  beforeEach(async () => {
+  async function run(cmd: string) {
     // Set up environment
     process.env.GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
 
     // Ensure test directory exists and is clean
-    await fs.mkdir(testDir, { recursive: true });
-    await cleanupReport();
-  });
+    await mkdir(simpleDir, { recursive: true });
 
-  afterEach(cleanupReport);
-
-  it('scans a directory for EOL components', async () => {
-    const cmd = `scan:eol --dir ${testDir}`;
     const output = await runCommand(cmd);
 
     // Log any errors for debugging
@@ -43,8 +33,12 @@ describe('scan:eol e2e', () => {
     // Verify command executed successfully
     strictEqual(output.error, undefined, 'Command should execute without errors');
 
-    // Verify output contains expected content
-    const stdout = output.stdout;
+    return output;
+  }
+
+  it('scans a directory for EOL components', async () => {
+    const cmd = `scan:eol --dir ${simpleDir}`;
+    const { stdout } = await run(cmd);
 
     // Match command output patterns
     match(stdout, /Here are the results of the scan:/, 'Should show results header');
@@ -54,51 +48,28 @@ describe('scan:eol e2e', () => {
   });
 
   it('saves report when --save flag is used', async () => {
-    const cmd = `scan:eol --dir ${testDir} --save`;
-    const output = await runCommand(cmd);
-
-    // Log any errors for debugging
-    if (output.error) {
-      console.error('Command failed with error:', output.error);
-      console.error('Error details:', output.stderr);
-    }
-
-    // Verify command executed successfully
-    strictEqual(output.error, undefined, 'Command should execute without errors');
+    const cmd = `scan:eol --dir ${simpleDir} --save`;
+    await run(cmd);
 
     // Verify report was saved
-    const reportExists = await fs
-      .access(reportPath)
-      .then(() => true)
-      .catch(() => false);
+    const reportExists = existsSync(reportPath);
 
     strictEqual(reportExists, true, 'Report file should be created');
 
     // Verify report content
-    const reportContent = await fs.readFile(reportPath, 'utf-8');
-    const report = JSON.parse(reportContent);
+    const report = readFileSync(reportPath, 'utf-8');
 
     // Verify report structure using match
-    match(JSON.stringify(report), /"components":\s*\[/, 'Report should contain components array');
-    match(JSON.stringify(report), /"purl":\s*"pkg:npm\/bootstrap@3\.1\.1"/, 'Report should contain bootstrap package');
-    match(JSON.stringify(report), /"isEol":\s*true/, 'Bootstrap should be marked as EOL');
+    match(report, /"components":\s*\[/, 'Report should contain components array');
+    match(report, /"purl":\s*"pkg:npm\/bootstrap@3\.1\.1"/, 'Report should contain bootstrap package');
+    match(report, /"isEol":\s*true/, 'Bootstrap should be marked as EOL');
+
+    unlinkSync(reportPath);
   });
 
   it('scans extra-large.purls.json for EOL components', async () => {
     const cmd = `scan:eol --purls ${extraLargePurlsPath}`;
-    const output = await runCommand(cmd);
-
-    // Log any errors for debugging
-    if (output.error) {
-      console.error('Command failed with error:', output.error);
-      console.error('Error details:', output.stderr);
-    }
-
-    // Verify command executed successfully
-    strictEqual(output.error, undefined, 'Command should execute without errors');
-
-    // Verify output contains expected content
-    const stdout = output.stdout;
+    const { stdout } = await run(cmd);
 
     // Match command output patterns
     match(stdout, /Here are the results of the scan:/, 'Should show results header');
@@ -116,5 +87,63 @@ describe('scan:eol e2e', () => {
     match(stdout, /✔ = OK/, 'Should show legend for OK status');
     match(stdout, /⚡= Long Term Support \(LTS\)/, 'Should show legend for LTS status');
     match(stdout, /✗ = End of Life \(EOL\)/, 'Should show legend for EOL status');
+  });
+
+  it('scans existing SBOM for EOL components', async () => {
+    const cmd = `scan:eol --file ${simpleDir}/sbom.json`;
+    const { stdout } = await run(cmd);
+
+    // Match command output patterns
+    match(stdout, /Here are the results of the scan:/, 'Should show results header');
+    match(stdout, /pkg:npm\/bootstrap@3\.1\.1/, 'Should detect bootstrap package');
+    match(stdout, /EOL Date: 2019-07-24/, 'Should show correct EOL date for bootstrap');
+  });
+
+  it('outputs JSON when using the --json flag', async () => {
+    const cmd = `scan:eol --dir ${simpleDir} --json`;
+    const { stdout } = await run(cmd);
+
+    // Match command output patterns
+    doesNotMatch(stdout, /Here are the results of the scan:/, 'Should not show results header');
+    doesNotThrow(() => JSON.parse(stdout));
+  });
+
+  describe('--all flag', () => {
+    it('excludes OK packages by default', async () => {
+      const cmd = `scan:eol --dir ${simpleDir}`;
+      const { stdout } = await run(cmd);
+
+      // Match command output patterns
+      match(stdout, /Here are the results of the scan:/, 'Should show results header');
+      doesNotMatch(stdout, /pkg:npm\/vue@3\.5\.13/, 'Should not show vue package');
+    });
+
+    it('shows all packages when --all flag is used', async () => {
+      const cmd = `scan:eol --dir ${simpleDir} --all`;
+      const { stdout } = await run(cmd);
+
+      // Match command output patterns
+      match(stdout, /Here are the results of the scan:/, 'Should show results header');
+      match(stdout, /pkg:npm\/bootstrap@3\.1\.1/, 'Should detect bootstrap package');
+      match(stdout, /pkg:npm\/vue@3\.5\.13/, 'Should show vue package');
+    });
+
+    it('shows "No EOL" message by default if no components are found', async () => {
+      const cmd = `scan:eol --dir ${upToDateDir}`;
+      const { stdout } = await run(cmd);
+
+      // Match command output patterns
+      doesNotMatch(stdout, /Here are the results of the scan:/, 'Should not show results header');
+      match(stdout, /No End-of-Life or Long Term Support components found in scan/, 'Should show "No EOL" message');
+    });
+
+    it('shows "No components found" message if no components are found with --all flag', async () => {
+      const cmd = `scan:eol --purls ${emptyPurlsPath} --all`;
+      const { stdout } = await run(cmd);
+
+      // Match command output patterns
+      doesNotMatch(stdout, /Here are the results of the scan:/, 'Should not show results header');
+      match(stdout, /No components found in scan/, 'Should show "No components found" message');
+    });
   });
 });
