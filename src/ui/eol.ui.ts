@@ -82,7 +82,7 @@ export function createStatusDisplay(
 
 export function createTableForStatus(
   components: ScanResultComponentsMap,
-  status: ComponentStatus
+  status: ComponentStatus,
 ): { table: Table.Table; count: number } {
   let count = 0;
 

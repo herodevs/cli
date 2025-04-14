@@ -117,7 +117,7 @@ describe('scan:eol e2e', () => {
     match(
       stdout,
       /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│/, // TODO: add vulns to monorepo api
-      'Should show table headers'
+      'Should show table headers',
     );
     match(stdout, /├.*┼.*┼.*┼.*┼.*┤/, 'Should show table header separator');
 
@@ -125,7 +125,7 @@ describe('scan:eol e2e', () => {
     match(
       stdout,
       /│ bootstrap\s*│ 3\.1\.1\s*│ 2019-07-24\s*│ \d+\s*│ npm\s*│/,
-      'Should show bootstrap package in table'
+      'Should show bootstrap package in table',
     );
 
     // Match table footer
