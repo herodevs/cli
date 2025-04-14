@@ -42,7 +42,9 @@
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-update": "^4",
-    "graphql": "^16.8.1"
+    "cli-table3": "^0.6.5",
+    "graphql": "^16.8.1",
+    "packageurl-js": "^2.0.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
