@@ -102,6 +102,7 @@ export const processBatch = async ({
   }
 
   debugLogger('Processing batch %d of %d', page, totalPages);
+  debugLogger('ScanID: %s', previousScanId);
   const result = await submitScan(batch, {
     ...scanOptions,
     page,

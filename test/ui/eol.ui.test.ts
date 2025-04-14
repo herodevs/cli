@@ -43,12 +43,13 @@ describe('EOL UI', () => {
       const result = convertComponentToTableRow(component);
 
       // Assert
-      assert.strictEqual(result.length, 5);
+      assert.strictEqual(result.length, 6);
       assert.strictEqual(result[0].content, 'very-long-package-name-that-exceeds-thirty-characters');
       assert.strictEqual(result[1].content, '1.0.0');
       assert.strictEqual(result[2].content, '2023-01-01');
       assert.strictEqual(result[3].content, 365);
       assert.strictEqual(result[4].content, 'npm');
+      assert.strictEqual(result[5].content, 0); // Default vulnCount
     });
 
     it('handles null values for eolAt and daysEol', () => {
@@ -59,12 +60,13 @@ describe('EOL UI', () => {
       const result = convertComponentToTableRow(component);
 
       // Assert
-      assert.strictEqual(result.length, 5);
+      assert.strictEqual(result.length, 6);
       assert.strictEqual(result[0].content, 'test');
       assert.strictEqual(result[1].content, '1.0.0');
       assert.strictEqual(result[2].content, '');
       assert.strictEqual(result[3].content, null);
       assert.strictEqual(result[4].content, 'npm');
+      assert.strictEqual(result[5].content, 0); // Default vulnCount
     });
   });
 
@@ -83,8 +85,8 @@ describe('EOL UI', () => {
       // Assert
       assert.strictEqual(table.length, 2);
       assert.strictEqual(table.length, 2); // Only data rows (excluding header)
-      assert.deepStrictEqual(table.options.head, ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE']);
-      assert.deepStrictEqual(table.options.colWidths, [30, 10, 12, 10, 12]);
+      assert.deepStrictEqual(table.options.head, ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE', '# OF VULNS']);
+      assert.deepStrictEqual(table.options.colWidths, [30, 10, 12, 10, 12, 12]);
     });
 
     it('returns empty table when no components match status', () => {

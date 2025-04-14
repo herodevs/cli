@@ -14,6 +14,7 @@ export const M_SCAN = {
                 eolAt
                 daysEol
                 status
+                vulnCount
               }
             } 
             diagnostics

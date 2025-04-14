@@ -83,8 +83,8 @@ export function createStatusDisplay(
 
 export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus): Table.Table {
   const table = new Table({
-    head: ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE'],
-    colWidths: [MAX_TABLE_COLUMN_WIDTH, 10, 12, 10, 12],
+    head: ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE', '# OF VULNS'],
+    colWidths: [MAX_TABLE_COLUMN_WIDTH, 10, 12, 10, 12, 12],
     wordWrap: true,
     style: {
       'padding-left': 1,
@@ -105,7 +105,7 @@ export function createTableForStatus(components: ScanResultComponentsMap, status
 
 export function convertComponentToTableRow(component: InsightsEolScanComponent) {
   const purlParts = PackageURL.fromString(component.purl);
-  const { eolAt, daysEol } = component.info;
+  const { eolAt, daysEol, vulnCount } = component.info;
 
   return [
     { content: purlParts.name },
@@ -113,6 +113,6 @@ export function convertComponentToTableRow(component: InsightsEolScanComponent) 
     { content: parseMomentToSimpleDate(eolAt) },
     { content: daysEol },
     { content: purlParts.type },
-    // vulns: component.vulns.length, // TODO: add vulns to monorepo api
+    { content: vulnCount },
   ];
 }
