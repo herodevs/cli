@@ -2,7 +2,11 @@ import { ux } from '@oclif/core';
 import Table from 'cli-table3';
 import { PackageURL } from 'packageurl-js';
 import type { ScanResultComponentsMap } from '../api/types/hd-cli.types.ts';
-import type { ComponentStatus, InsightsEolScanComponent } from '../api/types/nes.types.ts';
+import type {
+  ComponentStatus,
+  InsightsEolScanComponent,
+  InsightsEolScanComponentInfo,
+} from '../api/types/nes.types.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
 import { INDICATORS, MAX_PURL_LENGTH, MAX_TABLE_COLUMN_WIDTH, STATUS_COLORS } from './shared.ui.ts';
 
@@ -36,17 +40,17 @@ function getDaysEolString(daysEol: number | null): string {
   return `${daysEol} days ago`;
 }
 
-function formatDetailedComponent(
-  purl: string,
-  eolAt: Date | null,
-  daysEol: number | null,
-  status: ComponentStatus,
-): string {
+function formatDetailedComponent(purl: string, info: InsightsEolScanComponentInfo): string {
+  const { status, eolAt, daysEol, vulnCount } = info;
   const simpleComponent = formatSimpleComponent(purl, status);
   const eolAtString = parseMomentToSimpleDate(eolAt);
   const daysEolString = getDaysEolString(daysEol);
 
-  const output = [`${simpleComponent}`, `    ⮑  EOL Date: ${eolAtString} (${daysEolString})`]
+  const output = [
+    `${simpleComponent}`,
+    `    ⮑  EOL Date: ${eolAtString} (${daysEolString})`,
+    `    ⮑  # of Vulns: ${vulnCount}`,
+  ]
     .filter(Boolean)
     .join('\n');
 
@@ -66,7 +70,7 @@ export function createStatusDisplay(
 
   // Single loop to separate and format components
   for (const [purl, component] of components.entries()) {
-    const { status, eolAt, daysEol } = component.info;
+    const { status } = component.info;
 
     if (all) {
       if (status === 'UNKNOWN' || status === 'OK') {
@@ -74,7 +78,7 @@ export function createStatusDisplay(
       }
     }
     if (status === 'LTS' || status === 'EOL') {
-      statusOutput[status].push(formatDetailedComponent(purl, eolAt, daysEol, status));
+      statusOutput[status].push(formatDetailedComponent(purl, component.info));
     }
   }
 
