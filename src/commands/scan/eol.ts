@@ -167,7 +167,7 @@ export default class ScanEol extends Command {
     this.logLegend();
   }
 
-  private async displayResultsInTable(scan: ScanResult, all: boolean): Promise<void> {
+  private displayResultsInTable(scan: ScanResult, all: boolean) {
     const statuses: ComponentStatus[] = all ? ['UNKNOWN', 'OK', 'LTS', 'EOL'] : ['LTS', 'EOL'];
 
     for (const status of statuses) {
