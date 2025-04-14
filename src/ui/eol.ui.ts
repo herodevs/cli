@@ -4,7 +4,7 @@ import { PackageURL } from 'packageurl-js';
 import type { ScanResultComponentsMap } from '../api/types/hd-cli.types.ts';
 import type { ComponentStatus, InsightsEolScanComponent } from '../api/types/nes.types.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
-import { INDICATORS, MAX_PACKAGE_NAME_LENGTH, MAX_PURL_LENGTH, STATUS_COLORS } from './shared.ui.ts';
+import { INDICATORS, MAX_PURL_LENGTH, MAX_TABLE_COLUMN_WIDTH, STATUS_COLORS } from './shared.ui.ts';
 
 export function truncateString(purl: string, maxLength: number): string {
   return purl.length > maxLength ? `${purl.slice(0, maxLength - 3)}...` : purl;
@@ -82,12 +82,13 @@ export function createStatusDisplay(
 
 export function createTableForStatus(
   components: ScanResultComponentsMap,
-  status: ComponentStatus,
+  status: ComponentStatus
 ): { table: Table.Table; count: number } {
   let count = 0;
+
   const table = new Table({
     head: ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE'],
-    colWidths: [MAX_PACKAGE_NAME_LENGTH, 10, 12, 10, 12],
+    colWidths: [MAX_TABLE_COLUMN_WIDTH, 10, 12, 10, 12],
     wordWrap: true,
     style: {
       'padding-left': 1,
@@ -112,7 +113,7 @@ export function convertComponentToTableRow(component: InsightsEolScanComponent) 
   const { eolAt, daysEol } = component.info;
 
   return [
-    { content: truncateString(purlParts.name, MAX_PACKAGE_NAME_LENGTH) },
+    { content: purlParts.name },
     { content: purlParts.version },
     { content: parseMomentToSimpleDate(eolAt) },
     { content: daysEol },
