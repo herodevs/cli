@@ -1,7 +1,7 @@
-import { Command, Flags, ux } from '@oclif/core';
-import type { Table } from 'cli-table3';
 import fs from 'node:fs';
 import path from 'node:path';
+import { Command, Flags, ux } from '@oclif/core';
+import type { Table } from 'cli-table3';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
 import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
