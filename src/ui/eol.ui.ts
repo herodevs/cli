@@ -1,11 +1,13 @@
 import { ux } from '@oclif/core';
+import Table from 'cli-table3';
+import { PackageURL } from 'packageurl-js';
 import type { ScanResultComponentsMap } from '../api/types/hd-cli.types.ts';
-import type { ComponentStatus } from '../api/types/nes.types.ts';
+import type { ComponentStatus, InsightsEolScanComponent } from '../api/types/nes.types.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
-import { INDICATORS, STATUS_COLORS } from './shared.us.ts';
+import { INDICATORS, MAX_PACKAGE_NAME_LENGTH, MAX_PURL_LENGTH, STATUS_COLORS } from './shared.ui.ts';
 
-export function truncatePurl(purl: string): string {
-  return purl.length > 60 ? `${purl.slice(0, 57)}...` : purl;
+export function truncateString(purl: string, maxLength: number): string {
+  return purl.length > maxLength ? `${purl.slice(0, maxLength - 3)}...` : purl;
 }
 
 export function colorizeStatus(status: ComponentStatus): string {
@@ -14,7 +16,7 @@ export function colorizeStatus(status: ComponentStatus): string {
 
 function formatSimpleComponent(purl: string, status: ComponentStatus): string {
   const color = STATUS_COLORS[status];
-  return `  ${INDICATORS[status]} ${ux.colorize(color, truncatePurl(purl))}`;
+  return `  ${INDICATORS[status]} ${ux.colorize(color, truncateString(purl, MAX_PURL_LENGTH))}`;
 }
 
 function getDaysEolString(daysEol: number | null): string {
@@ -76,4 +78,45 @@ export function createStatusDisplay(
   }
 
   return statusOutput;
+}
+
+export function createTableForStatus(
+  components: ScanResultComponentsMap,
+  status: ComponentStatus,
+): { table: Table.Table; count: number } {
+  let count = 0;
+  const table = new Table({
+    head: ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE'],
+    colWidths: [MAX_PACKAGE_NAME_LENGTH, 10, 12, 10, 12],
+    wordWrap: true,
+    style: {
+      'padding-left': 1,
+      'padding-right': 1,
+      head: [],
+      border: [],
+    },
+  });
+
+  for (const [_, component] of components.entries()) {
+    if (component.info.status !== status) continue;
+
+    const row = convertComponentToTableRow(component);
+    table.push(row);
+    count++;
+  }
+  return { table, count };
+}
+
+export function convertComponentToTableRow(component: InsightsEolScanComponent) {
+  const purlParts = PackageURL.fromString(component.purl);
+  const { eolAt, daysEol } = component.info;
+
+  return [
+    { content: truncateString(purlParts.name, MAX_PACKAGE_NAME_LENGTH) },
+    { content: purlParts.version },
+    { content: parseMomentToSimpleDate(eolAt) },
+    { content: daysEol },
+    { content: purlParts.type },
+    // vulns: component.vulns.length, // TODO: add vulns to monorepo api
+  ];
 }
