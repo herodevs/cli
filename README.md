@@ -123,15 +123,15 @@ Scan a given sbom for EOL data
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value>] [-p <value>] [-d <value>] [-s] [-a] [-c]
+  $ hd scan eol [--json] [-f <value>] [-p <value>] [-d <value>] [-s] [-a] [-t]
 
 FLAGS
-  -a, --all                 Show all components (default is EOL and LTS only)
-  -c, --getCustomerSupport  Get Never-Ending Support for End-of-Life components
-  -d, --dir=<value>         The directory to scan in order to create a cyclonedx sbom
-  -f, --file=<value>        The file path of an existing cyclonedx sbom to scan for EOL
-  -p, --purls=<value>       The file path of a list of purls to scan for EOL
-  -s, --save                Save the generated SBOM as nes.sbom.json in the scanned directory
+  -a, --all            Show all components (default is EOL and LTS only)
+  -d, --dir=<value>    The directory to scan in order to create a cyclonedx sbom
+  -f, --file=<value>   The file path of an existing cyclonedx sbom to scan for EOL
+  -p, --purls=<value>  The file path of a list of purls to scan for EOL
+  -s, --save           Save the generated SBOM as nes.sbom.json in the scanned directory
+  -t, --table          Display the results in a table
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -215,5 +215,5 @@ EXAMPLES
     $ hd update --available
 ```
 
-_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.6.36/src/commands/update.ts)_
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.6.37/src/commands/update.ts)_
 <!-- commandsstop -->

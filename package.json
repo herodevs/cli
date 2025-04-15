@@ -44,7 +44,8 @@
     "@oclif/plugin-update": "^4",
     "@oclif/table": "^0.4.7",
     "graphql": "^16.8.1",
-    "packageurl-js": "^2.0.1"
+    "packageurl-js": "^2.0.1",
+    "update-notifier": "^7.3.1"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
@@ -52,6 +53,7 @@
     "@types/inquirer": "^9.0.7",
     "@types/node": "^22",
     "@types/sinon": "^17.0.4",
+    "@types/update-notifier": "^6.0.8",
     "globstar": "^1.0.0",
     "oclif": "^4",
     "shx": "^0.4.0",
@@ -80,6 +82,7 @@
       "@oclif/plugin-update"
     ],
     "hooks": {
+      "init": "./dist/hooks/npm-update-notifier",
       "prerun": "./dist/hooks/prerun.js"
     },
     "topicSeparator": " ",
