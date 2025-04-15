@@ -85,22 +85,11 @@ export function createStatusDisplay(
   return statusOutput;
 }
 
-export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus) {
-  const data: Array<{
-    name: string;
-    version: string;
-    eol: string;
-    daysEol: number | null;
-    type: string;
-    vulnCount: number;
-  }> = [];
-
-  for (const component of components.values()) {
-    if (component.info.status !== status) continue;
-
-    const row = convertComponentToTableRow(component);
-    data.push(row);
-  }
+export function createTableForStatus(
+  grouped: Record<ComponentStatus, InsightsEolScanComponent[]>,
+  status: ComponentStatus,
+) {
+  const data = grouped[status].map((component) => convertComponentToTableRow(component));
 
   return makeTable({
     data,
@@ -127,4 +116,21 @@ export function convertComponentToTableRow(component: InsightsEolScanComponent) 
     type: purlParts.type,
     vulnCount: vulnCount,
   };
+}
+
+export function groupComponentsByStatus(
+  components: ScanResultComponentsMap,
+): Record<ComponentStatus, InsightsEolScanComponent[]> {
+  const grouped: Record<ComponentStatus, InsightsEolScanComponent[]> = {
+    UNKNOWN: [],
+    OK: [],
+    LTS: [],
+    EOL: [],
+  };
+
+  return Array.from(components.values()).reduce((acc, component) => {
+    const status = component.info.status;
+    acc[status].push(component);
+    return acc;
+  }, grouped);
 }

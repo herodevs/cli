@@ -1,6 +1,11 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { convertComponentToTableRow, createTableForStatus, truncateString } from '../../src/ui/eol.ui.ts';
+import {
+  convertComponentToTableRow,
+  createTableForStatus,
+  groupComponentsByStatus,
+  truncateString,
+} from '../../src/ui/eol.ui.ts';
 import { createMockComponent, createMockScan } from '../utils/mocks/scan-result-component.mock.ts';
 
 describe('EOL UI', () => {
@@ -76,9 +81,10 @@ describe('EOL UI', () => {
         createMockComponent('pkg:npm/test2@2.0.0', 'OK'),
         createMockComponent('pkg:npm/test3@3.0.0', 'EOL', new Date('2023-02-01'), 400),
       ]).components;
+      const grouped = groupComponentsByStatus(components);
 
       // Act
-      const table = createTableForStatus(components, 'EOL');
+      const table = createTableForStatus(grouped, 'EOL');
 
       // Assert
       assert.strictEqual(typeof table, 'string');
@@ -90,9 +96,10 @@ describe('EOL UI', () => {
     it('returns empty table when no components match status', () => {
       // Arrange
       const components = createMockScan([createMockComponent('pkg:npm/test1@1.0.0', 'OK')]).components;
+      const grouped = groupComponentsByStatus(components);
 
       // Act
-      const table = createTableForStatus(components, 'EOL');
+      const table = createTableForStatus(grouped, 'EOL');
 
       // Assert
       assert.strictEqual(typeof table, 'string');
