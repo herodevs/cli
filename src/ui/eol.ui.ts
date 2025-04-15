@@ -1,5 +1,5 @@
 import { ux } from '@oclif/core';
-import Table from 'cli-table3';
+import { makeTable } from '@oclif/table';
 import { PackageURL } from 'packageurl-js';
 import type { ScanResultComponentsMap } from '../api/types/hd-cli.types.ts';
 import type {
@@ -85,38 +85,46 @@ export function createStatusDisplay(
   return statusOutput;
 }
 
-export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus): Table.Table {
-  const table = new Table({
-    head: ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE', '# OF VULNS'],
-    colWidths: [MAX_TABLE_COLUMN_WIDTH, 10, 12, 10, 12, 12],
-    wordWrap: true,
-    style: {
-      'padding-left': 1,
-      'padding-right': 1,
-      head: [],
-      border: [],
-    },
-  });
+export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus) {
+  const data: Array<{
+    name: string;
+    version: string;
+    eol: string;
+    daysEol: number | null;
+    type: string;
+    vulnCount: number;
+  }> = [];
 
   for (const component of components.values()) {
     if (component.info.status !== status) continue;
 
     const row = convertComponentToTableRow(component);
-    table.push(row);
+    data.push(row);
   }
-  return table;
+
+  return makeTable({
+    data,
+    columns: [
+      { key: 'name', name: 'NAME', width: MAX_TABLE_COLUMN_WIDTH },
+      { key: 'version', name: 'VERSION', width: 10 },
+      { key: 'eol', name: 'EOL', width: 12 },
+      { key: 'daysEol', name: 'DAYS EOL', width: 10 },
+      { key: 'type', name: 'TYPE', width: 12 },
+      { key: 'vulnCount', name: '# OF VULNS', width: 12 },
+    ],
+  });
 }
 
 export function convertComponentToTableRow(component: InsightsEolScanComponent) {
   const purlParts = PackageURL.fromString(component.purl);
   const { eolAt, daysEol, vulnCount } = component.info;
 
-  return [
-    { content: purlParts.name },
-    { content: purlParts.version },
-    { content: parseMomentToSimpleDate(eolAt) },
-    { content: daysEol },
-    { content: purlParts.type },
-    { content: vulnCount },
-  ];
+  return {
+    name: purlParts.name,
+    version: purlParts.version ?? '',
+    eol: parseMomentToSimpleDate(eolAt),
+    daysEol: daysEol,
+    type: purlParts.type,
+    vulnCount: vulnCount,
+  };
 }

@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
-import type { Table } from 'cli-table3';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
 import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
@@ -183,9 +182,9 @@ export default class ScanEol extends Command {
     }
   }
 
-  private displayTable(table: Table, count: number, status: ComponentStatus): void {
+  private displayTable(table: string, count: number, status: ComponentStatus): void {
     this.log(ux.colorize(STATUS_COLORS[status], `${INDICATORS[status]} ${count} ${status} Component(s):`));
-    this.log(ux.colorize(STATUS_COLORS[status], table.toString()));
+    this.log(ux.colorize(STATUS_COLORS[status], table));
   }
 
   private displayNoComponentsMessage(all: boolean): void {
