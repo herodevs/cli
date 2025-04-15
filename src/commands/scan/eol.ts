@@ -1,15 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
+import type { Table } from 'cli-table3';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
-import type { InsightsEolScanComponent } from '../../api/types/nes.types.ts';
+import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
-import { extractPurls } from '../../service/purls.svc.ts';
-import { parsePurlsFile } from '../../service/purls.svc.ts';
-import { createStatusDisplay } from '../../ui/eol.ui.ts';
-import { INDICATORS, STATUS_COLORS } from '../../ui/shared.us.ts';
+import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
+import { createStatusDisplay, createTableForStatus } from '../../ui/eol.ui.ts';
+import { INDICATORS, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
 
 export default class ScanEol extends Command {
@@ -44,19 +44,15 @@ export default class ScanEol extends Command {
       description: 'Show all components (default is EOL and LTS only)',
       default: false,
     }),
-    getCustomerSupport: Flags.boolean({
-      char: 'c',
-      description: 'Get Never-Ending Support for End-of-Life components',
+    table: Flags.boolean({
+      char: 't',
+      description: 'Display the results in a table',
       default: false,
     }),
   };
 
   public async run(): Promise<{ components: InsightsEolScanComponent[] }> {
     const { flags } = await this.parse(ScanEol);
-
-    if (flags.getCustomerSupport) {
-      this.log(ux.colorize('yellow', 'Never-Ending Support is on the way. Please stay tuned for this feature.'));
-    }
 
     const scan = await this.getScan(flags, this.config);
 
@@ -69,7 +65,12 @@ export default class ScanEol extends Command {
     }
 
     if (!this.jsonEnabled()) {
-      await this.displayResults(scan, flags.all);
+      if (flags.table) {
+        this.log(`${scan.components.size} components scanned`);
+        this.displayResultsInTable(scan, flags.all);
+      } else {
+        this.displayResults(scan, flags.all);
+      }
     }
 
     return { components };
@@ -147,7 +148,7 @@ export default class ScanEol extends Command {
     }
   }
 
-  private async displayResults(scan: ScanResult, all: boolean): Promise<void> {
+  private displayResults(scan: ScanResult, all: boolean) {
     const { UNKNOWN, OK, LTS, EOL } = createStatusDisplay(scan.components, all);
 
     if (!UNKNOWN.length && !OK.length && !LTS.length && !EOL.length) {
@@ -164,6 +165,27 @@ export default class ScanEol extends Command {
     }
 
     this.logLegend();
+  }
+
+  private displayResultsInTable(scan: ScanResult, all: boolean) {
+    const statuses: ComponentStatus[] = ['LTS', 'EOL'];
+
+    if (all) {
+      statuses.unshift('UNKNOWN', 'OK');
+    }
+
+    for (const status of statuses) {
+      const table = createTableForStatus(scan.components, status);
+
+      if (table.length > 0) {
+        this.displayTable(table, table.length, status);
+      }
+    }
+  }
+
+  private displayTable(table: Table, count: number, status: ComponentStatus): void {
+    this.log(ux.colorize(STATUS_COLORS[status], `${INDICATORS[status]} ${count} ${status} Component(s):`));
+    this.log(ux.colorize(STATUS_COLORS[status], table.toString()));
   }
 
   private displayNoComponentsMessage(all: boolean): void {

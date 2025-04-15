@@ -14,3 +14,7 @@ export const INDICATORS: Record<ComponentStatus, string> = {
   OK: ux.colorize(STATUS_COLORS.OK, '✔'),
   LTS: ux.colorize(STATUS_COLORS.LTS, '⚡'),
 };
+
+export const MAX_PURL_LENGTH = 60;
+
+export const MAX_TABLE_COLUMN_WIDTH = 30;

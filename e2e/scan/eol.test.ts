@@ -108,6 +108,30 @@ describe('scan:eol e2e', () => {
     doesNotThrow(() => JSON.parse(stdout));
   });
 
+  it('displays results in table format when using the -t flag', async () => {
+    const cmd = `scan:eol --dir ${simpleDir} -t`;
+    const { stdout } = await run(cmd);
+
+    // Match table header
+    match(stdout, /┌.*┬.*┬.*┬.*┬.*┐/, 'Should show table top border');
+    match(
+      stdout,
+      /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│/, // TODO: add vulns to monorepo api
+      'Should show table headers',
+    );
+    match(stdout, /├.*┼.*┼.*┼.*┼.*┤/, 'Should show table header separator');
+
+    // Match table content
+    match(
+      stdout,
+      /│ bootstrap\s*│ 3\.1\.1\s*│ 2019-07-24\s*│ \d+\s*│ npm\s*│/,
+      'Should show bootstrap package in table',
+    );
+
+    // Match table footer
+    match(stdout, /└.*┴.*┴.*┴.*┴.*┘/, 'Should show table bottom border');
+  });
+
   describe('--all flag', () => {
     it('excludes OK packages by default', async () => {
       const cmd = `scan:eol --dir ${simpleDir}`;
