@@ -29,7 +29,7 @@ function getDaysEolString(daysEol: number | null): string {
   if (daysEol === null) {
     return '';
   }
-  // LTS
+  // SCHEDULED
   if (daysEol < 0) {
     return `${Math.abs(daysEol)} days from now`;
   }
@@ -64,7 +64,7 @@ export function createStatusDisplay(
   const statusOutput: Record<ComponentStatus, string[]> = {
     UNKNOWN: [],
     OK: [],
-    LTS: [],
+    SCHEDULED: [],
     EOL: [],
   };
 
@@ -77,7 +77,7 @@ export function createStatusDisplay(
         statusOutput[status].push(formatSimpleComponent(purl, status));
       }
     }
-    if (status === 'LTS' || status === 'EOL') {
+    if (status === 'SCHEDULED' || status === 'EOL') {
       statusOutput[status].push(formatDetailedComponent(purl, component.info));
     }
   }
@@ -124,7 +124,7 @@ export function groupComponentsByStatus(
   const grouped: Record<ComponentStatus, InsightsEolScanComponent[]> = {
     UNKNOWN: [],
     OK: [],
-    LTS: [],
+    SCHEDULED: [],
     EOL: [],
   };
 
