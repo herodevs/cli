@@ -173,7 +173,7 @@ export default class ScanEol extends Command {
     if (all) {
       statuses.unshift('UNKNOWN', 'OK');
     }
-    
+
     for (const status of statuses) {
       const components = grouped[status];
       if (components.length > 0) {
