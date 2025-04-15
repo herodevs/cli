@@ -25,15 +25,12 @@ function formatSimpleComponent(purl: string, status: ComponentStatus): string {
 }
 
 function getDaysEolString(daysEol: number | null): string {
-  // UNKNOWN || OK
   if (daysEol === null) {
     return '';
   }
-  // SCHEDULED
   if (daysEol < 0) {
     return `${Math.abs(daysEol)} days from now`;
   }
-  // EOL
   if (daysEol === 0) {
     return 'today';
   }
