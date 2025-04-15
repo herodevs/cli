@@ -171,10 +171,10 @@ export default class ScanEol extends Command {
     const statuses: ComponentStatus[] = all ? ['UNKNOWN', 'OK', 'LTS', 'EOL'] : ['LTS', 'EOL'];
 
     for (const status of statuses) {
-      const { table, count } = createTableForStatus(scan.components, status);
+      const table = createTableForStatus(scan.components, status);
 
-      if (count > 0) {
-        this.displayTable(table, count, status);
+      if (table.length > 0) {
+        this.displayTable(table, table.length, status);
       }
     }
   }

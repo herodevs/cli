@@ -78,10 +78,10 @@ describe('EOL UI', () => {
       ]).components;
 
       // Act
-      const { table, count } = createTableForStatus(components, 'EOL');
+      const table = createTableForStatus(components, 'EOL');
 
       // Assert
-      assert.strictEqual(count, 2);
+      assert.strictEqual(table.length, 2);
       assert.strictEqual(table.length, 2); // Only data rows (excluding header)
       assert.deepStrictEqual(table.options.head, ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE']);
       assert.deepStrictEqual(table.options.colWidths, [30, 10, 12, 10, 12]);
@@ -92,10 +92,9 @@ describe('EOL UI', () => {
       const components = createMockScan([createMockComponent('pkg:npm/test1@1.0.0', 'OK')]).components;
 
       // Act
-      const { table, count } = createTableForStatus(components, 'EOL');
+      const table = createTableForStatus(components, 'EOL');
 
       // Assert
-      assert.strictEqual(count, 0);
       assert.strictEqual(table.length, 0); // No data rows
     });
   });

@@ -83,8 +83,7 @@ export function createStatusDisplay(
 export function createTableForStatus(
   components: ScanResultComponentsMap,
   status: ComponentStatus,
-): { table: Table.Table; count: number } {
-  let count = 0;
+): Table.Table {
 
   const table = new Table({
     head: ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE'],
@@ -103,9 +102,8 @@ export function createTableForStatus(
 
     const row = convertComponentToTableRow(component);
     table.push(row);
-    count++;
   }
-  return { table, count };
+  return table;
 }
 
 export function convertComponentToTableRow(component: InsightsEolScanComponent) {
