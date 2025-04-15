@@ -6,6 +6,7 @@ export const createMockComponent = (
   status: 'OK' | 'EOL' | 'LTS' = 'OK',
   eolAt: Date | null = null,
   daysEol: number | null = null,
+  vulnCount = 0,
 ): InsightsEolScanComponent => ({
   purl,
   info: {
@@ -14,6 +15,7 @@ export const createMockComponent = (
     isUnsafe: false,
     status,
     daysEol,
+    vulnCount,
   },
 });
 

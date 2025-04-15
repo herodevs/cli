@@ -41,6 +41,7 @@ export interface InsightsEolScanComponentInfo {
   eolAt: Date | null;
   status: ComponentStatus;
   daysEol: number | null;
+  vulnCount: number;
 }
 
 export interface InsightsEolScanComponent {

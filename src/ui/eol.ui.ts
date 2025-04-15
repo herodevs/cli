@@ -1,8 +1,12 @@
 import { ux } from '@oclif/core';
-import Table from 'cli-table3';
+import { makeTable } from '@oclif/table';
 import { PackageURL } from 'packageurl-js';
 import type { ScanResultComponentsMap } from '../api/types/hd-cli.types.ts';
-import type { ComponentStatus, InsightsEolScanComponent } from '../api/types/nes.types.ts';
+import type {
+  ComponentStatus,
+  InsightsEolScanComponent,
+  InsightsEolScanComponentInfo,
+} from '../api/types/nes.types.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
 import { INDICATORS, MAX_PURL_LENGTH, MAX_TABLE_COLUMN_WIDTH, STATUS_COLORS } from './shared.ui.ts';
 
@@ -36,17 +40,17 @@ function getDaysEolString(daysEol: number | null): string {
   return `${daysEol} days ago`;
 }
 
-function formatDetailedComponent(
-  purl: string,
-  eolAt: Date | null,
-  daysEol: number | null,
-  status: ComponentStatus,
-): string {
+function formatDetailedComponent(purl: string, info: InsightsEolScanComponentInfo): string {
+  const { status, eolAt, daysEol, vulnCount } = info;
   const simpleComponent = formatSimpleComponent(purl, status);
   const eolAtString = parseMomentToSimpleDate(eolAt);
   const daysEolString = getDaysEolString(daysEol);
 
-  const output = [`${simpleComponent}`, `    ⮑  EOL Date: ${eolAtString} (${daysEolString})`]
+  const output = [
+    `${simpleComponent}`,
+    `    ⮑  EOL Date: ${eolAtString} (${daysEolString})`,
+    `    ⮑  # of Vulns: ${vulnCount}`,
+  ]
     .filter(Boolean)
     .join('\n');
 
@@ -66,7 +70,7 @@ export function createStatusDisplay(
 
   // Single loop to separate and format components
   for (const [purl, component] of components.entries()) {
-    const { status, eolAt, daysEol } = component.info;
+    const { status } = component.info;
 
     if (all) {
       if (status === 'UNKNOWN' || status === 'OK') {
@@ -74,45 +78,59 @@ export function createStatusDisplay(
       }
     }
     if (status === 'LTS' || status === 'EOL') {
-      statusOutput[status].push(formatDetailedComponent(purl, eolAt, daysEol, status));
+      statusOutput[status].push(formatDetailedComponent(purl, component.info));
     }
   }
 
   return statusOutput;
 }
 
-export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus): Table.Table {
-  const table = new Table({
-    head: ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE'],
-    colWidths: [MAX_TABLE_COLUMN_WIDTH, 10, 12, 10, 12],
-    wordWrap: true,
-    style: {
-      'padding-left': 1,
-      'padding-right': 1,
-      head: [],
-      border: [],
-    },
+export function createTableForStatus(
+  grouped: Record<ComponentStatus, InsightsEolScanComponent[]>,
+  status: ComponentStatus,
+) {
+  const data = grouped[status].map((component) => convertComponentToTableRow(component));
+
+  return makeTable({
+    data,
+    columns: [
+      { key: 'name', name: 'NAME', width: MAX_TABLE_COLUMN_WIDTH },
+      { key: 'version', name: 'VERSION', width: 10 },
+      { key: 'eol', name: 'EOL', width: 12 },
+      { key: 'daysEol', name: 'DAYS EOL', width: 10 },
+      { key: 'type', name: 'TYPE', width: 12 },
+      { key: 'vulnCount', name: '# OF VULNS', width: 12 },
+    ],
   });
-
-  for (const component of components.values()) {
-    if (component.info.status !== status) continue;
-
-    const row = convertComponentToTableRow(component);
-    table.push(row);
-  }
-  return table;
 }
 
 export function convertComponentToTableRow(component: InsightsEolScanComponent) {
   const purlParts = PackageURL.fromString(component.purl);
-  const { eolAt, daysEol } = component.info;
+  const { eolAt, daysEol, vulnCount } = component.info;
 
-  return [
-    { content: purlParts.name },
-    { content: purlParts.version },
-    { content: parseMomentToSimpleDate(eolAt) },
-    { content: daysEol },
-    { content: purlParts.type },
-    // vulns: component.vulns.length, // TODO: add vulns to monorepo api
-  ];
+  return {
+    name: purlParts.name,
+    version: purlParts.version ?? '',
+    eol: parseMomentToSimpleDate(eolAt),
+    daysEol: daysEol,
+    type: purlParts.type,
+    vulnCount: vulnCount,
+  };
+}
+
+export function groupComponentsByStatus(
+  components: ScanResultComponentsMap,
+): Record<ComponentStatus, InsightsEolScanComponent[]> {
+  const grouped: Record<ComponentStatus, InsightsEolScanComponent[]> = {
+    UNKNOWN: [],
+    OK: [],
+    LTS: [],
+    EOL: [],
+  };
+
+  for (const component of components.values()) {
+    grouped[component.info.status].push(component);
+  }
+
+  return grouped;
 }

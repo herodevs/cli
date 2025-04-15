@@ -1,14 +1,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
-import type { Table } from 'cli-table3';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
 import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
-import { createStatusDisplay, createTableForStatus } from '../../ui/eol.ui.ts';
+import { createStatusDisplay, createTableForStatus, groupComponentsByStatus } from '../../ui/eol.ui.ts';
 import { INDICATORS, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
 
@@ -168,6 +167,7 @@ export default class ScanEol extends Command {
   }
 
   private displayResultsInTable(scan: ScanResult, all: boolean) {
+    const grouped = groupComponentsByStatus(scan.components);
     const statuses: ComponentStatus[] = ['LTS', 'EOL'];
 
     if (all) {
@@ -175,17 +175,17 @@ export default class ScanEol extends Command {
     }
 
     for (const status of statuses) {
-      const table = createTableForStatus(scan.components, status);
-
-      if (table.length > 0) {
-        this.displayTable(table, table.length, status);
+      const components = grouped[status];
+      if (components.length > 0) {
+        const table = createTableForStatus(grouped, status);
+        this.displayTable(table, components.length, status);
       }
     }
   }
 
-  private displayTable(table: Table, count: number, status: ComponentStatus): void {
+  private displayTable(table: string, count: number, status: ComponentStatus): void {
     this.log(ux.colorize(STATUS_COLORS[status], `${INDICATORS[status]} ${count} ${status} Component(s):`));
-    this.log(ux.colorize(STATUS_COLORS[status], table.toString()));
+    this.log(ux.colorize(STATUS_COLORS[status], table));
   }
 
   private displayNoComponentsMessage(all: boolean): void {
