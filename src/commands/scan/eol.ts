@@ -67,9 +67,9 @@ export default class ScanEol extends Command {
     if (!this.jsonEnabled()) {
       if (flags.table) {
         this.log(`${scan.components.size} components scanned`);
-        await this.displayResultsInTable(scan, flags.all);
+        this.displayResultsInTable(scan, flags.all);
       } else {
-        await this.displayResults(scan, flags.all);
+        this.displayResults(scan, flags.all);
       }
     }
 
@@ -148,7 +148,7 @@ export default class ScanEol extends Command {
     }
   }
 
-  private async displayResults(scan: ScanResult, all: boolean): Promise<void> {
+  private displayResults(scan: ScanResult, all: boolean) {
     const { UNKNOWN, OK, LTS, EOL } = createStatusDisplay(scan.components, all);
 
     if (!UNKNOWN.length && !OK.length && !LTS.length && !EOL.length) {
