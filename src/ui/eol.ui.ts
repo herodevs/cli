@@ -128,9 +128,9 @@ export function groupComponentsByStatus(
     EOL: [],
   };
 
-  return Array.from(components.values()).reduce((acc, component) => {
-    const status = component.info.status;
-    acc[status].push(component);
-    return acc;
-  }, grouped);
+  for (const component of components.values()) {
+    grouped[component.info.status].push(component);
+  }
+
+  return grouped;
 }
