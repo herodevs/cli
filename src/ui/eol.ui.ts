@@ -49,7 +49,7 @@ function formatDetailedComponent(purl: string, info: InsightsEolScanComponentInf
   const output = [
     `${simpleComponent}`,
     `    ⮑  EOL Date: ${eolAtString} (${daysEolString})`,
-    `    ⮑  # of Vulns: ${vulnCount}`,
+    `    ⮑  # of Vulns: ${vulnCount ?? ''}`,
   ]
     .filter(Boolean)
     .join('\n');
