@@ -1,4 +1,3 @@
-import type { ScanInputOptions } from '../../api/types/hd-cli.types.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { type Sbom, createBomFromDir } from './cdx.svc.ts';
 
