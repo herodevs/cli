@@ -20,43 +20,28 @@ export default updateNotifierHook;
 
 export function handleUpdate(update: UpdateInfo, currentVersion: string) {
   const isPreV1 = currentVersion.startsWith('0.');
-  const isMajorUpdate = update.type === 'major';
-  const isMinorUpdate = update.type === 'minor';
-  const isPatchUpdate = update.type === 'patch';
+  const isBeta = currentVersion.includes('-beta') || update.latest.includes('-beta');
+  const isAlpha = currentVersion.includes('-alpha') || update.latest.includes('-alpha');
+  const isNext = currentVersion.includes('-next') || update.latest.includes('-next');
+
+  let message = `Update available! v${currentVersion} → v${update.latest}`;
 
   /**
-   * Show all updates for v0.x.x
-   * This is because all updates (including patches) can contain breaking
-   * changes per SemVer spec[1]. See also a discussion on Antfu's blog[2].
+   * Show breaking changes warning for:
+   * - v0.x.x versions (all updates can contain breaking changes per SemVer spec[1][2])
+   * - Prerelease versions (beta/alpha/next)
+   * - Major version updates
+   *
    * [1]https://semver.org/#spec-item-4
    * [2]https://antfu.me/posts/epoch-semver#leading-zero-major-versioning
    */
-  if (isPreV1) {
-    return {
-      message: `Update available! v${currentVersion} → v${update.latest}\nWhile in v0, all updates may contain breaking changes.`,
-      defer: false,
-    };
+  if (isPreV1 || isBeta || isAlpha || isNext || update.type === 'major') {
+    message += '\nThis update may contain breaking changes.';
   }
 
-  // For stable versions (1.x.x+), use different messaging based on update type
-  if (isMajorUpdate) {
-    return {
-      message: `Major update available! v${currentVersion} → v${update.latest}\nThis includes breaking changes.`,
-      defer: false,
-    };
-  }
-
-  if (isMinorUpdate) {
-    return {
-      message: `New features available! v${currentVersion} → v${update.latest}\nUpdate includes new functionality.`,
-      defer: false,
-    };
-  }
-
-  if (isPatchUpdate) {
-    return {
-      message: `Patch update available v${currentVersion} → v${update.latest}\nThis may include bug fixes and security updates.`,
-      defer: false,
-    };
-  }
+  // For all other updates (minor, patch), they should be non-breaking
+  return {
+    message,
+    defer: false,
+  };
 }
