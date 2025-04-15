@@ -97,7 +97,7 @@ export function createTableForStatus(
     },
   });
 
-  for (const [_, component] of components.entries()) {
+  for (const component of components.values()) {
     if (component.info.status !== status) continue;
 
     const row = convertComponentToTableRow(component);
