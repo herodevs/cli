@@ -168,8 +168,12 @@ export default class ScanEol extends Command {
 
   private displayResultsInTable(scan: ScanResult, all: boolean) {
     const grouped = groupComponentsByStatus(scan.components);
-    const statuses: ComponentStatus[] = all ? ['UNKNOWN', 'OK', 'LTS', 'EOL'] : ['LTS', 'EOL'];
+    const statuses: ComponentStatus[] = ['LTS', 'EOL'];
 
+    if (all) {
+      statuses.unshift('UNKNOWN', 'OK');
+    }
+    
     for (const status of statuses) {
       const components = grouped[status];
       if (components.length > 0) {
