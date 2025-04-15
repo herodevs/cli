@@ -7,7 +7,8 @@ import { parseMomentToSimpleDate } from './date.ui.ts';
 import { INDICATORS, MAX_PURL_LENGTH, MAX_TABLE_COLUMN_WIDTH, STATUS_COLORS } from './shared.ui.ts';
 
 export function truncateString(purl: string, maxLength: number): string {
-  return purl.length > maxLength ? `${purl.slice(0, maxLength - 3)}...` : purl;
+  const ellipses = '...';
+  return purl.length > maxLength ? `${purl.slice(0, maxLength - ellipses.length)}${ellipses}` : purl;
 }
 
 export function colorizeStatus(status: ComponentStatus): string {
