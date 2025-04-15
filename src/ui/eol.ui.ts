@@ -80,11 +80,7 @@ export function createStatusDisplay(
   return statusOutput;
 }
 
-export function createTableForStatus(
-  components: ScanResultComponentsMap,
-  status: ComponentStatus,
-): Table.Table {
-
+export function createTableForStatus(components: ScanResultComponentsMap, status: ComponentStatus): Table.Table {
   const table = new Table({
     head: ['NAME', 'VERSION', 'EOL', 'DAYS EOL', 'TYPE'],
     colWidths: [MAX_TABLE_COLUMN_WIDTH, 10, 12, 10, 12],
