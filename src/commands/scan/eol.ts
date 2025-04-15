@@ -168,7 +168,11 @@ export default class ScanEol extends Command {
   }
 
   private displayResultsInTable(scan: ScanResult, all: boolean) {
-    const statuses: ComponentStatus[] = all ? ['UNKNOWN', 'OK', 'LTS', 'EOL'] : ['LTS', 'EOL'];
+    const statuses: ComponentStatus[] = ['LTS', 'EOL'];
+
+    if (all) {
+      statuses.unshift('UNKNOWN', 'OK');
+    }
 
     for (const status of statuses) {
       const table = createTableForStatus(scan.components, status);
