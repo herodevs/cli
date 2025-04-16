@@ -61,7 +61,7 @@ export function createStatusDisplay(
   const statusOutput: Record<ComponentStatus, string[]> = {
     UNKNOWN: [],
     OK: [],
-    SCHEDULED: [],
+    SUPPORTED: [],
     EOL: [],
   };
 
@@ -74,7 +74,7 @@ export function createStatusDisplay(
         statusOutput[status].push(formatSimpleComponent(purl, status));
       }
     }
-    if (status === 'SCHEDULED' || status === 'EOL') {
+    if (status === 'SUPPORTED' || status === 'EOL') {
       statusOutput[status].push(formatDetailedComponent(purl, component.info));
     }
   }
@@ -121,7 +121,7 @@ export function groupComponentsByStatus(
   const grouped: Record<ComponentStatus, InsightsEolScanComponent[]> = {
     UNKNOWN: [],
     OK: [],
-    SCHEDULED: [],
+    SUPPORTED: [],
     EOL: [],
   };
 

@@ -16,7 +16,7 @@ export const buildScanResult = (scan: InsightsEolScanResult): ScanResult => {
     // TODO: remove this once backend changes are deployed
     // @ts-expect-error
     if (status === 'LTS') {
-      c.info.status = 'SCHEDULED';
+      c.info.status = 'SUPPORTED';
     }
     components.set(c.purl, c);
   }
