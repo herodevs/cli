@@ -86,7 +86,7 @@ describe('scan:eol e2e', () => {
     // Match legend
     match(stdout, /• = No Known Issues/, 'Should show legend for No Known Issues');
     match(stdout, /✔ = OK/, 'Should show legend for OK status');
-    match(stdout, /⚡= Scheduled End-of-Life \(SCHEDULED\)/, 'Should show legend for SCHEDULED status');
+    match(stdout, /⚡= Supported: End-of-Life \(EOL\) is scheduled/, 'Should show legend for SUPPORTED status');
     match(stdout, /✗ = End of Life \(EOL\)/, 'Should show legend for EOL status');
   });
 
@@ -159,7 +159,7 @@ describe('scan:eol e2e', () => {
 
       // Match command output patterns
       doesNotMatch(stdout, /Here are the results of the scan:/, 'Should not show results header');
-      match(stdout, /No End-of-Life or Scheduled End-of-Life components found in scan/, 'Should show "No EOL" message');
+      match(stdout, /No End-of-Life or Supported components found in scan/, 'Should show "No EOL" message');
     });
 
     it('shows "No components found" message if no components are found with --all flag', async () => {
@@ -170,5 +170,26 @@ describe('scan:eol e2e', () => {
       doesNotMatch(stdout, /Here are the results of the scan:/, 'Should not show results header');
       match(stdout, /No components found in scan/, 'Should show "No components found" message');
     });
+  });
+
+  it('correctly identifies Angular 17 EOL status', async () => {
+    const angular17Dir = path.resolve(__dirname, '../fixtures/npm/angular-17');
+    const cmd = `scan:eol --dir ${angular17Dir}`;
+    const { stdout } = await run(cmd);
+
+    // Check for Angular package presence
+    match(stdout, /pkg:npm\/%40angular\/core@17\.3\.12/, 'Should detect Angular core package');
+
+    // Check for either SUPPORTED or EOL status
+    match(stdout, /⚡= Supported: End-of-Life \(EOL\) is scheduled/, 'Should show SUPPORTED status');
+
+    // Check for EOL date format with days remaining
+    match(stdout, /EOL Date: \d{4}-\d{2}-\d{2} \(\d+ days from now\)/, 'Should show EOL date with days remaining');
+
+    // Check for the status indicator in the package line
+    match(stdout, /⚡ pkg:npm\/%40angular\/core@17\.3\.12/, 'Should show supported status indicator');
+
+    // Check for the arrow format
+    match(stdout, /⮑ {2}EOL Date: \d{4}-\d{2}-\d{2}/, 'Should show EOL date with arrow');
   });
 });

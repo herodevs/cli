@@ -40,7 +40,7 @@ export default class ScanEol extends Command {
     }),
     all: Flags.boolean({
       char: 'a',
-      description: 'Show all components (default is EOL and SCHEDULED only)',
+      description: 'Show all components (default is EOL and SUPPORTED only)',
       default: false,
     }),
     table: Flags.boolean({
@@ -119,7 +119,7 @@ export default class ScanEol extends Command {
 
   private getFilteredComponents(scan: ScanResult, all: boolean) {
     return Array.from(scan.components.values()).filter(
-      (component) => all || ['EOL', 'SCHEDULED'].includes(component.info.status),
+      (component) => all || ['EOL', 'SUPPORTED'].includes(component.info.status),
     );
   }
 
@@ -148,9 +148,9 @@ export default class ScanEol extends Command {
   }
 
   private displayResults(scan: ScanResult, all: boolean) {
-    const { UNKNOWN, OK, SCHEDULED, EOL } = createStatusDisplay(scan.components, all);
+    const { UNKNOWN, OK, SUPPORTED, EOL } = createStatusDisplay(scan.components, all);
 
-    if (!UNKNOWN.length && !OK.length && !SCHEDULED.length && !EOL.length) {
+    if (!UNKNOWN.length && !OK.length && !SUPPORTED.length && !EOL.length) {
       this.displayNoComponentsMessage(all);
       return;
     }
@@ -159,7 +159,7 @@ export default class ScanEol extends Command {
     this.logLine();
 
     // Display sections in order of increasing severity
-    for (const components of [UNKNOWN, OK, SCHEDULED, EOL]) {
+    for (const components of [UNKNOWN, OK, SUPPORTED, EOL]) {
       this.displayStatusSection(components);
     }
 
@@ -168,7 +168,7 @@ export default class ScanEol extends Command {
 
   private displayResultsInTable(scan: ScanResult, all: boolean) {
     const grouped = groupComponentsByStatus(scan.components);
-    const statuses: ComponentStatus[] = ['SCHEDULED', 'EOL'];
+    const statuses: ComponentStatus[] = ['SUPPORTED', 'EOL'];
 
     if (all) {
       statuses.unshift('UNKNOWN', 'OK');
@@ -181,6 +181,7 @@ export default class ScanEol extends Command {
         this.displayTable(table, components.length, status);
       }
     }
+    this.logLegend();
   }
 
   private displayTable(table: string, count: number, status: ComponentStatus): void {
@@ -190,7 +191,7 @@ export default class ScanEol extends Command {
 
   private displayNoComponentsMessage(all: boolean): void {
     if (!all) {
-      this.log(ux.colorize('yellow', 'No End-of-Life or Scheduled End-of-Life components found in scan.'));
+      this.log(ux.colorize('yellow', 'No End-of-Life or Supported components found in scan.'));
       this.log(ux.colorize('yellow', 'Use --all flag to view all components.'));
     } else {
       this.log(ux.colorize('yellow', 'No components found in scan.'));
@@ -211,7 +212,9 @@ export default class ScanEol extends Command {
   private logLegend(): void {
     this.log(ux.colorize(STATUS_COLORS.UNKNOWN, `${INDICATORS.UNKNOWN} = No Known Issues`));
     this.log(ux.colorize(STATUS_COLORS.OK, `${INDICATORS.OK} = OK`));
-    this.log(ux.colorize(STATUS_COLORS.SCHEDULED, `${INDICATORS.SCHEDULED}= Scheduled End-of-Life (SCHEDULED)`));
+    this.log(
+      ux.colorize(STATUS_COLORS.SUPPORTED, `${INDICATORS.SUPPORTED}= Supported: End-of-Life (EOL) is scheduled`),
+    );
     this.log(ux.colorize(STATUS_COLORS.EOL, `${INDICATORS.EOL} = End of Life (EOL)`));
   }
 }

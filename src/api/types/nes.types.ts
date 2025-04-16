@@ -58,4 +58,4 @@ export interface ScanWarning {
 }
 
 export type ComponentStatus = (typeof VALID_STATUSES)[number];
-export const VALID_STATUSES = ['UNKNOWN', 'OK', 'EOL', 'SCHEDULED'] as const;
+export const VALID_STATUSES = ['UNKNOWN', 'OK', 'EOL', 'SUPPORTED'] as const;

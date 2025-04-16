@@ -5,14 +5,14 @@ export const STATUS_COLORS: Record<ComponentStatus, string> = {
   EOL: 'red',
   UNKNOWN: 'default',
   OK: 'green',
-  SCHEDULED: 'yellow',
+  SUPPORTED: 'yellow',
 };
 
 export const INDICATORS: Record<ComponentStatus, string> = {
   EOL: ux.colorize(STATUS_COLORS.EOL, '✗'),
   UNKNOWN: ux.colorize(STATUS_COLORS.UNKNOWN, '•'),
   OK: ux.colorize(STATUS_COLORS.OK, '✔'),
-  SCHEDULED: ux.colorize(STATUS_COLORS.SCHEDULED, '⚡'),
+  SUPPORTED: ux.colorize(STATUS_COLORS.SUPPORTED, '⚡'),
 };
 
 export const MAX_PURL_LENGTH = 60;

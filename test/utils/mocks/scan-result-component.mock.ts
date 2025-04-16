@@ -3,7 +3,7 @@ import type { InsightsEolScanComponent } from '../../../src/api/types/nes.types.
 
 export const createMockComponent = (
   purl: string,
-  status: 'OK' | 'EOL' | 'SCHEDULED' = 'OK',
+  status: 'OK' | 'EOL' | 'SUPPORTED' = 'OK',
   eolAt: Date | null = null,
   daysEol: number | null = null,
   vulnCount = 0,
