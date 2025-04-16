@@ -6,13 +6,8 @@ updates:
       interval: "weekly"
 
   - package-ecosystem: "npm"
-    directory: "/"
+    directories:
+      - "/"
+      - "!/e2e/**"  # This excludes e2e and all subdirectories
     schedule:
       interval: "weekly"
-      
-  - package-ecosystem: "npm"
-    directory: "/e2e"
-    schedule:
-      interval: "weekly"
-    ignore:
-      - dependency-name: "*"
