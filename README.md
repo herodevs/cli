@@ -126,7 +126,7 @@ USAGE
   $ hd scan eol [--json] [-f <value>] [-p <value>] [-d <value>] [-s] [-a] [-t]
 
 FLAGS
-  -a, --all            Show all components (default is EOL and LTS only)
+  -a, --all            Show all components (default is EOL and SCHEDULED only)
   -d, --dir=<value>    The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>   The file path of an existing cyclonedx sbom to scan for EOL
   -p, --purls=<value>  The file path of a list of purls to scan for EOL

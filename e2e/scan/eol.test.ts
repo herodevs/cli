@@ -18,6 +18,7 @@ describe('scan:eol e2e', () => {
   async function run(cmd: string) {
     // Set up environment
     process.env.GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
+    // process.env.GRAPHQL_HOST = 'http://localhost:3000';
 
     // Ensure test directory exists and is clean
     await mkdir(simpleDir, { recursive: true });
@@ -85,7 +86,7 @@ describe('scan:eol e2e', () => {
     // Match legend
     match(stdout, /• = No Known Issues/, 'Should show legend for No Known Issues');
     match(stdout, /✔ = OK/, 'Should show legend for OK status');
-    match(stdout, /⚡= Long Term Support \(LTS\)/, 'Should show legend for LTS status');
+    match(stdout, /⚡= Scheduled End-of-Life \(SCHEDULED\)/, 'Should show legend for SCHEDULED status');
     match(stdout, /✗ = End of Life \(EOL\)/, 'Should show legend for EOL status');
   });
 
@@ -158,7 +159,7 @@ describe('scan:eol e2e', () => {
 
       // Match command output patterns
       doesNotMatch(stdout, /Here are the results of the scan:/, 'Should not show results header');
-      match(stdout, /No End-of-Life or Long Term Support components found in scan/, 'Should show "No EOL" message');
+      match(stdout, /No End-of-Life or Scheduled End-of-Life components found in scan/, 'Should show "No EOL" message');
     });
 
     it('shows "No components found" message if no components are found with --all flag', async () => {
