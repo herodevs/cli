@@ -1,3 +1,4 @@
+import type { PackageURL } from 'packageurl-js';
 import { debugLogger } from '../../service/log.svc.ts';
 import { type Sbom, createBomFromDir } from './cdx.svc.ts';
 
@@ -36,4 +37,31 @@ export function validateIsCycloneDxSbom(sbom: unknown): asserts sbom is Sbom {
   if (!('components' in s) || !Array.isArray(s.components)) {
     throw new Error('Invalid SBOM: missing or invalid components array');
   }
+}
+
+const purlPackageNameRules = {
+  npm: (p: PackageURL) => (p.namespace ? `${p.namespace}/${p.name}` : p.name),
+  maven: (p: PackageURL) => (p.namespace ? `${p.namespace}:${p.name}` : p.name),
+  pypi: (p: PackageURL) => p.name.toLowerCase(),
+  nuget: (p: PackageURL) => p.name,
+  gem: (p: PackageURL) => p.name,
+  composer: (p: PackageURL) => (p.namespace ? `${p.namespace}/${p.name}` : p.name),
+  golang: (p: PackageURL) => (p.namespace ? `${p.namespace}/${p.name}` : p.name),
+  cargo: (p: PackageURL) => p.name,
+  conan: (p: PackageURL) => (p.namespace ? `${p.namespace}/${p.name}` : p.name),
+  github: (p: PackageURL) => (p.namespace ? `${p.namespace}/${p.name}` : p.name),
+  bitbucket: (p: PackageURL) => (p.namespace ? `${p.namespace}/${p.name}` : p.name),
+  docker: (p: PackageURL) => (p.namespace ? `${p.namespace}/${p.name}` : p.name),
+} as const;
+
+function isKnownEcosystemType(type: string): type is keyof typeof purlPackageNameRules {
+  return type in purlPackageNameRules;
+}
+
+export function resolvePurlPackageName(purl: PackageURL): string {
+  if (!isKnownEcosystemType(purl.type)) {
+    debugLogger(`Unsupported package type: ${purl.type}, falling back to name only`);
+    return purl.name;
+  }
+  return purlPackageNameRules[purl.type](purl);
 }
