@@ -7,6 +7,7 @@ import type {
   InsightsEolScanComponent,
   InsightsEolScanComponentInfo,
 } from '../api/types/nes.types.ts';
+import { resolvePurlPackageName } from '../service/eol/eol.svc.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
 import { INDICATORS, MAX_PURL_LENGTH, MAX_TABLE_COLUMN_WIDTH, STATUS_COLORS } from './shared.ui.ts';
 
@@ -106,7 +107,7 @@ export function convertComponentToTableRow(component: InsightsEolScanComponent) 
   const { eolAt, daysEol, vulnCount } = component.info;
 
   return {
-    name: purlParts.name,
+    name: resolvePurlPackageName(purlParts),
     version: purlParts.version ?? '',
     eol: parseMomentToSimpleDate(eolAt),
     daysEol: daysEol,
