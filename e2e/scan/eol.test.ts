@@ -171,4 +171,25 @@ describe('scan:eol e2e', () => {
       match(stdout, /No components found in scan/, 'Should show "No components found" message');
     });
   });
+
+  it('correctly identifies Angular 17 EOL status', async () => {
+    const angular17Dir = path.resolve(__dirname, '../fixtures/npm/angular-17');
+    const cmd = `scan:eol --dir ${angular17Dir}`;
+    const { stdout } = await run(cmd);
+
+    // Check for Angular package presence
+    match(stdout, /pkg:npm\/%40angular\/core@17\.3\.12/, 'Should detect Angular core package');
+
+    // Check for either SCHEDULED or EOL status
+    match(stdout, /(⚡= Scheduled End-of-Life|✗ = End of Life)/, 'Should show either SCHEDULED or EOL status');
+
+    // Check for EOL date format with days remaining
+    match(stdout, /EOL Date: \d{4}-\d{2}-\d{2} \(\d+ days from now\)/, 'Should show EOL date with days remaining');
+
+    // Check for the status indicator in the package line
+    match(stdout, /⚡ pkg:npm\/%40angular\/core@17\.3\.12/, 'Should show scheduled status indicator');
+
+    // Check for the arrow format
+    match(stdout, /⮑ {2}EOL Date: \d{4}-\d{2}-\d{2}/, 'Should show EOL date with arrow');
+  });
 });
