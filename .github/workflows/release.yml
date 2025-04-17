@@ -1,5 +1,5 @@
-name: Release
-run-name: Release ${{ github.ref_name }} (pushed by ${{ github.actor }})
+name: Production Release
+run-name: Production Release ${{ github.ref_name }} (pushed by ${{ github.actor }})
 
 on:
   push:
@@ -16,13 +16,19 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
-      - name: Get version
-        id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-      - name: Determine Oclif channel
-        id: oclif-channel
+      - uses: ./.github/actions/verify-version
+        id: verify-version
+      - name: Verify tag matches version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=${{ steps.verify-version.outputs.version }}
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          if [ "$VERSION" != "$TAG_VERSION" ]; then
+            echo "Error: Package version ($VERSION) does not match tag version ($TAG_VERSION)"
+            exit 1
+          fi
+      - name: Determine Oclif channel
+        run: |
+          VERSION=${{ steps.verify-version.outputs.version }}
           if [[ "$VERSION" == *"-beta"* ]]; then
             echo "oclif_channel=beta" >> $GITHUB_OUTPUT
           elif [[ "$VERSION" == *"-alpha"* ]]; then
@@ -33,8 +39,8 @@ jobs:
             echo "oclif_channel=latest" >> $GITHUB_OUTPUT
           fi
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      oclif_channel: ${{ steps.oclif-channel.outputs.oclif_channel }}
+      version: ${{ steps.verify-version.outputs.version }}
+      oclif_channel: ${{ steps.determine-channel.outputs.oclif_channel }}
 
   test:
     runs-on: ubuntu-latest

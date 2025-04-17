@@ -1,0 +1,22 @@
+name: 'Verify Package Version'
+description: 'Verifies the package.json version format and outputs it for use in the workflow'
+
+outputs:
+  version:
+    description: 'The verified package version'
+    value: ${{ steps.version.outputs.version }}
+runs:
+  using: "composite"
+  steps:
+    - name: Get and verify version
+      id: version
+      shell: bash
+      run: |
+        VERSION=$(node -p "require('./package.json').version")
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        
+        # Verify version format
+        if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-(alpha|beta|next)(\.[0-9]+)?)?$ ]]; then
+          echo "Error: Invalid version format: $VERSION"
+          exit 1
+        fi 

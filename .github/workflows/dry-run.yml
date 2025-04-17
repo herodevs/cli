@@ -1,5 +1,5 @@
-name: Dry Run Release
-run-name: Dry Run Release ${{ github.ref_name }} (pushed by ${{ github.actor }})
+name: Test Release (Dry Run)
+run-name: Test Release ${{ github.ref_name }} (pushed by ${{ github.actor }})
 
 on:
   workflow_dispatch:
@@ -24,11 +24,10 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
-      - name: Get version
-        id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+      - uses: ./.github/actions/verify-version
+        id: verify-version
     outputs:
-      version: ${{ steps.version.outputs.version }}
+      version: ${{ steps.verify-version.outputs.version }}
 
   test:
     runs-on: ubuntu-latest
