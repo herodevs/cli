@@ -136,13 +136,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
 
-      # Get changelog content
-      - name: Extract changelog content
-        id: extract-changelog
-        uses: ./.github/actions/extract-changelog
-        with:
-          version: ${{ needs.check-version.outputs.version }}
-
       # Create GitHub Release (draft - will be published manually from GitHub UI or CLI)
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
@@ -154,9 +147,6 @@ jobs:
             - macOS (ARM64)
             - Windows (x64)
             - Linux (x64)
-
-            ## Changes
-            ${{ steps.extract-changelog.outputs.content }}
           files: |
             dist/*.tar.gz
           draft: true
