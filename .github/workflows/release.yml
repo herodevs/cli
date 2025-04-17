@@ -141,7 +141,7 @@ jobs:
         run: |
           gh release create v${{ needs.check-version.outputs.version }} \
             --title "Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel == 'latest' && 'Latest' || needs.check-version.outputs.oclif_channel }}" \
-            --notes-from-tag \
+            --generate-notes \
             --draft \
             --prerelease=${{ needs.check-version.outputs.oclif_channel != 'latest' }} \
             --discussion-category "Announcements" \
