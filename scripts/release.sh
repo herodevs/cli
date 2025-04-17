@@ -74,28 +74,18 @@ echo "Running: $CMD"
 # Execute the command
 $CMD
 
-# If not dry run, ask for confirmation before publishing
+# If not dry run, show next steps
 if [ "$DRY_RUN" = false ]; then
   echo ""
-  echo "⚠️  WARNING: This will perform the following actions:"
-  echo "  1. Update version in package.json"
-  echo "  2. Update CHANGELOG.md with latest changes"
-  echo "  3. Create a commit with these changes"
-  echo "  4. Create a git tag for the new version"
-  echo "  5. Push both the commit and tag to the remote repository"
+  echo "✅ Release changes have been committed locally"
   echo ""
-  echo "This will trigger the GitHub Actions release workflow."
+  echo "Next steps:"
+  echo "1. Review the changes:"
+  echo "   git show"
+  echo "2. Push the tag to trigger the release workflow:"
+  echo "   git push --follow-tags"
   echo ""
-  read -p "Are you sure you want to proceed? (y/N) " -n 1 -r
-  echo ""
-  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Release cancelled."
-    exit 1
-  fi
-
-  echo "Pushing tag..."
-  git push --follow-tags
-  echo "Release published successfully!"
+  echo "The GitHub Actions release workflow will run once the tag is pushed."
 else
   echo ""
   echo "✅ DRY RUN COMPLETED"
