@@ -68,9 +68,12 @@ fi
 # Build the commit-and-tag-version command
 CMD="npx commit-and-tag-version"
 
-# Add release type if not latest
-if [ "$RELEASE_TYPE" != "latest" ]; then
-  CMD="$CMD --$RELEASE_TYPE"
+# Add release type
+if [ "$RELEASE_TYPE" = "latest" ]; then
+  # No flag needed for latest
+  true
+else
+  CMD="$CMD --prerelease $RELEASE_TYPE"
 fi
 
 # Add dry run if specified
