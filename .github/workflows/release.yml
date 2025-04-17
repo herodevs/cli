@@ -138,19 +138,13 @@ jobs:
 
       # Create GitHub Release (draft - will be published manually from GitHub UI or CLI)
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: v${{ needs.check-version.outputs.version }}
-          name: Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel == 'latest' && 'Latest' || needs.check-version.outputs.oclif_channel }}
-          body: |
-            This release includes the following platform-specific tarballs:
-            - macOS (ARM64)
-            - Windows (x64)
-            - Linux (x64)
-          files: |
+        run: |
+          gh release create v${{ needs.check-version.outputs.version }} \
+            --title "Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel == 'latest' && 'Latest' || needs.check-version.outputs.oclif_channel }}" \
+            --notes-from-tag \
+            --draft \
+            --prerelease=${{ needs.check-version.outputs.oclif_channel != 'latest' }} \
+            --discussion-category "Announcements" \
             dist/*.tar.gz
-          draft: true
-          prerelease: ${{ needs.check-version.outputs.oclif_channel != 'latest' }}
-          discussion_category_name: Announcements
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
