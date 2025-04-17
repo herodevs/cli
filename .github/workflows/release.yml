@@ -147,4 +147,4 @@ jobs:
             --discussion-category "Announcements" \
             dist/*.tar.gz
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
