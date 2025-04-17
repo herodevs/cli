@@ -95,6 +95,12 @@ if [ "$DRY_RUN" = false ]; then
 
   echo "Pushing tag..."
   git push --follow-tags
+  echo "Release published successfully!"
+else
+  echo ""
+  echo "✅ DRY RUN COMPLETED"
+  echo "This was a dry run - no changes were made to the repository."
+  echo "To actually publish this release, run:"
+  echo "  npm run release:publish:beta    # for a beta release"
+  echo "  npm run release:publish:latest  # for a latest release"
 fi
-
-echo "Release process completed!"
