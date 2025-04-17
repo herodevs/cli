@@ -87,6 +87,16 @@ export function createTableForStatus(
   grouped: Record<ComponentStatus, InsightsEolScanComponent[]>,
   status: ComponentStatus,
 ) {
+  if (status === 'EOL' || status === 'SUPPORTED') {
+    return createTableForEOLOrSupported(grouped, status);
+  }
+  return createTableForOKOrUnknown(grouped, status);
+}
+
+function createTableForEOLOrSupported(
+  grouped: Record<ComponentStatus, InsightsEolScanComponent[]>,
+  status: 'EOL' | 'SUPPORTED',
+) {
   const data = grouped[status].map((component) => convertComponentToTableRow(component));
 
   return makeTable({
@@ -96,6 +106,23 @@ export function createTableForStatus(
       { key: 'version', name: 'VERSION', width: 10 },
       { key: 'eol', name: 'EOL', width: 12 },
       { key: 'daysEol', name: 'DAYS EOL', width: 10 },
+      { key: 'type', name: 'TYPE', width: 12 },
+      { key: 'vulnCount', name: '# OF VULNS', width: 12 },
+    ],
+  });
+}
+
+function createTableForOKOrUnknown(
+  grouped: Record<ComponentStatus, InsightsEolScanComponent[]>,
+  status: 'OK' | 'UNKNOWN',
+) {
+  const data = grouped[status].map((component) => convertComponentToTableRow(component));
+
+  return makeTable({
+    data,
+    columns: [
+      { key: 'name', name: 'NAME', width: MAX_TABLE_COLUMN_WIDTH },
+      { key: 'version', name: 'VERSION', width: 10 },
       { key: 'type', name: 'TYPE', width: 12 },
       { key: 'vulnCount', name: '# OF VULNS', width: 12 },
     ],
