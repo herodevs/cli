@@ -118,6 +118,7 @@ jobs:
     needs: [check-version, test, upload-assets]
     permissions:
       id-token: write
+      contents: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -134,3 +135,22 @@ jobs:
         run: npm publish --tag ${{ needs.check-version.outputs.oclif_channel }} --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+
+      # Create GitHub Release (draft - will be published manually from GitHub UI or CLI)
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          name: Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel == 'latest' && 'Latest' || needs.check-version.outputs.oclif_channel }}
+          body: |
+            This release includes the following platform-specific tarballs:
+            - macOS (ARM64)
+            - Windows (x64)
+            - Linux (x64)
+          files: |
+            dist/*.tar.gz
+          draft: true
+          prerelease: ${{ needs.check-version.outputs.oclif_channel != 'latest' }}
+          discussion_category_name: Announcements
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
