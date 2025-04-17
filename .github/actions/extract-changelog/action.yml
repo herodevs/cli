@@ -38,4 +38,4 @@ runs:
         CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
         CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
         
-        echo "content=$CHANGELOG" >> $GITHUB_OUTPUT 
+        echo "content=$CHANGELOG" >> $GITHUB_OUTPUT
