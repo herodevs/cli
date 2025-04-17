@@ -1,22 +1,10 @@
-name: Manual Release
-run-name: Release ${{ github.ref_name }} (pushed by ${{ github.actor }})${{ inputs.dry-run == true && ' --dry-run' || '' }}
+name: Release
+run-name: Release ${{ github.ref_name }} (pushed by ${{ github.actor }})
 
 on:
-  workflow_dispatch:
-    inputs:
-      channel:
-        description: 'NPM tag to publish to'
-        type: choice
-        options:
-          - beta
-          - alpha
-          - latest
-          - next
-        default: beta
-      dry-run:
-        description: 'Dry run the release'
-        type: boolean
-        default: true
+  push:
+    tags:
+      - v*
 permissions:
   contents: read
 
@@ -39,8 +27,10 @@ jobs:
             echo "oclif_channel=beta" >> $GITHUB_OUTPUT
           elif [[ "$VERSION" == *"-alpha"* ]]; then
             echo "oclif_channel=alpha" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-next"* ]]; then
+            echo "oclif_channel=next" >> $GITHUB_OUTPUT
           else
-            echo "oclif_channel=stable" >> $GITHUB_OUTPUT
+            echo "oclif_channel=latest" >> $GITHUB_OUTPUT
           fi
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -88,7 +78,6 @@ jobs:
 
       # S3 Distribution
       - name: Configure AWS credentials
-        if: ${{ !inputs.dry-run }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -96,7 +85,6 @@ jobs:
           aws-region: us-east-1
 
       - name: Upload and promote to S3
-        if: ${{ !inputs.dry-run }}
         run: |
           # Enable oclif debug logging
           export DEBUG=oclif:*
@@ -135,16 +123,8 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      # Dry run NPM publish
-      - name: Dry run NPM publish
-        if: ${{ inputs.dry-run }}
-        run: npm publish --tag ${{ inputs.channel }} --provenance --access public --dry-run
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
-  
       # NPM Release
       - name: Create NPM release
-        if: ${{ !inputs.dry-run }}
-        run: npm publish --tag ${{ inputs.channel }} --provenance --access public
+        run: npm publish --tag ${{ needs.check-version.outputs.oclif_channel }} --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
