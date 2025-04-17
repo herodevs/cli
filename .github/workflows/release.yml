@@ -82,6 +82,19 @@ jobs:
         run: |
           npx oclif pack tarballs --targets=linux-x64,win32-x64,darwin-arm64 --no-xz --parallel
 
+      # Create GitHub Release (draft - will be published manually from GitHub UI or CLI)
+      - name: Create GitHub Release
+        run: |
+          gh release create v${{ needs.check-version.outputs.version }} \
+            --title "Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel == 'latest' && 'Latest' || needs.check-version.outputs.oclif_channel }}" \
+            --generate-notes \
+            --draft \
+            --prerelease=${{ needs.check-version.outputs.oclif_channel != 'latest' }} \
+            --discussion-category "Announcements" \
+            dist/*.tar.gz
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # S3 Distribution
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -135,16 +148,3 @@ jobs:
         run: npm publish --tag ${{ needs.check-version.outputs.oclif_channel }} --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
-
-      # Create GitHub Release (draft - will be published manually from GitHub UI or CLI)
-      - name: Create GitHub Release
-        run: |
-          gh release create v${{ needs.check-version.outputs.version }} \
-            --title "Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel == 'latest' && 'Latest' || needs.check-version.outputs.oclif_channel }}" \
-            --generate-notes \
-            --draft \
-            --prerelease=${{ needs.check-version.outputs.oclif_channel != 'latest' }} \
-            --discussion-category "Announcements" \
-            dist/*.tar.gz
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
