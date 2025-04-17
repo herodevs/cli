@@ -11,6 +11,7 @@ describe('scan:eol e2e', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const fixturesDir = path.resolve(__dirname, '../fixtures');
   const simplePurls = path.resolve(__dirname, '../fixtures/npm/simple.purls.json');
+  const simpleSbom = path.join(fixturesDir, 'npm/nes.sbom.json');
   const reportPath = path.resolve(fixturesDir, 'nes.eol.json');
   const upToDatePurls = path.resolve(__dirname, '../fixtures/npm/up-to-date.purls.json');
   const extraLargePurlsPath = path.resolve(__dirname, '../fixtures/npm/extra-large.purls.json');
@@ -39,14 +40,23 @@ describe('scan:eol e2e', () => {
     return output;
   }
 
-  it.skip('scans a directory for EOL components', async () => {
-    const cmd = `scan:eol --dir ${fixturesDir}`;
+  it('scans existing SBOM for EOL components', async () => {
+    const cmd = `scan:eol --file ${simpleSbom}`;
     const { stdout } = await run(cmd);
 
     // Match command output patterns
     match(stdout, /Here are the results of the scan:/, 'Should show results header');
     match(stdout, /pkg:npm\/bootstrap@3\.1\.1/, 'Should detect bootstrap package');
     match(stdout, /EOL Date: 2019-07-24/, 'Should show correct EOL date for bootstrap');
+  });
+
+  it('scans a directory for EOL components', async () => {
+    const cmd = `scan:eol --dir ${process.cwd()}`;
+    const { stdout } = await run(cmd);
+
+    // Match command output patterns for no EOL components
+    match(stdout, /No End-of-Life or Supported components found in scan/, 'Should show no EOL components message');
+    match(stdout, /Use --all flag to view all components/, 'Should provide instructions to view all components');
   });
 
   it('saves report when --save flag is used', async () => {
@@ -89,19 +99,6 @@ describe('scan:eol e2e', () => {
     match(stdout, /✔ = OK/, 'Should show legend for OK status');
     match(stdout, /⚡= Supported: End-of-Life \(EOL\) is scheduled/, 'Should show legend for SUPPORTED status');
     match(stdout, /✗ = End of Life \(EOL\)/, 'Should show legend for EOL status');
-  });
-
-  it.skip('scans existing SBOM for EOL components', async () => {
-    // Create a simple SBOM file from the root of this project
-    const sbomCmd = 'scan:sbom --save';
-
-    const cmd = `scan:eol --file ${fixturesDir}/sbom.json`;
-    const { stdout } = await run(cmd);
-
-    // Match command output patterns
-    match(stdout, /Here are the results of the scan:/, 'Should show results header');
-    match(stdout, /pkg:npm\/bootstrap@3\.1\.1/, 'Should detect bootstrap package');
-    match(stdout, /EOL Date: 2019-07-24/, 'Should show correct EOL date for bootstrap');
   });
 
   it('outputs JSON when using the --json flag', async () => {
