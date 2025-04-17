@@ -26,10 +26,10 @@
     "prepack": "oclif manifest && oclif readme",
     "pretest": "npm run lint && npm run typecheck",
     "readme": "npm run ci:fix && npm run build && npm exec oclif readme",
-    "test": "globstar -- node --import tsx --test \"test/**/*.test.ts\"",
+    "test": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test \"test/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "version": "oclif readme && git add README.md",
-    "test:e2e": "globstar -- node --import tsx --test \"e2e/**/*.test.ts\""
+    "test:e2e": "node --disable-warning=ExperimentalWarning --experimental-strip-types --test \"e2e/**/*.test.ts\""
   },
   "keywords": [
     "herodevs",
@@ -54,7 +54,6 @@
     "@types/node": "^22",
     "@types/sinon": "^17.0.4",
     "@types/update-notifier": "^6.0.8",
-    "globstar": "^1.0.0",
     "oclif": "^4",
     "shx": "^0.4.0",
     "sinon": "^20.0.0",
