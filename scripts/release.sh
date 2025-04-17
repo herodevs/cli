@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stricter shell controls
-set -eux
+set -eu
 
 # Default values
 RELEASE_TYPE="beta"
