@@ -1,16 +1,11 @@
 #!/bin/bash
 
-# Stricter shell controls
-set -eu
+# Exit on error
+set -e
 
 # Default values
 RELEASE_TYPE="beta"
 DRY_RUN=true
-
-echo "🔍 Debug: Initial values"
-echo "  RELEASE_TYPE=$RELEASE_TYPE"
-echo "  DRY_RUN=$DRY_RUN"
-echo ""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -54,11 +49,6 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-echo "🔍 Debug: After parsing arguments"
-echo "  RELEASE_TYPE=$RELEASE_TYPE"
-echo "  DRY_RUN=$DRY_RUN"
-echo ""
-
 # Check if there are uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then
   echo "Error: You have uncommitted changes. Please commit or stash them before releasing."
@@ -68,12 +58,9 @@ fi
 # Build the commit-and-tag-version command
 CMD="npx commit-and-tag-version"
 
-# Add release type
-if [ "$RELEASE_TYPE" = "latest" ]; then
-  # No flag needed for latest
-  true
-else
-  CMD="$CMD --prerelease $RELEASE_TYPE"
+# Add release type if not latest
+if [ "$RELEASE_TYPE" != "latest" ]; then
+  CMD="$CMD --$RELEASE_TYPE"
 fi
 
 # Add dry run if specified
@@ -81,33 +68,33 @@ if [ "$DRY_RUN" = true ]; then
   CMD="$CMD --dry-run"
 fi
 
-echo "🔍 Debug: Final command"
-echo "  $CMD"
-echo ""
-
 echo "Creating $RELEASE_TYPE release..."
 echo "Running: $CMD"
 
 # Execute the command
 $CMD
 
-# If not dry run, show next steps
+# If not dry run, ask for confirmation before publishing
 if [ "$DRY_RUN" = false ]; then
   echo ""
-  echo "✅ Release changes have been committed locally"
+  echo "⚠️  WARNING: This will perform the following actions:"
+  echo "  1. Update version in package.json"
+  echo "  2. Update CHANGELOG.md with latest changes"
+  echo "  3. Create a commit with these changes"
+  echo "  4. Create a git tag for the new version"
+  echo "  5. Push both the commit and tag to the remote repository"
   echo ""
-  echo "Next steps:"
-  echo "1. Review the changes:"
-  echo "   git show"
-  echo "2. Push the tag to trigger the release workflow:"
-  echo "   git push --follow-tags"
+  echo "This will trigger the GitHub Actions release workflow."
   echo ""
-  echo "The GitHub Actions release workflow will run once the tag is pushed."
-else
+  read -p "Are you sure you want to proceed? (y/N) " -n 1 -r
   echo ""
-  echo "✅ DRY RUN COMPLETED"
-  echo "This was a dry run - no changes were made to the repository."
-  echo "To actually publish this release, run:"
-  echo "  npm run release:publish:beta    # for a beta release"
-  echo "  npm run release:publish:latest  # for a latest release"
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "Release cancelled."
+    exit 1
+  fi
+
+  echo "Pushing tag..."
+  git push --follow-tags
 fi
+
+echo "Release process completed!"
