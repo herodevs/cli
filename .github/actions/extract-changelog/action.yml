@@ -1,0 +1,41 @@
+name: 'Extract Changelog'
+description: 'Extracts the changelog section for a specific version from CHANGELOG.md'
+
+inputs:
+  version:
+    description: 'The version to extract changelog for'
+    required: true
+    default: ''
+
+outputs:
+  content:
+    description: 'The extracted changelog content'
+    value: ${{ steps.extract.outputs.content }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Extract changelog content
+      id: extract
+      shell: bash
+      run: |
+        # Get the changelog content for this version using awk
+        CHANGELOG=$(git show HEAD:CHANGELOG.md | awk '
+          BEGIN { found=0 }
+          /^## \[/ { 
+            if (found) exit
+            if ($0 ~ /^## \['"${{ inputs.version }}"'\]/) found=1
+            next
+          }
+          found { print }
+        ')
+        
+        # Remove any trailing empty lines
+        CHANGELOG=$(echo "$CHANGELOG" | sed -e :a -e '/^\n*$/{$d;N;};/\n$/ba')
+        
+        # Escape newlines for GitHub Actions
+        CHANGELOG="${CHANGELOG//'%'/'%25'}"
+        CHANGELOG="${CHANGELOG//$'\n'/'%0A'}"
+        CHANGELOG="${CHANGELOG//$'\r'/'%0D'}"
+        
+        echo "content=$CHANGELOG" >> $GITHUB_OUTPUT 
