@@ -118,7 +118,7 @@ describe('scan:eol e2e', () => {
     match(stdout, /┌.*┬.*┬.*┬.*┬.*┐/, 'Should show table top border');
     match(
       stdout,
-      /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│/, // TODO: add vulns to monorepo api
+      /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│ # OF VULNS*|/,
       'Should show table headers',
     );
     match(stdout, /├.*┼.*┼.*┼.*┼.*┤/, 'Should show table header separator');
