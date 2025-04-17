@@ -1,11 +1,16 @@
 #!/bin/bash
 
-# Exit on error
-set -e
+# Stricter shell controls
+set -eux
 
 # Default values
 RELEASE_TYPE="beta"
 DRY_RUN=true
+
+echo "🔍 Debug: Initial values"
+echo "  RELEASE_TYPE=$RELEASE_TYPE"
+echo "  DRY_RUN=$DRY_RUN"
+echo ""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -49,6 +54,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+echo "🔍 Debug: After parsing arguments"
+echo "  RELEASE_TYPE=$RELEASE_TYPE"
+echo "  DRY_RUN=$DRY_RUN"
+echo ""
+
 # Check if there are uncommitted changes
 if [ -n "$(git status --porcelain)" ]; then
   echo "Error: You have uncommitted changes. Please commit or stash them before releasing."
@@ -67,6 +77,10 @@ fi
 if [ "$DRY_RUN" = true ]; then
   CMD="$CMD --dry-run"
 fi
+
+echo "🔍 Debug: Final command"
+echo "  $CMD"
+echo ""
 
 echo "Creating $RELEASE_TYPE release..."
 echo "Running: $CMD"
