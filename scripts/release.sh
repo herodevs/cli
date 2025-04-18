@@ -100,7 +100,7 @@ if [ "$DRY_RUN" = false ]; then
   echo "1. Review the changes:"
   echo "   git show"
   echo "2. Push the tag to trigger the release workflow:"
-  echo "   git push --follow-tags"
+  echo "   git push origin tag $(git describe --tags --abbrev=0)"
   echo ""
   echo "The GitHub Actions release workflow will run once the tag is pushed."
 else
