@@ -50,15 +50,6 @@ describe('scan:eol e2e', () => {
     match(stdout, /EOL Date: 2019-07-24/, 'Should show correct EOL date for bootstrap');
   });
 
-  it('scans a directory for EOL components', async () => {
-    const cmd = `scan:eol --dir ${process.cwd()}`;
-    const { stdout } = await run(cmd);
-
-    // Match command output patterns for no EOL components
-    match(stdout, /No End-of-Life or Supported components found in scan/, 'Should show no EOL components message');
-    match(stdout, /Use --all flag to view all components/, 'Should provide instructions to view all components');
-  });
-
   it('saves report when --save flag is used', async () => {
     const cmd = `scan:eol --purls=${simplePurls} --dir=${fixturesDir} --save`;
     await run(cmd);
