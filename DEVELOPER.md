@@ -2,16 +2,23 @@
 
 ## Release Process
 
-### Current Process (Tag-based Releases)
+### Current Process (Branch-based Releases)
 
-The CLI currently uses tag-based releases managed through `.github/workflows/manual-release.yml`. To create a release:
+The CLI uses a branch-based release process managed through `.github/workflows/manual-release.yml`. To create a release:
 
 1. Run one of the following npm commands:
    - `npm run release` - Test the release process without making changes (--dry-run by default)
    - `npm run release:publish:beta` - Create and publish a beta release
    - `npm run release:publish:latest` - Create and publish a latest release
 
-2. The workflow will:
+2. The script will:
+   - Create a new release branch (format: `release-{type}-{timestamp}`)
+   - Run commit-and-tag-version to bump version and create tag
+   - Create a PR for the release changes
+   - Wait for PR review and merge
+   - After PR merge, push the tag to trigger the release workflow
+
+3. The release workflow will:
    - Verify the tag matches the package version
    - Run tests
    - Build platform-specific tarballs
