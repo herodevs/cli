@@ -7,6 +7,13 @@ set -eu
 RELEASE_TYPE="beta"
 DRY_RUN=true
 
+# Check for required tools
+if ! command -v gh &>/dev/null; then
+  echo "Error: GitHub CLI (gh) is not installed."
+  echo "Please install it from https://cli.github.com/"
+  exit 1
+fi
+
 echo "🔍 Debug: Initial values"
 echo "  RELEASE_TYPE=$RELEASE_TYPE"
 echo "  DRY_RUN=$DRY_RUN"
@@ -88,19 +95,56 @@ echo ""
 echo "Creating $RELEASE_TYPE release..."
 echo "Running: $CMD"
 
+if [ "$DRY_RUN" = false ]; then
+  # Ensure we're on main branch
+  CURRENT_BRANCH=$(git branch --show-current)
+  if [ "$CURRENT_BRANCH" != "main" ]; then
+    echo "Switching to main branch..."
+    git switch main
+  fi
+
+  # Fetch latest changes
+  echo "Fetching latest changes..."
+  git fetch origin main
+
+  # Create release branch with timestamp
+  TIMESTAMP=$(date +%Y%m%d%H%M%S)
+  RELEASE_BRANCH="release-$RELEASE_TYPE-$TIMESTAMP"
+  echo "Creating release branch: $RELEASE_BRANCH"
+  git switch -c "$RELEASE_BRANCH" origin/main
+fi
+
 # Execute the command
 $CMD
 
-# If not dry run, show next steps
 if [ "$DRY_RUN" = false ]; then
+  # Get the most recent tag
+  TAG_NAME=$(git describe --tags --abbrev=0)
+
   echo ""
   echo "✅ Release changes have been committed locally"
   echo ""
+
+  # Push the branch to remote
+  echo "Pushing release branch to remote..."
+  git push -u origin "$RELEASE_BRANCH"
+
+  # Create PR using gh CLI
+  echo "Creating pull request..."
+  PR_TITLE="chore: release $TAG_NAME"
+  PR_BODY="Release As $TAG_NAME"
+
+  gh pr create \
+    --title "$PR_TITLE" \
+    --body "$PR_BODY" \
+    --base main \
+    --head "$RELEASE_BRANCH"
+
+  echo ""
   echo "Next steps:"
-  echo "1. Review the changes:"
-  echo "   git show"
-  echo "2. Push the tag to trigger the release workflow:"
-  echo "   git push --follow-tags"
+  echo "1. Wait for the PR to be reviewed and merged"
+  echo "2. After PR is merged, push the tag to trigger the release workflow:"
+  echo "   git push origin $TAG_NAME"
   echo ""
   echo "The GitHub Actions release workflow will run once the tag is pushed."
 else
