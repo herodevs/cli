@@ -1,9 +1,9 @@
 import type { ScanResult } from '../../../src/api/types/hd-cli.types.ts';
-import type { InsightsEolScanComponent } from '../../../src/api/types/nes.types.ts';
+import type { ComponentStatus, InsightsEolScanComponent } from '../../../src/api/types/nes.types.ts';
 
 export const createMockComponent = (
   purl: string,
-  status: 'OK' | 'EOL' | 'SUPPORTED' = 'OK',
+  status: ComponentStatus = 'OK',
   eolAt: Date | null = null,
   daysEol: number | null = null,
   vulnCount = 0,

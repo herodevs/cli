@@ -89,13 +89,24 @@ export function createTableForStatus(
 ) {
   const data = grouped[status].map((component) => convertComponentToTableRow(component));
 
+  if (status === 'EOL' || status === 'SUPPORTED') {
+    return makeTable({
+      data,
+      columns: [
+        { key: 'name', name: 'NAME', width: MAX_TABLE_COLUMN_WIDTH },
+        { key: 'version', name: 'VERSION', width: 10 },
+        { key: 'eol', name: 'EOL', width: 12 },
+        { key: 'daysEol', name: 'DAYS EOL', width: 10 },
+        { key: 'type', name: 'TYPE', width: 12 },
+        { key: 'vulnCount', name: '# OF VULNS', width: 12 },
+      ],
+    });
+  }
   return makeTable({
     data,
     columns: [
       { key: 'name', name: 'NAME', width: MAX_TABLE_COLUMN_WIDTH },
       { key: 'version', name: 'VERSION', width: 10 },
-      { key: 'eol', name: 'EOL', width: 12 },
-      { key: 'daysEol', name: 'DAYS EOL', width: 10 },
       { key: 'type', name: 'TYPE', width: 12 },
       { key: 'vulnCount', name: '# OF VULNS', width: 12 },
     ],

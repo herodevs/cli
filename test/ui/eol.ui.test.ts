@@ -106,5 +106,72 @@ describe('EOL UI', () => {
       // The table should be empty except for headers
       assert.doesNotMatch(table, /test1/);
     });
+    it('creates a table with components of matching status without EOL columns', () => {
+      // Arrange
+      const components = createMockScan([
+        createMockComponent('pkg:npm/test1@1.0.0', 'OK'),
+        createMockComponent('pkg:npm/test2@2.0.0', 'EOL', new Date('2023-01-01'), 365),
+        createMockComponent('pkg:npm/test3@3.0.0', 'OK'),
+      ]).components;
+      const grouped = groupComponentsByStatus(components);
+
+      // Act
+      const table = createTableForStatus(grouped, 'OK');
+
+      // Assert
+      assert.strictEqual(typeof table, 'string');
+      // Check that the table contains the expected columns in order
+      const lines = table.split('\n');
+      const headerLine = lines[1]; // Second line contains headers
+      assert.match(headerLine, /NAME.*VERSION.*TYPE.*# OF VULNS/);
+      // Verify EOL and DAYS EOL columns are not present
+      assert.doesNotMatch(headerLine, /EOL/);
+      assert.doesNotMatch(headerLine, /DAYS EOL/);
+      // Check data rows
+      assert.match(table, /test1.*1.0.0.*npm.*0/);
+      assert.match(table, /test3.*3.0.0.*npm.*0/);
+    });
+
+    it('creates a table for UNKNOWN status without EOL columns', () => {
+      // Arrange
+      const components = createMockScan([
+        createMockComponent('pkg:npm/test1@1.0.0', 'UNKNOWN'),
+        createMockComponent('pkg:npm/test2@2.0.0', 'OK'),
+        createMockComponent('pkg:npm/test3@3.0.0', 'UNKNOWN'),
+      ]).components;
+      const grouped = groupComponentsByStatus(components);
+
+      // Act
+      const table = createTableForStatus(grouped, 'UNKNOWN');
+
+      // Assert
+      assert.strictEqual(typeof table, 'string');
+      // Check that the table contains the expected columns in order
+      const lines = table.split('\n');
+      const headerLine = lines[1]; // Second line contains headers
+      assert.match(headerLine, /NAME.*VERSION.*TYPE.*# OF VULNS/);
+      // Verify EOL and DAYS EOL columns are not present
+      assert.doesNotMatch(headerLine, /EOL/);
+      assert.doesNotMatch(headerLine, /DAYS EOL/);
+      // Check data rows
+      assert.match(table, /test1.*1.0.0.*npm.*0/);
+      assert.match(table, /test3.*3.0.0.*npm.*0/);
+    });
+
+    it('returns empty table when no components match status', () => {
+      // Arrange
+      const components = createMockScan([
+        createMockComponent('pkg:npm/test1@1.0.0', 'EOL', new Date('2023-01-01'), 365),
+      ]).components;
+      const grouped = groupComponentsByStatus(components);
+
+      // Act
+      const table = createTableForStatus(grouped, 'OK');
+
+      // Assert
+      assert.strictEqual(typeof table, 'string');
+      // The table should be empty except for headers
+      assert.doesNotMatch(table, /test1/);
+    });
   });
 });
