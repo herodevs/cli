@@ -12,12 +12,6 @@ import { debugLogger } from '../log.svc.ts';
 export const buildScanResult = (scan: InsightsEolScanResult): ScanResult => {
   const components = new Map<string, InsightsEolScanComponent>();
   for (const c of scan.components) {
-    const { status } = c.info;
-    // TODO: remove this once backend changes are deployed
-    // @ts-expect-error
-    if (status === 'LTS') {
-      c.info.status = 'SUPPORTED';
-    }
     components.set(c.purl, c);
   }
 

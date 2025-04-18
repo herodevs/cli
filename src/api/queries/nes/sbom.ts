@@ -14,8 +14,7 @@ export const M_SCAN = {
                 eolAt
                 daysEol
                 status
-                # TODO: uncomment vulnCount once backend changes are deployed 
-                # vulnCount
+                vulnCount
               }
             }
             diagnostics
