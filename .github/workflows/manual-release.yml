@@ -1,22 +1,10 @@
 name: Manual Release
-run-name: Release ${{ github.ref_name }} (pushed by ${{ github.actor }})${{ inputs.dry-run == true && ' --dry-run' || '' }}
+run-name: Production Release ${{ github.ref_name }} (pushed by ${{ github.actor }})
 
 on:
-  workflow_dispatch:
-    inputs:
-      channel:
-        description: 'NPM tag to publish to'
-        type: choice
-        options:
-          - beta
-          - alpha
-          - latest
-          - next
-        default: beta
-      dry-run:
-        description: 'Dry run the release'
-        type: boolean
-        default: true
+  push:
+    tags:
+      - v*
 permissions:
   contents: read
 
@@ -28,23 +16,31 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: '.nvmrc'
-      - name: Get version
-        id: version
-        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
-      - name: Determine Oclif channel
-        id: oclif-channel
+      - uses: ./.github/actions/verify-version
+        id: verify-version
+      - name: Verify tag matches version
         run: |
-          VERSION=$(node -p "require('./package.json').version")
+          VERSION=${{ steps.verify-version.outputs.version }}
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          if [ "$VERSION" != "$TAG_VERSION" ]; then
+            echo "Error: Package version ($VERSION) does not match tag version ($TAG_VERSION)"
+            exit 1
+          fi
+      - name: Determine Oclif channel
+        run: |
+          VERSION=${{ steps.verify-version.outputs.version }}
           if [[ "$VERSION" == *"-beta"* ]]; then
             echo "oclif_channel=beta" >> $GITHUB_OUTPUT
           elif [[ "$VERSION" == *"-alpha"* ]]; then
             echo "oclif_channel=alpha" >> $GITHUB_OUTPUT
+          elif [[ "$VERSION" == *"-next"* ]]; then
+            echo "oclif_channel=next" >> $GITHUB_OUTPUT
           else
-            echo "oclif_channel=stable" >> $GITHUB_OUTPUT
+            echo "oclif_channel=latest" >> $GITHUB_OUTPUT
           fi
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      oclif_channel: ${{ steps.oclif-channel.outputs.oclif_channel }}
+      version: ${{ steps.verify-version.outputs.version }}
+      oclif_channel: ${{ steps.determine-channel.outputs.oclif_channel }}
 
   test:
     runs-on: ubuntu-latest
@@ -86,9 +82,21 @@ jobs:
         run: |
           npx oclif pack tarballs --targets=linux-x64,win32-x64,darwin-arm64 --no-xz --parallel
 
+      # Create GitHub Release (draft - will be published manually from GitHub UI or CLI)
+      - name: Create GitHub Release
+        run: |
+          gh release create v${{ needs.check-version.outputs.version }} \
+            --title "Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel == 'latest' && 'Latest' || needs.check-version.outputs.oclif_channel }}" \
+            --generate-notes \
+            --draft \
+            --prerelease=${{ needs.check-version.outputs.oclif_channel != 'latest' }} \
+            --discussion-category "Announcements" \
+            dist/*.tar.gz
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       # S3 Distribution
       - name: Configure AWS credentials
-        if: ${{ !inputs.dry-run }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -96,7 +104,6 @@ jobs:
           aws-region: us-east-1
 
       - name: Upload and promote to S3
-        if: ${{ !inputs.dry-run }}
         run: |
           # Enable oclif debug logging
           export DEBUG=oclif:*
@@ -137,14 +144,12 @@ jobs:
 
       # Dry run NPM publish
       - name: Dry run NPM publish
-        if: ${{ inputs.dry-run }}
-        run: npm publish --tag ${{ inputs.channel }} --provenance --access public --dry-run
+        run: npm publish --tag ${{ needs.check-version.outputs.oclif_channel }} --provenance --access public --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
-  
+
       # NPM Release
       - name: Create NPM release
-        if: ${{ !inputs.dry-run }}
-        run: npm publish --tag ${{ inputs.channel }} --provenance --access public
+        run: npm publish --tag ${{ needs.check-version.outputs.oclif_channel }} --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
