@@ -7,7 +7,7 @@
 The CLI currently uses tag-based releases managed through `.github/workflows/manual-release.yml`. To create a release:
 
 1. Run one of the following npm commands:
-   - `npm run release:dry-run` - Test the release process without making changes
+   - `npm run release` - Test the release process without making changes (--dry-run by default)
    - `npm run release:publish:beta` - Create and publish a beta release
    - `npm run release:publish:latest` - Create and publish a latest release
 
