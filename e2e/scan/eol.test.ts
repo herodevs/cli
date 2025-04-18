@@ -187,15 +187,7 @@ describe('scan:eol e2e', () => {
 
 /**
  * Directory scan tests
- * Please note, if you add a new package.json or package-lock.json, dependabot may
- * create a PR warning that the fixture has vulnerabilities. It is possible to
- * tell dependabot to ignore such dependencies by leaving a comment in the PR.
- *
- * ``` Example Comment in the Dependabot PR
- * @dependabot ignore this dependency
- * ```
- *
- * See https://github.com/herodevs/cli/pull/182#issuecomment-2812762970
+ * Please see CONTRIBUTING.md before adding new tests to this section.
  */
 describe('scan:eol e2e directory', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
