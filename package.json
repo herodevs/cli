@@ -41,7 +41,7 @@
   ],
   "dependencies": {
     "@apollo/client": "^3.13.8",
-    "@cyclonedx/cdxgen": "^11.2.4",
+    "@cyclonedx/cdxgen": "^11.2.5",
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-update": "^4",
