@@ -45,7 +45,7 @@
     "@oclif/core": "^4",
     "@oclif/plugin-help": "^6",
     "@oclif/plugin-update": "^4",
-    "@oclif/table": "^0.4.7",
+    "@oclif/table": "^0.4.8",
     "graphql": "^16.8.1",
     "packageurl-js": "^2.0.1",
     "update-notifier": "^7.3.1"
