@@ -27,6 +27,7 @@ jobs:
             exit 1
           fi
       - name: Determine Oclif channel
+        id: determine-oclif-channel
         run: |
           VERSION=${{ steps.verify-version.outputs.version }}
           if [[ "$VERSION" == *"-beta"* ]]; then
@@ -40,7 +41,7 @@ jobs:
           fi
     outputs:
       version: ${{ steps.verify-version.outputs.version }}
-      oclif_channel: ${{ steps.determine-channel.outputs.oclif_channel }}
+      oclif_channel: ${{ steps.determine-oclif-channel.outputs.oclif_channel }}
 
   test:
     runs-on: ubuntu-latest
@@ -90,7 +91,6 @@ jobs:
             --generate-notes \
             --draft \
             --prerelease=${{ needs.check-version.outputs.oclif_channel != 'latest' }} \
-            --discussion-category "Announcements" \
             dist/*.tar.gz
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
