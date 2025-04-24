@@ -37,7 +37,7 @@ export default class Committers extends Command {
     }),
     save: Flags.boolean({
       char: 's',
-      description: 'Save the committers report as nes.committers.<output>',
+      description: 'Save the committers report as eol.committers.<output>',
       default: false,
     }),
   };
@@ -61,7 +61,7 @@ export default class Committers extends Command {
         // JSON mode
         if (save) {
           try {
-            fs.writeFileSync(path.resolve('nes.committers.json'), JSON.stringify(reportData, null, 2));
+            fs.writeFileSync(path.resolve('eol.committers.json'), JSON.stringify(reportData, null, 2));
             this.log('Report written to json');
           } catch (error) {
             this.error(`Failed to save JSON report: ${getErrorMessage(error)}`);
@@ -77,7 +77,7 @@ export default class Committers extends Command {
         const csvOutput = formatAsCsv(reportData);
         if (save) {
           try {
-            fs.writeFileSync(path.resolve('nes.committers.csv'), csvOutput);
+            fs.writeFileSync(path.resolve('eol.committers.csv'), csvOutput);
             this.log('Report written to csv');
           } catch (error) {
             this.error(`Failed to save CSV report: ${getErrorMessage(error)}`);
@@ -90,7 +90,7 @@ export default class Committers extends Command {
 
       if (save) {
         try {
-          fs.writeFileSync(path.resolve('nes.committers.txt'), textOutput);
+          fs.writeFileSync(path.resolve('eol.committers.txt'), textOutput);
           this.log('Report written to txt');
         } catch (error) {
           this.error(`Failed to save txt report: ${getErrorMessage(error)}`);

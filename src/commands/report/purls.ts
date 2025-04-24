@@ -28,7 +28,7 @@ export default class ReportPurls extends Command {
     save: Flags.boolean({
       char: 's',
       default: false,
-      description: 'Save the list of purls as nes.purls.<output>',
+      description: 'Save the list of purls as eol.purls.<output>',
     }),
     csv: Flags.boolean({
       char: 'c',
@@ -57,7 +57,7 @@ export default class ReportPurls extends Command {
       if (save) {
         try {
           const outputFile = csv && !this.jsonEnabled() ? 'csv' : 'json';
-          const outputPath = path.join(_dirFlag || process.cwd(), `nes.purls.${outputFile}`);
+          const outputPath = path.join(_dirFlag || process.cwd(), `eol.purls.${outputFile}`);
           const purlOutput = getPurlOutput(purls, outputFile);
           fs.writeFileSync(outputPath, purlOutput);
 

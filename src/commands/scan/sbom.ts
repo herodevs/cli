@@ -25,7 +25,7 @@ export default class ScanSbom extends Command {
     save: Flags.boolean({
       char: 's',
       default: false,
-      description: 'Save the generated SBOM as nes.sbom.json in the scanned directory',
+      description: 'Save the generated SBOM as eol.sbom.json in the scanned directory',
     }),
     background: Flags.boolean({
       char: 'b',
@@ -77,7 +77,7 @@ export default class ScanSbom extends Command {
       sbom = this._getSbomFromFile(file);
     } else if (background) {
       this._getSbomInBackground(path);
-      this.log(`The scan is running in the background. The file will be saved at ${path}/nes.sbom.json`);
+      this.log(`The scan is running in the background. The file will be saved at ${path}/eol.sbom.json`);
       return;
     } else {
       sbom = await this._getSbomFromScan(path);
@@ -158,7 +158,7 @@ export default class ScanSbom extends Command {
 
   private _saveSbom(dir: string, sbom: Sbom) {
     try {
-      const outputPath = join(dir, 'nes.sbom.json');
+      const outputPath = join(dir, 'eol.sbom.json');
       fs.writeFileSync(outputPath, JSON.stringify(sbom, null, 2));
       if (!this.jsonEnabled()) {
         this.log(`SBOM saved to ${outputPath}`);

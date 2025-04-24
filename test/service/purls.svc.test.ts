@@ -52,7 +52,7 @@ describe('formatCsvValue', () => {
 
 describe('parsePurlsFile', () => {
   describe('JSON format', () => {
-    it('should parse nes.purls.json format', () => {
+    it('should parse eol.purls.json format', () => {
       const input = JSON.stringify({
         purls: ['pkg:npm/@apollo/client@3.13.5', 'pkg:npm/react@18.2.0'],
       });

@@ -34,7 +34,7 @@ export async function extractPurls(sbom: Sbom): Promise<string[]> {
 
 /**
  * Parse a purls file in either JSON or text format, including the format of
- * nes.purls.json - { purls: [ 'pkg:npm/express@4.18.2', 'pkg:npm/react@18.3.1' ] }
+ * eol.purls.json - { purls: [ 'pkg:npm/express@4.18.2', 'pkg:npm/react@18.3.1' ] }
  * or a text file with one purl per line.
  */
 export function parsePurlsFile(purlsFileString: string): string[] {
