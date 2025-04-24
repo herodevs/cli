@@ -105,10 +105,14 @@ pkg:npm/typescript@5.0.0`;
       });
     });
 
-    it('should throw error for empty file', () => {
-      assert.throws(() => parsePurlsFile(''), {
-        message: 'Invalid purls file: must be either JSON with purls array or text file with one purl per line',
-      });
+    it('should return empty array for empty file', () => {
+      const result = parsePurlsFile('');
+      assert.deepStrictEqual(result, []);
+    });
+
+    it('should return empty array for whitespace-only file', () => {
+      const result = parsePurlsFile('  \n  \t  ');
+      assert.deepStrictEqual(result, []);
     });
 
     it('should throw error for file with no valid purls', () => {
