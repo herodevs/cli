@@ -36,7 +36,7 @@ export default class ScanEol extends Command {
     save: Flags.boolean({
       char: 's',
       default: false,
-      description: 'Save the generated SBOM as nes.sbom.json in the scanned directory',
+      description: 'Save the generated report as eol.report.json in the scanned directory',
     }),
     all: Flags.boolean({
       char: 'a',
@@ -125,21 +125,21 @@ export default class ScanEol extends Command {
 
   private async saveReport(components: InsightsEolScanComponent[]): Promise<void> {
     const { flags } = await this.parse(ScanEol);
-    const reportPath = path.join(flags.dir || process.cwd(), 'nes.eol.json');
+    const reportPath = path.join(flags.dir || process.cwd(), 'eol.report.json');
 
     try {
       fs.writeFileSync(reportPath, JSON.stringify({ components }, null, 2));
-      this.log('Report saved to nes.eol.json');
+      this.log('Report saved to eol.report.json');
     } catch (error) {
       if (!isErrnoException(error)) {
         this.error(`Failed to save report: ${getErrorMessage(error)}`);
       }
       switch (error.code) {
         case 'EACCES':
-          this.error('Permission denied. Unable to save report to nes.eol.json');
+          this.error('Permission denied. Unable to save report to eol.report.json');
           break;
         case 'ENOSPC':
-          this.error('No space left on device. Unable to save report to nes.eol.json');
+          this.error('No space left on device. Unable to save report to eol.report.json');
           break;
         default:
           this.error(`Failed to save report: ${getErrorMessage(error)}`);

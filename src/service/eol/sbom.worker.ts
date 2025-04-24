@@ -18,7 +18,7 @@ try {
   const options = JSON.parse(process.argv[2]);
   const { path, opts } = options;
   const { bomJson } = await createBom(path, { ...SBOM_DEFAULT__OPTIONS, ...opts });
-  const outputPath = join(path, 'nes.sbom.json');
+  const outputPath = join(path, 'eol.sbom.json');
   writeFileSync(outputPath, JSON.stringify(bomJson, null, 2));
   process.exit(0);
 } catch (error: unknown) {

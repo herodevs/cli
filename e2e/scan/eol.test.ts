@@ -11,8 +11,8 @@ describe('scan:eol e2e', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const fixturesDir = path.resolve(__dirname, '../fixtures');
   const simplePurls = path.resolve(__dirname, '../fixtures/npm/simple.purls.json');
-  const simpleSbom = path.join(fixturesDir, 'npm/nes.sbom.json');
-  const reportPath = path.resolve(fixturesDir, 'nes.eol.json');
+  const simpleSbom = path.join(fixturesDir, 'npm/eol.sbom.json');
+  const reportPath = path.resolve(fixturesDir, 'eol.report.json');
   const upToDatePurls = path.resolve(__dirname, '../fixtures/npm/up-to-date.purls.json');
   const extraLargePurlsPath = path.resolve(__dirname, '../fixtures/npm/extra-large.purls.json');
   const emptyPurlsPath = path.resolve(__dirname, '../fixtures/npm/empty.purls.json');
@@ -189,7 +189,7 @@ describe('scan:eol e2e directory', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const simpleDir = path.resolve(__dirname, '../fixtures/npm/simple');
   const upToDateDir = path.resolve(__dirname, '../fixtures/npm/up-to-date');
-  const reportPath = path.join(simpleDir, 'nes.eol.json');
+  const reportPath = path.join(simpleDir, 'eol.report.json');
 
   async function run(cmd: string) {
     // Set up environment
