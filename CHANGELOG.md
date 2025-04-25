@@ -8,19 +8,8 @@ All notable changes to this project will be documented in this file. See [commit
 ### Features
 
 * add install.sh script ([#193](https://github.com/herodevs/cli/issues/193)) ([17100ba](https://github.com/herodevs/cli/commit/17100baffdda6fde8ffe21447fb13ea86bdf3a4c))
-* add update-notifier feature for npx users ([#176](https://github.com/herodevs/cli/issues/176)) ([0daecad](https://github.com/herodevs/cli/commit/0daecad6890f4ace15b3eee403938baadb2cad07))
-* add vuln count to table output ([#175](https://github.com/herodevs/cli/issues/175)) ([d730975](https://github.com/herodevs/cli/commit/d7309756000d419dbb061ee7f530cc919dae8add))
-* enable vuln count feature ([#187](https://github.com/herodevs/cli/issues/187)) ([6915c6e](https://github.com/herodevs/cli/commit/6915c6e208e99d8712ebd3922bb3c28bb3f737af)), closes [#188](https://github.com/herodevs/cli/issues/188)
 * ensure hd cli does not trigger yarn install ([#199](https://github.com/herodevs/cli/issues/199)) ([c8c9336](https://github.com/herodevs/cli/commit/c8c93366ad254c7a61c8194693af0879d57e8ca8))
-* hide extra columns on ok and unknown tables ([#189](https://github.com/herodevs/cli/issues/189)) ([2dd96f3](https://github.com/herodevs/cli/commit/2dd96f3a7724d2a668a7600b5bb11953ab34bf41))
-* outputs eol scan in table format ([#168](https://github.com/herodevs/cli/issues/168)) ([fbacece](https://github.com/herodevs/cli/commit/fbacece9344ef4b479b084eaa8658a347bb75b83))
-* swap scheduled for lts status ([#177](https://github.com/herodevs/cli/issues/177)) ([e82ab2c](https://github.com/herodevs/cli/commit/e82ab2c4fae2784d3a47f7b1c5a14bb488af68d7))
-* upload tarballs to s3 ([#157](https://github.com/herodevs/cli/issues/157)) ([3ce8582](https://github.com/herodevs/cli/commit/3ce8582f3fb8f834fb43e5694a4fa956d18d4d40))
 
-
-### Bug Fixes
-
-* properly display package names on table ([#183](https://github.com/herodevs/cli/issues/183)) ([b16f825](https://github.com/herodevs/cli/commit/b16f82559e3a051fb3b2fe8d9eb1540a12f136cb))
 
 ## [1.5.0-beta.2](https://github.com/herodevs/cli/compare/v1.4.0-beta.1...v1.5.0-beta.2) (2025-04-18)
 
