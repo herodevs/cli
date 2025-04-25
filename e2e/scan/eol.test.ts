@@ -1,4 +1,3 @@
-import { runCommand } from '@oclif/test';
 import { doesNotThrow } from 'node:assert';
 import { doesNotMatch, match, strictEqual } from 'node:assert/strict';
 import { exec } from 'node:child_process';
@@ -8,6 +7,7 @@ import path from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { runCommand } from '@oclif/test';
 
 const execAsync = promisify(exec);
 
