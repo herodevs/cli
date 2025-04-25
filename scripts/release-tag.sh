@@ -74,8 +74,24 @@ if [[ "$ACTION" != "add" && "$ACTION" != "delete" && "$ACTION" != "full" ]]; the
   error_exit "Invalid action '$ACTION'. Use -a <add|delete|full>"
 fi
 
+# Function to detect release channel from version
+detect_release_channel() {
+  if [[ "$VERSION" =~ -beta\. ]]; then
+    echo "beta"
+  elif [[ "$VERSION" =~ -alpha\. ]]; then
+    echo "alpha"
+  elif [[ "$VERSION" =~ -next\. ]]; then
+    echo "next"
+  else
+    echo "latest"
+  fi
+}
+
 # Get version from package.json
 PACKAGE_JSON_VERSION=$(jq -r '.version' package.json)
+
+# Detect release channel
+RELEASE_CHANNEL=$(detect_release_channel)
 
 # Ensure the tag version matches the package.json version
 if [[ "$VERSION" != "$PACKAGE_JSON_VERSION" ]]; then
@@ -122,8 +138,9 @@ confirm_full_release
 
 add() {
   echo "Adding tag v${VERSION}..."
+  echo "Release channel: $RELEASE_CHANNEL"
 
-  git tag -s -a "v${VERSION}" -m "Release v${VERSION}"
+  git tag -s -a "v${VERSION}" -m "Release v${VERSION} ($RELEASE_CHANNEL channel)"
   git push origin tag "v${VERSION}"
 }
 
