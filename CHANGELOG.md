@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.5.0-beta.3](https://github.com/herodevs/cli/compare/v1.4.0-beta.1...v1.5.0-beta.3) (2025-04-25)
+
+
+### Features
+
+* add install.sh script ([#193](https://github.com/herodevs/cli/issues/193)) ([17100ba](https://github.com/herodevs/cli/commit/17100baffdda6fde8ffe21447fb13ea86bdf3a4c))
+* ensure hd cli does not trigger yarn install ([#199](https://github.com/herodevs/cli/issues/199)) ([c8c9336](https://github.com/herodevs/cli/commit/c8c93366ad254c7a61c8194693af0879d57e8ca8))
+
+
 ## [1.5.0-beta.2](https://github.com/herodevs/cli/compare/v1.4.0-beta.1...v1.5.0-beta.2) (2025-04-18)
 
 
