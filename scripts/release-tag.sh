@@ -138,7 +138,7 @@ confirm_tag_version() {
 
 confirm_full_release() {
   if [[ "$ACTION" == "full" ]]; then
-    read -r -p "WARNING: This will delete and recreate the tag 'v${VERSION}'. Are you sure? (y/N) " confirm
+    read -r -p "WARNING: This will delete and recreate the tag 'v${VERSION} (local and remote)'. Are you sure? (y/N) " confirm
     if [[ "$confirm" != 'y' && "$confirm" != "Y" ]]; then
       echo "Aborted."
       exit 1
