@@ -38,7 +38,13 @@ export async function extractPurls(sbom: Sbom): Promise<string[]> {
  * or a text file with one purl per line.
  */
 export function parsePurlsFile(purlsFileString: string): string[] {
+  // Handle empty string
+  if (!purlsFileString.trim()) {
+    return [];
+  }
+
   try {
+    // Try parsing as JSON first
     const parsed = JSON.parse(purlsFileString);
 
     if (parsed && Array.isArray(parsed.purls)) {
@@ -49,11 +55,18 @@ export function parsePurlsFile(purlsFileString: string): string[] {
       return parsed;
     }
   } catch {
+    // If not JSON, try parsing as text file
     const lines = purlsFileString
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 0 && line.startsWith('pkg:'));
 
+    // Handle single purl case (no newlines)
+    if (lines.length === 0 && purlsFileString.trim().startsWith('pkg:')) {
+      return [purlsFileString.trim()];
+    }
+
+    // Return any valid purls found
     if (lines.length > 0) {
       return lines;
     }
