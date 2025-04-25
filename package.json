@@ -86,7 +86,7 @@
       "@oclif/plugin-update"
     ],
     "hooks": {
-      "init": "./dist/hooks/npm-update-notifier",
+      "init": "./dist/hooks/npm-update-notifier.js",
       "prerun": "./dist/hooks/prerun.js"
     },
     "topicSeparator": " ",

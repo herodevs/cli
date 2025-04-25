@@ -1,11 +1,17 @@
+import { runCommand } from '@oclif/test';
 import { doesNotThrow } from 'node:assert';
 import { doesNotMatch, match, strictEqual } from 'node:assert/strict';
+import { exec } from 'node:child_process';
 import { existsSync, readFileSync, unlinkSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { runCommand } from '@oclif/test';
+import { promisify } from 'node:util';
+
+const execAsync = promisify(exec);
+
+const GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
 
 describe('scan:eol e2e', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -20,8 +26,7 @@ describe('scan:eol e2e', () => {
 
   async function run(cmd: string) {
     // Set up environment
-    process.env.GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
-    // process.env.GRAPHQL_HOST = 'http://localhost:3000';
+    process.env.GRAPHQL_HOST = GRAPHQL_HOST;
 
     // Ensure fixtures directory exists and is clean
     await mkdir(fixturesDir, { recursive: true });
@@ -39,6 +44,28 @@ describe('scan:eol e2e', () => {
 
     return output;
   }
+
+  it('defaults to scan:eol -t when no arguments are provided', async () => {
+    // Run the CLI directly with no arguments
+    const { stdout } = await execAsync('node bin/run.js', {
+      env: { ...process.env, GRAPHQL_HOST },
+    });
+
+    // Match table header
+    match(stdout, /┌.*┬.*┬.*┬.*┬.*┐/, 'Should show table top border');
+    match(stdout, /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│ # OF VULNS*|/, 'Should show table headers');
+    match(stdout, /├.*┼.*┼.*┼.*┼.*┤/, 'Should show table header separator');
+
+    // Match table content
+    match(
+      stdout,
+      /│ bootstrap\s*│ 3\.1\.1\s*│ 2019-07-24\s*│ \d+\s*│ npm\s*│/,
+      'Should show bootstrap package in table',
+    );
+
+    // Match table footer
+    match(stdout, /└.*┴.*┴.*┴.*┴.*┘/, 'Should show table bottom border');
+  });
 
   it('scans existing SBOM for EOL components', async () => {
     const cmd = `scan:eol --file ${simpleSbom}`;
@@ -193,7 +220,7 @@ describe('scan:eol e2e directory', () => {
 
   async function run(cmd: string) {
     // Set up environment
-    process.env.GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
+    process.env.GRAPHQL_HOST = GRAPHQL_HOST;
     // process.env.GRAPHQL_HOST = 'http://localhost:3000';
 
     // Ensure test directory exists and is clean
