@@ -42,23 +42,23 @@ ACTION=""
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
-  case "$1" in 
-    -v | --version)
-      VERSION="$2"
-      shift 2
+  case "$1" in
+  -v | --version)
+    VERSION="$2"
+    shift 2
     ;;
-    -a | --action)
-      ACTION="$2"
-      shift 2
+  -a | --action)
+    ACTION="$2"
+    shift 2
     ;;
-    -h | --help)
-      usage
-      ;;
-    *)
-      error_exit "Unknown option: $1"
+  -h | --help)
+    usage
+    ;;
+  *)
+    error_exit "Unknown option: $1"
+    ;;
   esac
 done
-
 
 # Ensure a version is provided
 if [[ -z "$VERSION" ]]; then
@@ -72,6 +72,23 @@ fi
 
 if [[ "$ACTION" != "add" && "$ACTION" != "delete" && "$ACTION" != "full" ]]; then
   error_exit "Invalid action '$ACTION'. Use -a <add|delete|full>"
+fi
+
+# Get version from package.json
+PACKAGE_JSON_VERSION=$(jq -r '.version' package.json)
+
+# Ensure the tag version matches the package.json version
+if [[ "$VERSION" != "$PACKAGE_JSON_VERSION" ]]; then
+  error_exit "Version mismatch: package.json has version $PACKAGE_JSON_VERSION but you specified $VERSION"
+fi
+
+# Check if tag exists and handle based on action
+if [ -n "$(git tag -l "v$VERSION")" ]; then
+  if [[ "$ACTION" == "add" ]]; then
+    error_exit "Tag v$VERSION already exists. Use --action delete to remove it first, or --action full to recreate it."
+  elif [[ "$ACTION" == "delete" || "$ACTION" == "full" ]]; then
+    echo "Note: Tag v$VERSION exists and will be removed (locally and remotely) as part of the $ACTION action."
+  fi
 fi
 
 validate_tag_version() {
@@ -103,34 +120,34 @@ validate_tag_version
 confirm_tag_version
 confirm_full_release
 
-add () {
+add() {
   echo "Adding tag v${VERSION}..."
 
   git tag -s -a "v${VERSION}" -m "Release v${VERSION}"
   git push origin tag "v${VERSION}"
 }
 
-delete () {
+delete() {
   echo "Deleting tag v${VERSION}..."
-  set +e  # Temporarily disable immediate exit on error
+  set +e # Temporarily disable immediate exit on error
 
   git tag -d "v${VERSION}" 2>/dev/null || echo "WARNING: Local tag 'v${VERSION}' not found."
   git push --delete origin "v${VERSION}" 2>/dev/null || echo "WARNING: Remote tag 'v${VERSION}' not found."
 
-  set -e  # Re-enable strict error handling
+  set -e # Re-enable strict error handling
 }
 
 case "$ACTION" in
-  add)
-    add
+add)
+  add
   ;;
-  delete)
-    delete
+delete)
+  delete
   ;;
-  full)
-    echo "Performing full action for v${VERSION}..."
-    delete
-    add
+full)
+  echo "Performing full action for v${VERSION}..."
+  delete
+  add
   ;;
 esac
 
