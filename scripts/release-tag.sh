@@ -7,7 +7,7 @@ set -o pipefail # Catch errors in piped commands
 # Function to show usage
 usage() {
   cat <<EOF
-Usage: $(basename "$0") -v <version> -a <action>
+Usage: $(basename "$0") -v <version> -a <action> [--release]
 
 Options:
   -v, --version <version>         Set the release version (required)
@@ -15,12 +15,21 @@ Options:
                                         add     -- Create and push a new tag
                                         delete  -- Delete an existing tag
                                         full    -- Delete and recreate the tag (requires confirmation)
+  --release                       Actually perform the actions (default is dry-run)
   -h, --help                      Show this help message
 
 Examples:
-  $(basename "$0") -v 1.2.3 -a add
-  $(basename "$0") -v 1.2.3 -a delete
-  $(basename "$0") -v 1.2.3 -a full
+  # Dry run (default) - shows what would happen
+  $(basename "$0") -v 1.2.3-beta.1 -a full
+
+  # Actually perform the actions
+  $(basename "$0") -v 1.2.3-beta.1 -a full --release
+
+  # Valid version formats:
+  #   Latest:    1.2.3
+  #   Beta:      1.2.3-beta.1
+  #   Alpha:     1.2.3-alpha.1
+  #   Next:      1.2.3-next.1
 EOF
   exit 1
 }
@@ -39,6 +48,7 @@ fi
 # Initialize variables
 VERSION=""
 ACTION=""
+DRY_RUN=true
 
 # Parse arguments
 while [[ "$#" -gt 0 ]]; do
@@ -50,6 +60,10 @@ while [[ "$#" -gt 0 ]]; do
   -a | --action)
     ACTION="$2"
     shift 2
+    ;;
+  --release)
+    DRY_RUN=false
+    shift
     ;;
   -h | --help)
     usage
@@ -108,9 +122,9 @@ if [ -n "$(git tag -l "v$VERSION")" ]; then
 fi
 
 validate_tag_version() {
-  # Ensure the version follows semantic versioning: MAJOR.MINOR.PATCH (e.g., 1.2.3)
-  if [[ ! "$VERSION" =~ ^[0-9]+(\.[0-9]+){2}$ ]]; then
-    error_exit "Invalid version format: '$VERSION'. Expected format: MAJOR.MINOR.PATCH (e.g., 1.2.3)"
+  # Ensure the version follows semantic versioning
+  if [[ ! "$VERSION" =~ ^[0-9]+(\.[0-9]+){2}(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$ ]]; then
+    error_exit "Invalid version format: '$VERSION'. Expected format: MAJOR.MINOR.PATCH (e.g., 1.2.3) || MAJOR.MINOR.PATCH-{prerelease}.VERSION (e.g., 1.2.3-beta.1)"
   fi
 }
 
@@ -134,24 +148,34 @@ confirm_full_release() {
 
 validate_tag_version
 confirm_tag_version
-confirm_full_release
+
+if [ "$DRY_RUN" = false ]; then
+  confirm_full_release
+fi
 
 add() {
   echo "Adding tag v${VERSION}..."
   echo "Release channel: $RELEASE_CHANNEL"
 
-  git tag -s -a "v${VERSION}" -m "Release v${VERSION} ($RELEASE_CHANNEL channel)"
-  git push origin tag "v${VERSION}"
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would create and push tag v${VERSION} with message: 'Release v${VERSION} ($RELEASE_CHANNEL channel)'"
+  else
+    git tag -s -a "v${VERSION}" -m "Release v${VERSION} ($RELEASE_CHANNEL channel)"
+    git push origin tag "v${VERSION}"
+  fi
 }
 
 delete() {
   echo "Deleting tag v${VERSION}..."
-  set +e # Temporarily disable immediate exit on error
 
-  git tag -d "v${VERSION}" 2>/dev/null || echo "WARNING: Local tag 'v${VERSION}' not found."
-  git push --delete origin "v${VERSION}" 2>/dev/null || echo "WARNING: Remote tag 'v${VERSION}' not found."
-
-  set -e # Re-enable strict error handling
+  if [ "$DRY_RUN" = true ]; then
+    echo "[DRY RUN] Would delete tag v${VERSION} locally and remotely"
+  else
+    set +e # Temporarily disable immediate exit on error
+    git tag -d "v${VERSION}" 2>/dev/null || echo "WARNING: Local tag 'v${VERSION}' not found."
+    git push --delete origin "v${VERSION}" 2>/dev/null || echo "WARNING: Remote tag 'v${VERSION}' not found."
+    set -e # Re-enable strict error handling
+  fi
 }
 
 case "$ACTION" in
