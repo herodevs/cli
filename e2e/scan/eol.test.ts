@@ -13,6 +13,49 @@ const execAsync = promisify(exec);
 
 const GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
 
+describe('default arguments', () => {
+  it('defaults to scan:eol -t when no arguments are provided', async () => {
+    // Run the CLI directly with no arguments
+    const { stdout } = await execAsync('node bin/run.js', {
+      env: { ...process.env, GRAPHQL_HOST },
+    });
+
+    // Match table header
+    match(stdout, /┌.*┬.*┬.*┬.*┬.*┐/, 'Should show table top border');
+    match(stdout, /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│ # OF VULNS*|/, 'Should show table headers');
+    match(stdout, /├.*┼.*┼.*┼.*┼.*┤/, 'Should show table header separator');
+
+    // Match table content
+    match(
+      stdout,
+      /│ bootstrap\s*│ 3\.1\.1\s*│ 2019-07-24\s*│ \d+\s*│ npm\s*│/,
+      'Should show bootstrap package in table',
+    );
+
+    // Match table footer
+    match(stdout, /└.*┴.*┴.*┴.*┴.*┘/, 'Should show table bottom border');
+  });
+
+  it('runs scan:eol -a -t when -a -t is passed in', async () => {
+    const { stdout, stderr } = await execAsync('node bin/run.js -a -t', {
+      env: { ...process.env, GRAPHQL_HOST },
+    });
+
+    // Verify command executed successfully
+    match(stdout, /components scanned/, 'Should show components scanned message');
+  });
+
+  it('runs scan:eol --json when --json is passed in', async () => {
+    // Run the CLI with --json flag
+    const { stdout } = await execAsync('node bin/run.js --json', {
+      env: { ...process.env, GRAPHQL_HOST },
+    });
+
+    // Verify JSON output
+    doesNotMatch(stdout, /Here are the results of the scan:/, 'Should not show results header');
+    doesNotThrow(() => JSON.parse(stdout), 'Output should be valid JSON');
+  });
+});
 describe('scan:eol e2e', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const fixturesDir = path.resolve(__dirname, '../fixtures');
@@ -45,28 +88,6 @@ describe('scan:eol e2e', () => {
 
     return output;
   }
-
-  it('defaults to scan:eol -t when no arguments are provided', async () => {
-    // Run the CLI directly with no arguments
-    const { stdout } = await execAsync('node bin/run.js', {
-      env: { ...process.env, GRAPHQL_HOST },
-    });
-
-    // Match table header
-    match(stdout, /┌.*┬.*┬.*┬.*┬.*┐/, 'Should show table top border');
-    match(stdout, /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│ # OF VULNS*|/, 'Should show table headers');
-    match(stdout, /├.*┼.*┼.*┼.*┼.*┤/, 'Should show table header separator');
-
-    // Match table content
-    match(
-      stdout,
-      /│ bootstrap\s*│ 3\.1\.1\s*│ 2019-07-24\s*│ \d+\s*│ npm\s*│/,
-      'Should show bootstrap package in table',
-    );
-
-    // Match table footer
-    match(stdout, /└.*┴.*┴.*┴.*┴.*┘/, 'Should show table bottom border');
-  });
 
   it('scans existing SBOM for EOL components', async () => {
     const cmd = `scan:eol --file ${simpleSbom}`;
