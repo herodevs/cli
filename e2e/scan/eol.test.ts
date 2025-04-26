@@ -18,6 +18,7 @@ describe('scan:eol e2e', () => {
   const fixturesDir = path.resolve(__dirname, '../fixtures');
   const simplePurls = path.resolve(__dirname, '../fixtures/npm/simple.purls.json');
   const simpleSbom = path.join(fixturesDir, 'npm/eol.sbom.json');
+  const transitiveDependenciesSbom = path.join(fixturesDir, 'npm/transitive-dependencies.sbom.json');
   const reportPath = path.resolve(fixturesDir, 'eol.report.json');
   const upToDatePurls = path.resolve(__dirname, '../fixtures/npm/up-to-date.purls.json');
   const extraLargePurlsPath = path.resolve(__dirname, '../fixtures/npm/extra-large.purls.json');
@@ -75,6 +76,19 @@ describe('scan:eol e2e', () => {
     match(stdout, /Here are the results of the scan:/, 'Should show results header');
     match(stdout, /pkg:npm\/bootstrap@3\.1\.1/, 'Should detect bootstrap package');
     match(stdout, /EOL Date: 2019-07-24/, 'Should show correct EOL date for bootstrap');
+  });
+
+  it('generates purls from SBOM for direct and transitive dependencies', async () => {
+    const cmd = `report:purls --file ${transitiveDependenciesSbom} --json`;
+    const { stdout } = await run(cmd);
+
+    const { purls } = JSON.parse(stdout);
+
+    // Direct dependency
+    strictEqual(purls.includes('pkg:npm/is-core-module@2.11.0'), true);
+
+    // Transitive dependency
+    strictEqual(purls.includes('pkg:npm/@babel/helper-validator-identifier@7.19.1'), true);
   });
 
   it('saves report when --save flag is used', async () => {

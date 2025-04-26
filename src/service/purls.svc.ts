@@ -1,4 +1,4 @@
-import type { Sbom } from './eol/cdx.svc.ts';
+import type { Sbom, SbomDependency, SbomEntry } from './eol/cdx.svc.ts';
 
 /**
  * Formats a value for CSV output by wrapping it in quotes if it contains commas.
@@ -25,11 +25,50 @@ export function getPurlOutput(purls: string[], output: string): string {
 }
 
 /**
- * Translate an SBOM to a list of purls for api request.
+ * Extract PURLs from components recursively
  */
-export async function extractPurls(sbom: Sbom): Promise<string[]> {
-  const { components: comps } = sbom;
-  return comps.map((c) => c.purl) ?? [];
+function extractPurlsFromComponents(components: SbomEntry[], purlSet: Set<string>): void {
+  for (const component of components) {
+    if (component.purl) {
+      purlSet.add(component.purl);
+    }
+  }
+}
+
+/**
+ * Extract PURLs from dependencies
+ */
+function extractPurlsFromDependencies(dependencies: SbomDependency[], purlSet: Set<string>): void {
+  for (const dependency of dependencies) {
+    if (dependency.ref) {
+      purlSet.add(dependency.ref);
+    }
+
+    if (dependency.dependsOn) {
+      for (const dep of dependency.dependsOn) {
+        purlSet.add(dep);
+      }
+    }
+  }
+}
+
+/**
+ * Extract all PURLs from a CycloneDX SBOM, including components and dependencies
+ */
+export function extractPurls(sbom: Sbom): string[] {
+  const purlSet = new Set<string>();
+
+  // Extract from direct components
+  if (sbom.components) {
+    extractPurlsFromComponents(sbom.components, purlSet);
+  }
+
+  // Extract from dependencies
+  if (sbom.dependencies) {
+    extractPurlsFromDependencies(sbom.dependencies, purlSet);
+  }
+
+  return Array.from(purlSet);
 }
 
 /**

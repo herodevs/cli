@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { formatCsvValue, getPurlOutput, parsePurlsFile } from '../../src/service/purls.svc.ts';
+import type { Sbom } from '../../src/service/eol/cdx.svc.ts';
+import { extractPurls, formatCsvValue, getPurlOutput, parsePurlsFile } from '../../src/service/purls.svc.ts';
 
 describe('getPurlOutput', () => {
   describe('json output', () => {
@@ -121,5 +122,112 @@ pkg:npm/typescript@5.0.0`;
         message: 'Invalid purls file: must be either JSON with purls array or text file with one purl per line',
       });
     });
+  });
+});
+
+describe('extractPurls', () => {
+  it('should extract purls from components', () => {
+    const sbom: Sbom = {
+      components: [
+        {
+          group: '',
+          name: 'react',
+          version: '18.2.0',
+          purl: 'pkg:npm/react@18.2.0',
+        },
+        {
+          group: '',
+          name: 'typescript',
+          version: '5.0.0',
+          purl: 'pkg:npm/typescript@5.0.0',
+        },
+      ],
+      dependencies: [],
+    };
+    const result = extractPurls(sbom);
+    assert.deepStrictEqual(result, ['pkg:npm/react@18.2.0', 'pkg:npm/typescript@5.0.0']);
+  });
+
+  it('should extract purls from direct dependencies', () => {
+    const sbom: Sbom = {
+      components: [],
+      dependencies: [
+        { ref: 'pkg:npm/express@4.18.2', dependsOn: [] },
+        { ref: 'pkg:npm/lodash@4.17.21', dependsOn: [] },
+      ],
+    };
+    const result = extractPurls(sbom);
+    assert.deepStrictEqual(result, ['pkg:npm/express@4.18.2', 'pkg:npm/lodash@4.17.21']);
+  });
+
+  it('should extract purls from transitive dependencies', () => {
+    const sbom: Sbom = {
+      components: [],
+      dependencies: [
+        {
+          ref: 'pkg:npm/express@4.18.2',
+          dependsOn: ['pkg:npm/body-parser@1.20.2', 'pkg:npm/cookie-parser@1.4.6'],
+        },
+        {
+          ref: 'pkg:npm/react@18.2.0',
+          dependsOn: ['pkg:npm/scheduler@0.23.0'],
+        },
+      ],
+    };
+    const result = extractPurls(sbom);
+    assert.deepStrictEqual(
+      result.sort(),
+      [
+        'pkg:npm/express@4.18.2',
+        'pkg:npm/body-parser@1.20.2',
+        'pkg:npm/cookie-parser@1.4.6',
+        'pkg:npm/react@18.2.0',
+        'pkg:npm/scheduler@0.23.0',
+      ].sort(),
+    );
+  });
+
+  it('should handle empty components and dependencies', () => {
+    const sbom: Sbom = {
+      components: [],
+      dependencies: [],
+    };
+    const result = extractPurls(sbom);
+    assert.deepStrictEqual(result, []);
+  });
+
+  it('should handle mixed components and dependencies', () => {
+    const sbom: Sbom = {
+      components: [
+        {
+          group: '',
+          name: 'react',
+          version: '18.2.0',
+          purl: 'pkg:npm/react@18.2.0',
+        },
+        {
+          group: '',
+          name: 'typescript',
+          version: '5.0.0',
+          purl: 'pkg:npm/typescript@5.0.0',
+        },
+      ],
+      dependencies: [
+        {
+          ref: 'pkg:npm/express@4.18.2',
+          dependsOn: ['pkg:npm/body-parser@1.20.2'],
+        },
+      ],
+    };
+    const result = extractPurls(sbom);
+    assert.deepStrictEqual(
+      result.sort(),
+      [
+        'pkg:npm/react@18.2.0',
+        'pkg:npm/typescript@5.0.0',
+        'pkg:npm/express@4.18.2',
+        'pkg:npm/body-parser@1.20.2',
+      ].sort(),
+    );
   });
 });
