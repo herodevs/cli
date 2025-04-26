@@ -2,4 +2,8 @@
 
 import main from './main.js';
 
-await main();
+try {
+  await main(true);
+} catch (error) {
+  process.exit(1);
+}

@@ -20,10 +20,14 @@ async function main(isProduction = false) {
     }
   }
 
-  await execute({
-    development: !isProduction,
-    dir: new URL('./dev.js', import.meta.url),
-  });
+  try {
+    await execute({
+      development: !isProduction,
+      dir: new URL('./dev.js', import.meta.url),
+    });
+  } catch (error) {
+    process.exit(1);
+  }
 }
 
 export default main;
