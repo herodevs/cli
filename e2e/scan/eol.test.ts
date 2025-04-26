@@ -55,6 +55,17 @@ describe('default arguments', () => {
     doesNotMatch(stdout, /Here are the results of the scan:/, 'Should not show results header');
     doesNotThrow(() => JSON.parse(stdout), 'Output should be valid JSON');
   });
+
+  it('shows help when --help is passed in', async () => {
+    const { stdout } = await execAsync('node bin/run.js --help', {
+      env: { ...process.env, GRAPHQL_HOST },
+    });
+
+    // Verify help output
+    match(stdout, /USAGE/, 'Should show usage section');
+    match(stdout, /TOPICS/, 'Should show topics section');
+    match(stdout, /COMMANDS/, 'Should show commands section');
+  });
 });
 describe('scan:eol e2e', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));

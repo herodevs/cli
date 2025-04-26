@@ -11,7 +11,7 @@ async function main(isProduction = false) {
     const isFlag = firstArg.startsWith('-');
 
     // If it's a flag or not a valid command, insert scan:eol
-    if (isFlag || (!firstArg.includes(':') && process.argv.length === 3)) {
+    if (isFlag && !['--help', '-h'].includes(firstArg)) {
       process.argv.splice(2, 0, 'scan:eol');
       // Add -t flag if no other flags are present
       if (!process.argv.some((arg) => arg.startsWith('-'))) {
