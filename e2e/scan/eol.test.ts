@@ -56,8 +56,19 @@ describe('default arguments', () => {
     doesNotThrow(() => JSON.parse(stdout), 'Output should be valid JSON');
   });
 
-  it('shows help when --help is passed in', async () => {
+  it('shows help for scan:eol when --help is passed in', async () => {
     const { stdout } = await execAsync('node bin/run.js --help', {
+      env: { ...process.env, GRAPHQL_HOST },
+    });
+
+    // Verify help output
+    match(stdout, /USAGE/, 'Should show usage section');
+    match(stdout, /FLAGS/, 'Should show flags section');
+    match(stdout, /EXAMPLES/, 'Should show examples section');
+  });
+
+  it('shows global help when help is passed in', async () => {
+    const { stdout } = await execAsync('node bin/run.js help', {
       env: { ...process.env, GRAPHQL_HOST },
     });
 

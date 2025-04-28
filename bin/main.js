@@ -1,23 +1,20 @@
+import { parseArgs } from 'node:util';
 import { execute } from '@oclif/core';
 
 async function main(isProduction = false) {
-  // If no command is provided, default to scan:eol -t
-  // See https://github.com/oclif/oclif/issues/277#issuecomment-657352674 for more info
-  if (process.argv.length === 2) {
-    process.argv[2] = 'scan:eol';
-    process.argv[3] = '-t';
-  } else if (process.argv.length > 2) {
-    const firstArg = process.argv[2];
-    const isFlag = firstArg.startsWith('-');
+  const { positionals } = parseArgs({
+    args: process.argv.slice(2),
+    allowPositionals: true,
+    strict: false, // Don't validate flags
+  });
 
-    // If it's a flag or not a valid command, insert scan:eol
-    if (isFlag && !['--help', '-h'].includes(firstArg)) {
-      process.argv.splice(2, 0, 'scan:eol');
-      // Add -t flag if no other flags are present
-      if (!process.argv.some((arg) => arg.startsWith('-'))) {
-        process.argv.splice(3, 0, '-t');
-      }
-    }
+  // If no arguments at all, default to scan:eol -t
+  if (positionals.length === 0) {
+    process.argv.splice(2, 0, 'scan:eol', '-t');
+  }
+  // If only flags are provided, set scan:eol as the command for those flags
+  else if (positionals.length === 1 && positionals[0].startsWith('-')) {
+    process.argv.splice(2, 0, 'scan:eol');
   }
 
   try {
