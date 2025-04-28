@@ -4,27 +4,36 @@
 
 ### Current Process (Branch-based Releases)
 
-The CLI uses a branch-based release process managed through `.github/workflows/manual-release.yml`. To create a release:
+The CLI uses a branch-based release process. To create a release:
 
-1. Run one of the following npm commands:
-   - `npm run release` - Test the release process without making changes (--dry-run by default)
-   - `npm run release:publish:beta` - Create and publish a beta release
-   - `npm run release:publish:latest` - Create and publish a latest release
+#### Create a release branch
 
-2. The script will:
-   - Create a new release branch (format: `release-{type}-{timestamp}`)
-   - Run commit-and-tag-version to bump version and create tag
-   - Create a PR for the release changes
-   - Wait for PR review and merge
-   - After PR merge, push the tag to trigger the release workflow
+1. `git fetch origin main`
+2. `git switch main`
+3. `git pull origin main`
+4. `git switch -c release-{version}` (e.g., `release-1.2.3`)
+5. Manually bump version number in package.json
+6. `npm i` to update package-lock
+7. `npx oclif manifest && npm run readme` to update readme
+8. `git add . && git commit -m "chore: release {version}"` (e.g., `chore: release 1.2.3`)
+9. `git push -u origin release-{version}`
+10. Create PR into main
 
-3. The release workflow will:
-   - Verify the tag matches the package version
-   - Run tests
-   - Build platform-specific tarballs
-   - Create a draft GitHub release
-   - Upload to S3 distribution
-   - Publish to npm
+#### Push a tag
+
+1. Once PR is merged:
+   - `git fetch origin main`
+   - `git switch main`
+   - `git pull origin main`
+2. Run `./scripts/release-tag.sh -v {version} -a full` to push the tag
+
+The release workflow in GitHub will then:
+- Verify the tag matches the package version
+- Run tests
+- Build platform-specific tarballs
+- Create a draft GitHub release
+- Upload to S3 distribution
+- Publish to npm
 
 ### Planned Process (Release Please)
 
