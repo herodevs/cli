@@ -2,6 +2,11 @@ import { createBom } from '@cyclonedx/cdxgen';
 import { debugLogger } from '../../service/log.svc.ts';
 import type { CdxGenOptions } from './eol.svc.ts';
 
+export interface SbomDependency {
+  ref: string;
+  dependsOn: string[];
+}
+
 export interface SbomEntry {
   group: string;
   name: string;
@@ -11,7 +16,7 @@ export interface SbomEntry {
 
 export interface Sbom {
   components: SbomEntry[];
-  dependencies: SbomEntry[];
+  dependencies: SbomDependency[];
 }
 
 export const SBOM_DEFAULT__OPTIONS = {

@@ -26,7 +26,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/1.5.0-beta.2 darwin-arm64 node-v22.14.0
+@herodevs/cli/1.5.0-beta.3 darwin-arm64 node-v22.14.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -91,7 +91,7 @@ EXAMPLES
   $ hd report committers --csv
 ```
 
-_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v1.5.0-beta.2/src/commands/report/committers.ts)_
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v1.5.0-beta.3/src/commands/report/committers.ts)_
 
 ## `hd report purls`
 
@@ -125,7 +125,7 @@ EXAMPLES
   $ hd report purls --save --csv
 ```
 
-_See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v1.5.0-beta.2/src/commands/report/purls.ts)_
+_See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v1.5.0-beta.3/src/commands/report/purls.ts)_
 
 ## `hd scan eol`
 
@@ -140,7 +140,7 @@ FLAGS
   -d, --dir=<value>    The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>   The file path of an existing cyclonedx sbom to scan for EOL
   -p, --purls=<value>  The file path of a list of purls to scan for EOL
-  -s, --save           Save the generated Report as eol.sbom.json in the scanned directory
+  -s, --save           Save the generated report as eol.report.json in the scanned directory
   -t, --table          Display the results in a table
 
 GLOBAL FLAGS
@@ -159,7 +159,7 @@ EXAMPLES
   $ hd scan eol -a --dir=./my-project
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v1.5.0-beta.2/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v1.5.0-beta.3/src/commands/scan/eol.ts)_
 
 ## `hd scan sbom`
 
@@ -187,7 +187,7 @@ EXAMPLES
   $ hd scan sbom --file=path/to/sbom.json
 ```
 
-_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v1.5.0-beta.2/src/commands/scan/sbom.ts)_
+_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v1.5.0-beta.3/src/commands/scan/sbom.ts)_
 
 ## `hd update [CHANNEL]`
 

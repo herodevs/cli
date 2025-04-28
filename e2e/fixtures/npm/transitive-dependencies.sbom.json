@@ -1,0 +1,51 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "serialNumber": "urn:uuid:9e8485b9-2d49-449e-b729-22516cbd085c",
+  "version": 1,
+  "metadata": {
+    "timestamp": "2025-03-28T13:48:09Z",
+    "tools": {
+      "components": [
+        {
+          "group": "@cyclonedx",
+          "name": "cdxgen",
+          "version": "11.2.2",
+          "purl": "pkg:npm/%40cyclonedx/cdxgen@11.2.2",
+          "type": "application",
+          "bom-ref": "pkg:npm/@cyclonedx/cdxgen@11.2.2",
+          "publisher": "OWASP Foundation",
+          "authors": [
+            {
+              "name": "OWASP Foundation"
+            }
+          ]
+        }
+      ]
+    },
+    "authors": [],
+    "lifecycles": [
+      {
+        "phase": "build"
+      }
+    ]
+  },
+  "components": [],
+  "services": [],
+  "dependencies": [
+    {
+      "ref": "pkg:npm/is-core-module@2.11.0",
+      "dependsOn": [
+        "pkg:npm/has@1.0.3"
+      ]
+    },
+    {
+      "ref": "pkg:npm/@babel/highlight@7.18.6",
+      "dependsOn": [
+        "pkg:npm/@babel/helper-validator-identifier@7.19.1",
+        "pkg:npm/chalk@2.4.2",
+        "pkg:npm/js-tokens@4.0.0"
+      ]
+    }
+  ]
+}
