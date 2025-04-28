@@ -3,7 +3,6 @@ import { execute } from '@oclif/core';
 
 async function main(isProduction = false) {
   const { positionals } = parseArgs({
-    args: process.argv.slice(2),
     allowPositionals: true,
     strict: false, // Don't validate flags
   });
