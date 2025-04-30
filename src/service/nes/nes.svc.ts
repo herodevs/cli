@@ -27,7 +27,13 @@ export const SbomScanner =
   (client: NesApolloClient) =>
   async (purls: string[], options: ScanInputOptions): Promise<InsightsEolScanResult> => {
     const { type, page, totalPages, scanId } = options;
-    const input: InsightsEolScanInput = { components: purls, type, page, totalPages, scanId };
+    const input: InsightsEolScanInput = {
+      components: purls,
+      type,
+      page,
+      totalPages,
+      scanId,
+    };
 
     const res = await client.mutate<ScanResponse, { input: InsightsEolScanInput }>(M_SCAN.gql, { input });
 

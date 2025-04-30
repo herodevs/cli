@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 
-import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
+import { isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, getPurlOutput } from '../../service/purls.svc.ts';
 import ScanSbom from '../scan/sbom.ts';
 
@@ -66,26 +66,23 @@ export default class ReportPurls extends Command {
           if (isErrnoException(error)) {
             switch (error.code) {
               case 'EACCES':
-                this.error('Permission denied: Cannot write to output file');
-                break;
+                throw new Error('Permission denied: Cannot write to output file');
               case 'ENOSPC':
-                this.error('No space left on device');
-                break;
+                throw new Error('No space left on device');
               case 'EISDIR':
-                this.error('Cannot write to output file: Is a directory');
-                break;
+                throw new Error('Cannot write to output file: Is a directory');
               default:
-                this.error(`Failed to save purls: ${getErrorMessage(error)}`);
+                throw new Error('Failed to save purls', { cause: error });
             }
           }
-          this.error(`Failed to save purls: ${getErrorMessage(error)}`);
+          throw new Error('Failed to save purls', { cause: error });
         }
       }
 
       // Return wrapped object with metadata
       return { purls };
     } catch (error) {
-      this.error(`Failed to generate PURLs: ${getErrorMessage(error)}`);
+      throw new Error('Failed to generate PURLs', { cause: error });
     }
   }
 }

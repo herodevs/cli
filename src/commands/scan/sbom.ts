@@ -4,7 +4,6 @@ import { join, resolve } from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
-import { getErrorMessage } from '../../service/error.svc.ts';
 
 export default class ScanSbom extends Command {
   static override description = 'Scan a SBOM for purls';
@@ -69,7 +68,7 @@ export default class ScanSbom extends Command {
 
     // Validate that exactly one of --file or --dir is provided
     if (file && dir) {
-      this.error('Cannot specify both --file and --dir flags. Please use one or the other.');
+      throw new Error('Cannot specify both --file and --dir flags. Please use one or the other.');
     }
     let sbom: Sbom;
     const path = dir || process.cwd();
@@ -93,11 +92,10 @@ export default class ScanSbom extends Command {
     const dir = resolve(_dirFlag);
     try {
       if (!fs.existsSync(dir)) {
-        this.error(`Directory not found: ${dir}`);
+        throw new Error(`Directory not found: ${dir}`);
       }
       const stats = fs.statSync(dir);
       if (!stats.isDirectory()) {
-        this.error(`Path is not a directory: ${dir}`);
       }
 
       ux.action.start(`Scanning ${dir}`);
@@ -105,11 +103,11 @@ export default class ScanSbom extends Command {
       const options = this.getScanOptions();
       const sbom = await createSbom(dir, options);
       if (!sbom) {
-        this.error(`SBOM failed to generate for dir: ${dir}`);
+        throw new Error(`SBOM failed to generate: ${dir}`);
       }
       return sbom;
     } catch (error) {
-      this.error(`Failed to scan directory: ${getErrorMessage(error)}`);
+      throw new Error('Failed to scan directory', { cause: error });
     }
   }
 
@@ -131,7 +129,7 @@ export default class ScanSbom extends Command {
 
       workerProcess.unref();
     } catch (error) {
-      this.error(`Failed to start background scan: ${getErrorMessage(error)}`);
+      throw new Error('Failed to start background scan', { cause: error });
     }
   }
 
@@ -139,7 +137,7 @@ export default class ScanSbom extends Command {
     const file = resolve(_fileFlag);
     try {
       if (!fs.existsSync(file)) {
-        this.error(`SBOM file not found: ${file}`);
+        throw new Error(`SBOM file not found: ${file}`);
       }
 
       ux.action.start(`Loading sbom from ${file}`);
@@ -152,7 +150,7 @@ export default class ScanSbom extends Command {
       validateIsCycloneDxSbom(sbom);
       return sbom;
     } catch (error) {
-      this.error(`Failed to read SBOM file: ${getErrorMessage(error)}`);
+      throw new Error('Failed to read SBOM file', { cause: error });
     }
   }
 
@@ -164,7 +162,7 @@ export default class ScanSbom extends Command {
         this.log(`SBOM saved to ${outputPath}`);
       }
     } catch (error) {
-      this.error(`Failed to save SBOM: ${getErrorMessage(error)}`);
+      throw new Error('Failed to save SBOM', { cause: error });
     }
   }
 }

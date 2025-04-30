@@ -12,7 +12,7 @@ import {
   groupCommitsByMonth,
   parseGitLogOutput,
 } from '../../service/committers.svc.ts';
-import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
+import { isErrnoException } from '../../service/error.svc.ts';
 
 export default class Committers extends Command {
   static override description = 'Generate report of committers to a git repository';
@@ -64,7 +64,7 @@ export default class Committers extends Command {
             fs.writeFileSync(path.resolve('eol.committers.json'), JSON.stringify(reportData, null, 2));
             this.log('Report written to json');
           } catch (error) {
-            this.error(`Failed to save JSON report: ${getErrorMessage(error)}`);
+            throw new Error('Failed to save JSON report', { cause: error });
           }
         }
         return reportData;
@@ -80,7 +80,7 @@ export default class Committers extends Command {
             fs.writeFileSync(path.resolve('eol.committers.csv'), csvOutput);
             this.log('Report written to csv');
           } catch (error) {
-            this.error(`Failed to save CSV report: ${getErrorMessage(error)}`);
+            throw new Error('Failed to save CSV report', { cause: error });
           }
         } else {
           this.log(textOutput);
@@ -93,14 +93,14 @@ export default class Committers extends Command {
           fs.writeFileSync(path.resolve('eol.committers.txt'), textOutput);
           this.log('Report written to txt');
         } catch (error) {
-          this.error(`Failed to save txt report: ${getErrorMessage(error)}`);
+          throw new Error('Failed to save txt report', { cause: error });
         }
       } else {
         this.log(textOutput);
       }
       return textOutput;
     } catch (error) {
-      this.error(`Failed to generate report: ${getErrorMessage(error)}`);
+      throw new Error('Failed to generate report', { cause: error });
     }
   }
 
@@ -152,15 +152,15 @@ export default class Committers extends Command {
     if (logProcess.error) {
       if (isErrnoException(logProcess.error)) {
         if (logProcess.error.code === 'ENOENT') {
-          this.error('Git command not found. Please ensure git is installed and available in your PATH.');
+          throw new Error('Git command not found. Please ensure git is installed and available in your PATH.');
         }
-        this.error(`Git command failed: ${getErrorMessage(logProcess.error)}`);
+        throw new Error('Git command failed', { cause: logProcess.error });
       }
-      this.error(`Git command failed: ${getErrorMessage(logProcess.error)}`);
+      throw new Error('Git command failed', { cause: logProcess.error });
     }
 
     if (logProcess.status !== 0) {
-      this.error(`Git command failed with status ${logProcess.status}: ${logProcess.stderr}`);
+      throw new Error(`Git command failed with status ${logProcess.status}`, { cause: logProcess.stderr });
     }
 
     if (!logProcess.stdout) {

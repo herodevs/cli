@@ -5,7 +5,7 @@ import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
 import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
-import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
+import { isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
 import { createStatusDisplay, createTableForStatus, groupComponentsByStatus } from '../../ui/eol.ui.ts';
 import { INDICATORS, STATUS_COLORS } from '../../ui/shared.ui.ts';
@@ -91,7 +91,7 @@ export default class ScanEol extends Command {
       const purlsFileString = fs.readFileSync(filePath, 'utf8');
       return parsePurlsFile(purlsFileString);
     } catch (error) {
-      this.error(`Failed to read purls file. ${getErrorMessage(error)}`);
+      throw new Error('Failed to read purls file', { cause: error });
     }
   }
 
@@ -102,12 +102,12 @@ export default class ScanEol extends Command {
     try {
       purls = await extractPurls(sbom);
     } catch (error) {
-      this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
+      throw new Error('Failed to extract purls from sbom', { cause: error });
     }
     try {
       scan = await batchSubmitPurls(purls);
     } catch (error) {
-      this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
+      throw new Error('Failed to submit scan to NES from sbom', { cause: error });
     }
 
     if (scan.components.size === 0) {
@@ -132,17 +132,15 @@ export default class ScanEol extends Command {
       this.log('Report saved to eol.report.json');
     } catch (error) {
       if (!isErrnoException(error)) {
-        this.error(`Failed to save report: ${getErrorMessage(error)}`);
+        throw new Error('Failed to save report', { cause: error });
       }
       switch (error.code) {
         case 'EACCES':
-          this.error('Permission denied. Unable to save report to eol.report.json');
-          break;
+          throw new Error('Permission denied. Unable to save report to eol.report.json');
         case 'ENOSPC':
-          this.error('No space left on device. Unable to save report to eol.report.json');
-          break;
+          throw new Error('No space left on device. Unable to save report to eol.report.json');
         default:
-          this.error(`Failed to save report: ${getErrorMessage(error)}`);
+          throw new Error('Failed to save report', { cause: error });
       }
     }
   }

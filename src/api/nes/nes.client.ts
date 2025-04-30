@@ -75,7 +75,7 @@ export const batchSubmitPurls = async (
     return handleBatchResults(results);
   } catch (error) {
     debugLogger('Fatal error in batchSubmitPurls: %s', error);
-    throw new Error(`Failed to process purls: ${error instanceof Error ? error.message : String(error)}`);
+    throw new Error('Failed to process purls', { cause: error });
   }
 };
 

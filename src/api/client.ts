@@ -1,5 +1,4 @@
 import * as apollo from '@apollo/client/core/index.js';
-import { ApolloError } from '../service/error.svc.ts';
 
 export interface ApolloHelper {
   mutate<T, V extends apollo.OperationVariables>(
@@ -41,7 +40,7 @@ export class ApolloClient implements ApolloHelper {
         variables,
       });
     } catch (error: unknown) {
-      throw new ApolloError('GraphQL mutation failed', error);
+      throw new Error('GraphQL mutation failed', { cause: error });
     }
   }
 
@@ -52,7 +51,7 @@ export class ApolloClient implements ApolloHelper {
         variables,
       });
     } catch (error) {
-      throw new ApolloError('GraphQL query failed', error);
+      throw new Error('GraphQL query failed', { cause: error });
     }
   }
 }
