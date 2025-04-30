@@ -8,7 +8,7 @@ export function parseMomentToSimpleDate(momentDate: string | Date | number | nul
       throw new Error('Invalid date');
     }
     return dateObj.toISOString().split('T')[0];
-  } catch {
-    throw new Error('Invalid date');
+  } catch (cause: unknown) {
+    throw new Error('Invalid date', { cause });
   }
 }

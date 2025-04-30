@@ -136,9 +136,9 @@ export default class ScanEol extends Command {
       }
       switch (cause.code) {
         case 'EACCES':
-          throw new Error('Permission denied. Unable to save report to eol.report.json');
+          throw new Error('Permission denied. Unable to save report to eol.report.json', { cause });
         case 'ENOSPC':
-          throw new Error('No space left on device. Unable to save report to eol.report.json');
+          throw new Error('No space left on device. Unable to save report to eol.report.json', { cause });
         default:
           throw new Error('Failed to save report', { cause });
       }

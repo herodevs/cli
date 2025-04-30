@@ -42,7 +42,7 @@ export const SbomScanner =
       debugLogger('failed scan %o', scan || {});
       debugLogger('scan failed');
 
-      throw new Error('Failed to provide scan: ');
+      throw new Error(`Scan failed: ${scan?.message}`);
     }
 
     return scan;

@@ -152,7 +152,9 @@ export default class Committers extends Command {
     if (logProcess.error) {
       if (isErrnoException(logProcess.error)) {
         if (logProcess.error.code === 'ENOENT') {
-          throw new Error('Git command not found. Please ensure git is installed and available in your PATH.');
+          throw new Error('Git command not found. Please ensure git is installed and available in your PATH.', {
+            cause: logProcess.error,
+          });
         }
         throw new Error('Git command failed', { cause: logProcess.error });
       }

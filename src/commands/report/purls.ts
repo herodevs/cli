@@ -66,11 +66,11 @@ export default class ReportPurls extends Command {
           if (isErrnoException(cause)) {
             switch (cause.code) {
               case 'EACCES':
-                throw new Error('Permission denied: Cannot write to output file');
+                throw new Error('Permission denied: Cannot write to output file', { cause });
               case 'ENOSPC':
-                throw new Error('No space left on device');
+                throw new Error('No space left on device', { cause });
               case 'EISDIR':
-                throw new Error('Cannot write to output file: Is a directory');
+                throw new Error('Cannot write to output file: Is a directory', { cause });
               default:
                 throw new Error('Failed to save purls', { cause });
             }
