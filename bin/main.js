@@ -22,7 +22,10 @@ async function main(isProduction = false) {
       dir: new URL('./dev.js', import.meta.url),
     });
   } catch (error) {
-    process.exit(1);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(String(error));
   }
 }
 
