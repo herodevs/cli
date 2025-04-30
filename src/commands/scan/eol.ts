@@ -90,8 +90,8 @@ export default class ScanEol extends Command {
     try {
       const purlsFileString = fs.readFileSync(filePath, 'utf8');
       return parsePurlsFile(purlsFileString);
-    } catch (error) {
-      throw new Error('Failed to read purls file', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('Failed to read purls file', { cause });
     }
   }
 
@@ -100,14 +100,14 @@ export default class ScanEol extends Command {
     let purls: string[];
 
     try {
-      purls = await extractPurls(sbom);
-    } catch (error) {
-      throw new Error('Failed to extract purls from sbom', { cause: error });
+      purls = extractPurls(sbom);
+    } catch (cause: unknown) {
+      throw new Error('Failed to extract purls from sbom', { cause });
     }
     try {
       scan = await batchSubmitPurls(purls);
-    } catch (error) {
-      throw new Error('Failed to submit scan to NES from sbom', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('Failed to submit scan to NES from sbom', { cause });
     }
 
     if (scan.components.size === 0) {
@@ -130,17 +130,17 @@ export default class ScanEol extends Command {
     try {
       fs.writeFileSync(reportPath, JSON.stringify({ components }, null, 2));
       this.log('Report saved to eol.report.json');
-    } catch (error) {
-      if (!isErrnoException(error)) {
-        throw new Error('Failed to save report', { cause: error });
+    } catch (cause: unknown) {
+      if (!isErrnoException(cause)) {
+        throw new Error('Failed to save report', { cause });
       }
-      switch (error.code) {
+      switch (cause.code) {
         case 'EACCES':
           throw new Error('Permission denied. Unable to save report to eol.report.json');
         case 'ENOSPC':
           throw new Error('No space left on device. Unable to save report to eol.report.json');
         default:
-          throw new Error('Failed to save report', { cause: error });
+          throw new Error('Failed to save report', { cause });
       }
     }
   }

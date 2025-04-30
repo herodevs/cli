@@ -62,9 +62,9 @@ export default class ReportPurls extends Command {
           fs.writeFileSync(outputPath, purlOutput);
 
           this.log('Purls saved to %s', outputPath);
-        } catch (error: unknown) {
-          if (isErrnoException(error)) {
-            switch (error.code) {
+        } catch (cause: unknown) {
+          if (isErrnoException(cause)) {
+            switch (cause.code) {
               case 'EACCES':
                 throw new Error('Permission denied: Cannot write to output file');
               case 'ENOSPC':
@@ -72,17 +72,17 @@ export default class ReportPurls extends Command {
               case 'EISDIR':
                 throw new Error('Cannot write to output file: Is a directory');
               default:
-                throw new Error('Failed to save purls', { cause: error });
+                throw new Error('Failed to save purls', { cause });
             }
           }
-          throw new Error('Failed to save purls', { cause: error });
+          throw new Error('Failed to save purls', { cause });
         }
       }
 
       // Return wrapped object with metadata
       return { purls };
-    } catch (error) {
-      throw new Error('Failed to generate PURLs', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('Failed to generate PURLs', { cause });
     }
   }
 }

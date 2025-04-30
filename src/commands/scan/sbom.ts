@@ -106,8 +106,8 @@ export default class ScanSbom extends Command {
         throw new Error(`SBOM failed to generate: ${dir}`);
       }
       return sbom;
-    } catch (error) {
-      throw new Error('Failed to scan directory', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('Failed to scan directory', { cause });
     }
   }
 
@@ -128,8 +128,8 @@ export default class ScanSbom extends Command {
       });
 
       workerProcess.unref();
-    } catch (error) {
-      throw new Error('Failed to start background scan', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('Failed to start background scan', { cause });
     }
   }
 
@@ -149,8 +149,8 @@ export default class ScanSbom extends Command {
       const sbom = JSON.parse(fileContent) as Sbom;
       validateIsCycloneDxSbom(sbom);
       return sbom;
-    } catch (error) {
-      throw new Error('Failed to read SBOM file', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('Failed to read SBOM file', { cause });
     }
   }
 
@@ -161,8 +161,8 @@ export default class ScanSbom extends Command {
       if (!this.jsonEnabled()) {
         this.log(`SBOM saved to ${outputPath}`);
       }
-    } catch (error) {
-      throw new Error('Failed to save SBOM', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('Failed to save SBOM', { cause });
     }
   }
 }

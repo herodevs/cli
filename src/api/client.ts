@@ -39,8 +39,8 @@ export class ApolloClient implements ApolloHelper {
         mutation,
         variables,
       });
-    } catch (error: unknown) {
-      throw new Error('GraphQL mutation failed', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('GraphQL mutation failed', { cause });
     }
   }
 
@@ -50,8 +50,8 @@ export class ApolloClient implements ApolloHelper {
         query,
         variables,
       });
-    } catch (error) {
-      throw new Error('GraphQL query failed', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('GraphQL query failed', { cause });
     }
   }
 }

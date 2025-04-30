@@ -63,8 +63,8 @@ export default class Committers extends Command {
           try {
             fs.writeFileSync(path.resolve('eol.committers.json'), JSON.stringify(reportData, null, 2));
             this.log('Report written to json');
-          } catch (error) {
-            throw new Error('Failed to save JSON report', { cause: error });
+          } catch (cause: unknown) {
+            throw new Error('Failed to save JSON report', { cause });
           }
         }
         return reportData;
@@ -79,8 +79,8 @@ export default class Committers extends Command {
           try {
             fs.writeFileSync(path.resolve('eol.committers.csv'), csvOutput);
             this.log('Report written to csv');
-          } catch (error) {
-            throw new Error('Failed to save CSV report', { cause: error });
+          } catch (cause: unknown) {
+            throw new Error('Failed to save CSV report', { cause });
           }
         } else {
           this.log(textOutput);
@@ -92,15 +92,15 @@ export default class Committers extends Command {
         try {
           fs.writeFileSync(path.resolve('eol.committers.txt'), textOutput);
           this.log('Report written to txt');
-        } catch (error) {
-          throw new Error('Failed to save txt report', { cause: error });
+        } catch (cause: unknown) {
+          throw new Error('Failed to save txt report', { cause });
         }
       } else {
         this.log(textOutput);
       }
       return textOutput;
-    } catch (error) {
-      throw new Error('Failed to generate report', { cause: error });
+    } catch (cause: unknown) {
+      throw new Error('Failed to generate report', { cause });
     }
   }
 
