@@ -31,6 +31,7 @@ export interface ScanResult {
   message: string;
   success: boolean;
   warnings: ScanWarning[];
+  scanId: string | undefined;
 }
 
 export interface ProcessBatchOptions {

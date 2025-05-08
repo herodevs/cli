@@ -70,6 +70,8 @@ export default class ScanEol extends Command {
       } else {
         this.displayResults(scan, flags.all);
       }
+
+      this.printWebReportUrl(scan.scanId);
     }
 
     return { components };
@@ -92,6 +94,14 @@ export default class ScanEol extends Command {
       return parsePurlsFile(purlsFileString);
     } catch (error) {
       this.error(`Failed to read purls file. ${getErrorMessage(error)}`);
+    }
+  }
+
+  private printWebReportUrl(scanId: string | undefined): void {
+    if (scanId) {
+      this.logLine();
+      const url = ux.colorize('blue', `https://herodevs.com/eol/${scanId}`);
+      this.log(`🌐 View your free EOL report at ${url}`);
     }
   }
 

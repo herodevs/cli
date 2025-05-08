@@ -263,6 +263,32 @@ describe('scan:eol e2e', () => {
     // Check for the arrow format
     match(stdout, /⮑ {2}EOL Date: \d{4}-\d{2}-\d{2}/, 'Should show EOL date with arrow');
   });
+
+  describe('web report URL', () => {
+    it('displays web report URL with scan ID when scan is successful', async () => {
+      const cmd = `scan:eol --purls=${simplePurls}`;
+      const { stdout } = await run(cmd);
+
+      // Match the key text and scan ID pattern
+      match(stdout, /View your free EOL report at.*[a-zA-Z0-9-]+/, 'Should show web report text and scan ID');
+    });
+
+    it('displays web report URL in table format when using -t flag', async () => {
+      const cmd = `scan:eol --purls=${simplePurls} -t`;
+      const { stdout } = await run(cmd);
+
+      // Match the key text and scan ID pattern
+      match(stdout, /View your free EOL report at.*[a-zA-Z0-9-]+/, 'Should show web report text and scan ID');
+    });
+
+    it('does not display web report URL when using --json flag', async () => {
+      const cmd = `scan:eol --purls=${simplePurls} --json`;
+      const { stdout } = await run(cmd);
+
+      // Verify URL text is not in output
+      doesNotMatch(stdout, /View your free EOL report/, 'Should not show web report text in JSON output');
+    });
+  });
 });
 
 /**
@@ -308,6 +334,14 @@ describe('scan:eol e2e directory', () => {
     match(stdout, /EOL Date:/, 'Should show EOL date information');
   });
 
+  it('displays web report URL when scanning directory', async () => {
+    const cmd = `scan:eol --dir ${simpleDir}`;
+    const { stdout } = await run(cmd);
+
+    // Match the key text and scan ID pattern
+    match(stdout, /View your free EOL report at.*[a-zA-Z0-9-]+/, 'Should show web report text and scan ID');
+  });
+
   it('saves report when --save flag is used', async () => {
     const cmd = `scan:eol --dir ${simpleDir} --save`;
     await run(cmd);
@@ -327,6 +361,7 @@ describe('scan:eol e2e directory', () => {
 
     unlinkSync(reportPath);
   });
+
   it('scans existing SBOM for EOL components', async () => {
     const cmd = `scan:eol --file ${simpleDir}/sbom.json`;
     const { stdout } = await run(cmd);
