@@ -4,18 +4,14 @@ import updateNotifier, { type UpdateInfo } from 'update-notifier';
 import pkg from '../../package.json' with { type: 'json' };
 import { debugLogger } from '../service/log.svc.ts';
 
-const updateNotifierHook: Hook.Init = async (options) => {
+const updateNotifierHook: Hook.Init = (options) => {
   debugLogger('pkg.version', pkg.version);
 
   const distTag = getDistTag(pkg.version);
   debugLogger('distTag', distTag);
-
-  let updateCheckInterval = 1000 * 60 * 60 * 24; // Check once per day for latest versions
-
-  // If we're not on the latest dist-tag, check for updates every time
-  if (distTag !== 'latest') {
-    updateCheckInterval = 0;
-  }
+ const ONE_DAY_MS = 1000 * 60 * 60 * 24;
+ // If we're on the latest dist-tag, check for updates every time
+ const updateCheckInterval = distTag ===  'latest' ? 0 : ONE_DAY_MS;
 
   debugLogger('updateCheckInterval', updateCheckInterval);
 
@@ -23,6 +19,7 @@ const updateNotifierHook: Hook.Init = async (options) => {
     pkg,
     distTag,
     updateCheckInterval,
+    shouldNotifyInNpmScript: true,
   });
 
   debugLogger('updateNotifierHook', { notifier });
@@ -32,7 +29,7 @@ const updateNotifierHook: Hook.Init = async (options) => {
     debugLogger('notification', notification);
 
     if (notification) {
-      console.log(ux.colorize('yellow', notification.message));
+      notifier.notify(notification);
     }
   }
 };
@@ -42,22 +39,9 @@ export default updateNotifierHook;
 type DistTag = 'latest' | 'beta' | 'prev1' | 'alpha' | 'next';
 
 export function getDistTag(version: string): DistTag {
-  const isBeta = version.includes('-beta');
-  const isAlpha = version.includes('-alpha');
-  const isNext = version.includes('-next');
-
-  if (isBeta) {
-    return 'beta';
-  }
-
-  if (isAlpha) {
-    return 'alpha';
-  }
-
-  if (isNext) {
-    return 'next';
-  }
-
+  if (version.includes('-beta')) return 'beta';
+  if (version.includes('-alpha')) return 'alpha';
+  if (version.includes('-next')) return 'next';
   return 'latest';
 }
 
