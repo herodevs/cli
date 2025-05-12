@@ -20,6 +20,7 @@ export const buildScanResult = (scan: InsightsEolScanResult): ScanResult => {
     message: scan.message,
     success: true,
     warnings: scan.warnings || [],
+    scanId: scan.scanId,
   };
 };
 

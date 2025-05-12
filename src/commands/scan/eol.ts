@@ -4,11 +4,12 @@ import { Command, Flags, ux } from '@oclif/core';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
 import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
+import { getEolReportUrl } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
 import { createStatusDisplay, createTableForStatus, groupComponentsByStatus } from '../../ui/eol.ui.ts';
-import { INDICATORS, STATUS_COLORS } from '../../ui/shared.ui.ts';
+import { INDICATORS, SCAN_ID_KEY, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
 
 export default class ScanEol extends Command {
@@ -70,6 +71,10 @@ export default class ScanEol extends Command {
       } else {
         this.displayResults(scan, flags.all);
       }
+
+      if (scan.scanId) {
+        this.printWebReportUrl(scan.scanId);
+      }
     }
 
     return { components };
@@ -93,6 +98,14 @@ export default class ScanEol extends Command {
     } catch (error) {
       this.error(`Failed to read purls file. ${getErrorMessage(error)}`);
     }
+  }
+
+  private printWebReportUrl(scanId: string): void {
+    this.logLine();
+    const id = scanId.split(SCAN_ID_KEY)[1];
+    const reportCardUrl = getEolReportUrl();
+    const url = ux.colorize('blue', `${reportCardUrl}/${id}`);
+    this.log(`🌐 View your free EOL report at ${url}`);
   }
 
   private async scanSbom(sbom: Sbom): Promise<ScanResult> {

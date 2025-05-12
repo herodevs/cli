@@ -68,6 +68,7 @@ export const batchSubmitPurls = async (
         message: 'No batches to process',
         success: true,
         warnings: [],
+        scanId: undefined,
       } satisfies ScanResult;
     }
 
