@@ -8,7 +8,7 @@ import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
 import { createStatusDisplay, createTableForStatus, groupComponentsByStatus } from '../../ui/eol.ui.ts';
-import { INDICATORS, STATUS_COLORS } from '../../ui/shared.ui.ts';
+import { INDICATORS, SCAN_ID_KEY, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
 
 export default class ScanEol extends Command {
@@ -100,7 +100,8 @@ export default class ScanEol extends Command {
   private printWebReportUrl(scanId: string | undefined): void {
     if (scanId) {
       this.logLine();
-      const url = ux.colorize('blue', `https://herodevs.com/eol/${scanId}`);
+      const [_, id] = scanId.split(SCAN_ID_KEY);
+      const url = ux.colorize('blue', `https://eol-report-card.stage.apps.herodevs.io/${id}`);
       this.log(`🌐 View your free EOL report at ${url}`);
     }
   }
