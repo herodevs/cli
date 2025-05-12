@@ -14,7 +14,7 @@ const updateNotifierHook: Hook.Init = async (options) => {
 
   // If we're not on the latest dist-tag, check for updates every time
   if (distTag !== 'latest') {
-    updateCheckInterval = 0; // Check every time for non-latest versions
+    updateCheckInterval = 0;
   }
 
   debugLogger('updateCheckInterval', updateCheckInterval);
