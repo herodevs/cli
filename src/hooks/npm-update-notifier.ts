@@ -1,28 +1,70 @@
 import type { Hook } from '@oclif/core';
 import updateNotifier, { type UpdateInfo } from 'update-notifier';
 import pkg from '../../package.json' with { type: 'json' };
+import { debugLogger } from '../service/log.svc.ts';
+import { ux } from '@oclif/core';
 
 const updateNotifierHook: Hook.Init = async (options) => {
+  debugLogger('pkg.version', pkg.version);
+
+  const distTag = getDistTag(pkg.version);
+  debugLogger('distTag', distTag);
+
+  let updateCheckInterval = 1000 * 60 * 60 * 24; // Check once per day for latest versions
+
+  // If we're not on the latest dist-tag, check for updates every time
+  if (distTag !== 'latest') {
+    updateCheckInterval = 0; // Check every time for non-latest versions
+  }
+
+  debugLogger('updateCheckInterval', updateCheckInterval);
+
   const notifier = updateNotifier({
     pkg,
-    updateCheckInterval: 1000 * 60 * 60 * 24, // Check once per day
+    distTag,
+    updateCheckInterval, 
   });
+
+  debugLogger('updateNotifierHook', { notifier });
 
   if (notifier.update) {
     const notification = handleUpdate(notifier.update, pkg.version);
+    debugLogger('notification', notification);
+
     if (notification) {
-      notifier.notify(notification);
+      console.log(ux.colorize('yellow', notification.message))
     }
   }
 };
 
 export default updateNotifierHook;
 
+type DistTag = 'latest' | 'beta' | 'prev1' | 'alpha' | 'next';
+
+function getDistTag(version: string): DistTag {
+  const isBeta = version.includes('-beta');
+  const isAlpha = version.includes('-alpha');
+  const isNext = version.includes('-next');
+
+  if (isBeta) {
+    return 'beta';
+  }
+
+  if (isAlpha) {
+    return 'alpha';
+  }
+
+  if (isNext) {
+    return 'next';
+  }
+
+  return 'latest';
+}
+
 export function handleUpdate(update: UpdateInfo, currentVersion: string) {
-  const isPreV1 = currentVersion.startsWith('0.');
-  const isBeta = currentVersion.includes('-beta') || update.latest.includes('-beta');
-  const isAlpha = currentVersion.includes('-alpha') || update.latest.includes('-alpha');
-  const isNext = currentVersion.includes('-next') || update.latest.includes('-next');
+  const isPreV1 = currentVersion.startsWith('0.') || update.latest.startsWith('0.');
+  const currentDistTag = getDistTag(currentVersion);
+  const updateDistTag = getDistTag(update.latest);
 
   let message = `Update available! v${currentVersion} → v${update.latest}`;
 
@@ -35,7 +77,7 @@ export function handleUpdate(update: UpdateInfo, currentVersion: string) {
    * [1]https://semver.org/#spec-item-4
    * [2]https://antfu.me/posts/epoch-semver#leading-zero-major-versioning
    */
-  if (isPreV1 || isBeta || isAlpha || isNext || update.type === 'major') {
+  if (isPreV1 || currentDistTag !== 'latest' || updateDistTag !== 'latest' || update.type === 'major') {
     message += '\nThis update may contain breaking changes.';
   }
 
