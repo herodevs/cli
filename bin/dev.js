@@ -1,13 +1,9 @@
 #!/usr/bin/env node
 
 // Localhost
-// process.env.GRAPHQL_HOST = 'http://localhost:3000';
+// process.env.ENVIRONMENT = 'localhost';
 
-// Dev
-process.env.GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
-
-// Prod
-// process.env.GRAPHQL_HOST = 'https://api.nes.herodevs.com';
+process.env.ENVIRONMENT = 'development';
 
 import main from './main.js';
 
