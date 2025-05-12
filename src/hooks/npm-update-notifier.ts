@@ -1,8 +1,8 @@
 import type { Hook } from '@oclif/core';
+import { ux } from '@oclif/core';
 import updateNotifier, { type UpdateInfo } from 'update-notifier';
 import pkg from '../../package.json' with { type: 'json' };
 import { debugLogger } from '../service/log.svc.ts';
-import { ux } from '@oclif/core';
 
 const updateNotifierHook: Hook.Init = async (options) => {
   debugLogger('pkg.version', pkg.version);
@@ -22,7 +22,7 @@ const updateNotifierHook: Hook.Init = async (options) => {
   const notifier = updateNotifier({
     pkg,
     distTag,
-    updateCheckInterval, 
+    updateCheckInterval,
   });
 
   debugLogger('updateNotifierHook', { notifier });
@@ -32,7 +32,7 @@ const updateNotifierHook: Hook.Init = async (options) => {
     debugLogger('notification', notification);
 
     if (notification) {
-      console.log(ux.colorize('yellow', notification.message))
+      console.log(ux.colorize('yellow', notification.message));
     }
   }
 };
@@ -41,7 +41,7 @@ export default updateNotifierHook;
 
 type DistTag = 'latest' | 'beta' | 'prev1' | 'alpha' | 'next';
 
-function getDistTag(version: string): DistTag {
+export function getDistTag(version: string): DistTag {
   const isBeta = version.includes('-beta');
   const isAlpha = version.includes('-alpha');
   const isNext = version.includes('-next');
