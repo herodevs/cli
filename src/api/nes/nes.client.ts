@@ -6,6 +6,7 @@ import type {
   InsightsEolScanInput,
   InsightsEolScanResult,
 } from '../../api/types/nes.types.ts';
+import { GRAPHQL_PATH, getGraphQLHost } from '../../config/constants.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { SbomScanner, buildScanResult } from '../../service/nes/nes.svc.ts';
 import {
@@ -15,7 +16,6 @@ import {
   type ScanInputOptions,
   type ScanResult,
 } from '../types/hd-cli.types.ts';
-import { GRAPHQL_PATH, getGraphQLHost } from '../../config/constants.ts';
 
 export interface NesClient {
   scan: {

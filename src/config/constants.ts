@@ -16,7 +16,7 @@ export function getEolReportUrl() {
       return EOL_REPORT_URL_DEVELOPMENT;
     default:
       return EOL_REPORT_URL_PRODUCTION;
-  } 
+  }
 }
 
 export function getGraphQLHost() {
