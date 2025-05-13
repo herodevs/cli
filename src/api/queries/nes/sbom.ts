@@ -20,6 +20,7 @@ export const M_SCAN = {
             diagnostics
             message
             scanId
+            permalink
             success
             warnings {
               purl
