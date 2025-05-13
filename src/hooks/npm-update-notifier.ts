@@ -4,14 +4,14 @@ import updateNotifier, { type UpdateInfo } from 'update-notifier';
 import pkg from '../../package.json' with { type: 'json' };
 import { debugLogger } from '../service/log.svc.ts';
 
-const updateNotifierHook: Hook.Init = (options) => {
+const updateNotifierHook: Hook.Init = async (options) => {
   debugLogger('pkg.version', pkg.version);
 
   const distTag = getDistTag(pkg.version);
   debugLogger('distTag', distTag);
- const ONE_DAY_MS = 1000 * 60 * 60 * 24;
- // If we're on the latest dist-tag, check for updates every time
- const updateCheckInterval = distTag ===  'latest' ? 0 : ONE_DAY_MS;
+  const ONE_DAY_MS = 1000 * 60 * 60 * 24;
+  // If we're on the latest dist-tag, check for updates every time
+  const updateCheckInterval = distTag === 'latest' ? 0 : ONE_DAY_MS;
 
   debugLogger('updateCheckInterval', updateCheckInterval);
 
