@@ -4,7 +4,7 @@ import { Command, Flags, ux } from '@oclif/core';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
 import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
-import { getEolReportUrl } from '../../config/constants.ts';
+import { config } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
@@ -103,7 +103,7 @@ export default class ScanEol extends Command {
   private printWebReportUrl(scanId: string): void {
     this.logLine();
     const id = scanId.split(SCAN_ID_KEY)[1];
-    const reportCardUrl = getEolReportUrl();
+    const reportCardUrl = config.eolReportUrl;
     const url = ux.colorize('blue', `${reportCardUrl}/${id}`);
     this.log(`🌐 View your free EOL report at: ${reportCardUrl ? url : '(Web Reporter coming soon!)'}`);
   }

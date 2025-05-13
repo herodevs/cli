@@ -6,7 +6,7 @@ import type {
   InsightsEolScanInput,
   InsightsEolScanResult,
 } from '../../api/types/nes.types.ts';
-import { GRAPHQL_PATH, getGraphQLHost } from '../../config/constants.ts';
+import { config } from '../../config/constants.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { SbomScanner, buildScanResult } from '../../service/nes/nes.svc.ts';
 import {
@@ -46,8 +46,8 @@ export class NesApolloClient implements NesClient {
  * Submit a scan for a list of purls after they've been batched by batchSubmitPurls
  */
 function submitScan(purls: string[], options: ScanInputOptions): Promise<InsightsEolScanResult> {
-  const host = getGraphQLHost();
-  const path = GRAPHQL_PATH;
+  const host = config.graphqlHost;
+  const path = config.graphqlPath;
   const url = host + path;
   const client = new NesApolloClient(url);
   return client.scan.purls(purls, options);
