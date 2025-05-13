@@ -105,7 +105,7 @@ export default class ScanEol extends Command {
     const id = scanId.split(SCAN_ID_KEY)[1];
     const reportCardUrl = config.eolReportUrl;
     const url = ux.colorize('blue', `${reportCardUrl}/${id}`);
-    this.log(`🌐 View your free EOL report at: ${reportCardUrl ? url : '(Web Reporter coming soon!)'}`);
+    this.log(`🌐 View your free EOL report at: ${ux.colorize('blue', url)}`);
   }
 
   private async scanSbom(sbom: Sbom): Promise<ScanResult> {
