@@ -36,7 +36,7 @@ const updateNotifierHook: Hook.Init = async (options) => {
 
 export default updateNotifierHook;
 
-type DistTag = 'latest' | 'beta' | 'prev1' | 'alpha' | 'next';
+type DistTag = 'latest' | 'beta' | 'alpha' | 'next';
 
 export function getDistTag(version: string): DistTag {
   if (version.includes('-beta')) return 'beta';
