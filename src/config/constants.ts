@@ -1,4 +1,4 @@
-export const EOL_REPORT_URL = ''
+export const EOL_REPORT_URL = '';
 export const GRAPHQL_HOST = 'https://api.nes.herodevs.com';
 
 export const config = {
@@ -6,4 +6,3 @@ export const config = {
   graphqlHost: process.env.GRAPHQL_HOST || GRAPHQL_HOST,
   graphqlPath: '/graphql',
 };
-
