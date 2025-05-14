@@ -10,6 +10,10 @@ The HeroDevs CLI
 * [@herodevs/cli](#herodevscli)
 <!-- tocstop -->
 
+## TERMS
+
+Use of this CLI is governed by the [HeroDevs End of Life Dataset Terms of Service and Data Policy](https://docs.herodevs.com/legal/end-of-life-dataset-terms).
+
 ## Scanning Behavior
 
 The CLI's scanning commands (`hd scan eol` and `hd scan sbom`) are designed to be non-invasive:
