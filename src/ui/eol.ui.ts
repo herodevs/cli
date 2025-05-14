@@ -29,10 +29,10 @@ function getDaysEolString(daysEol: number | null): string {
   if (daysEol === null) {
     return '';
   }
-  if (daysEol < 0) {
-    return `${Math.abs(daysEol)} days from now`;
+  if (daysEol <= 0) {
+    return `${Math.abs(daysEol) + 1} days from now`;
   }
-  if (daysEol === 0) {
+  if (daysEol > 0) {
     return 'today';
   }
   return `${daysEol} days ago`;
