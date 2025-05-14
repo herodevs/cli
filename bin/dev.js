@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 process.env.GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
-process.env.EOL_REPORT_URL = 'https://eol-report-card.stage.apps.herodevs.io';
+process.env.EOL_REPORT_URL = 'https://eol-report-card.stage.apps.herodevs.io/reports';
 
 import main from './main.js';
 

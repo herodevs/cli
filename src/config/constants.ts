@@ -1,4 +1,4 @@
-export const EOL_REPORT_URL = 'https://eol-report-card.apps.herodevs.com';
+export const EOL_REPORT_URL = 'https://eol-report-card.apps.herodevs.com/reports';
 export const GRAPHQL_HOST = 'https://api.nes.herodevs.com';
 export const GRAPHQL_PATH = '/graphql';
 
