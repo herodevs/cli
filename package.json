@@ -1,6 +1,6 @@
 {
   "name": "@herodevs/cli",
-  "version": "1.6.0-beta.0",
+  "version": "1.3.0-beta.1",
   "author": "HeroDevs, Inc",
   "bin": {
     "hd": "./bin/run.js"
