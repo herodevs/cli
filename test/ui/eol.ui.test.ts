@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+import { config } from '../../src/config/constants.ts';
 import {
   convertComponentToTableRow,
   createTableForStatus,
@@ -7,7 +8,6 @@ import {
   truncateString,
 } from '../../src/ui/eol.ui.ts';
 import { createMockComponent, createMockScan } from '../utils/mocks/scan-result-component.mock.ts';
-import { config } from '../../src/config/constants.ts';
 
 describe('EOL UI', () => {
   describe('truncateString', () => {
@@ -157,7 +157,7 @@ describe('EOL UI', () => {
       if (config.showVulnCount) {
         assert.match(headerLine, /NAME.*VERSION.*TYPE.*# OF VULNS/);
       } else {
-        assert.match(headerLine, /NAME.*VERSION.*TYPE.*/); 
+        assert.match(headerLine, /NAME.*VERSION.*TYPE.*/);
       }
       // Verify EOL and DAYS EOL columns are not present
       assert.doesNotMatch(headerLine, /EOL/);
