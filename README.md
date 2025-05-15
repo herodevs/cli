@@ -30,7 +30,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/1.6.0-beta.0 darwin-arm64 node-v22.14.0
+@herodevs/cli/2.0.0-beta.0 darwin-arm64 node-v22.14.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -64,7 +64,7 @@ DESCRIPTION
   Display help for hd.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.27/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.28/src/commands/help.ts)_
 
 ## `hd report committers`
 
@@ -95,7 +95,7 @@ EXAMPLES
   $ hd report committers --csv
 ```
 
-_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v1.6.0-beta.0/src/commands/report/committers.ts)_
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.0/src/commands/report/committers.ts)_
 
 ## `hd report purls`
 
@@ -129,7 +129,7 @@ EXAMPLES
   $ hd report purls --save --csv
 ```
 
-_See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v1.6.0-beta.0/src/commands/report/purls.ts)_
+_See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.0/src/commands/report/purls.ts)_
 
 ## `hd scan eol`
 
@@ -163,7 +163,7 @@ EXAMPLES
   $ hd scan eol -a --dir=./my-project
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v1.6.0-beta.0/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.0/src/commands/scan/eol.ts)_
 
 ## `hd scan sbom`
 
@@ -191,7 +191,7 @@ EXAMPLES
   $ hd scan sbom --file=path/to/sbom.json
 ```
 
-_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v1.6.0-beta.0/src/commands/scan/sbom.ts)_
+_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.0/src/commands/scan/sbom.ts)_
 
 ## `hd update [CHANNEL]`
 
@@ -229,5 +229,5 @@ EXAMPLES
     $ hd update --available
 ```
 
-_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.6.38/src/commands/update.ts)_
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.6.39/src/commands/update.ts)_
 <!-- commandsstop -->
