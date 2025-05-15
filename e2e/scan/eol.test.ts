@@ -8,6 +8,7 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { runCommand } from '@oclif/test';
+import { config } from '../../src/config/constants';
 
 const execAsync = promisify(exec);
 
@@ -22,7 +23,11 @@ describe('default arguments', () => {
 
     // Match table header
     match(stdout, /┌.*┬.*┬.*┬.*┬.*┐/, 'Should show table top border');
-    match(stdout, /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│ # OF VULNS*|/, 'Should show table headers');
+    if (config.showVulnCount) {
+      match(stdout, /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│ # OF VULNS*|/, 'Should show table headers');
+    } else {
+      match(stdout, /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*|/, 'Should show table headers');
+    }
     match(stdout, /├.*┼.*┼.*┼.*┼.*┤/, 'Should show table header separator');
 
     // Match table content
@@ -192,7 +197,11 @@ describe('scan:eol e2e', () => {
 
     // Match table header
     match(stdout, /┌.*┬.*┬.*┬.*┬.*┐/, 'Should show table top border');
-    match(stdout, /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│ # OF VULNS*|/, 'Should show table headers');
+    if (config.showVulnCount) {
+      match(stdout, /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*│ # OF VULNS*|/, 'Should show table headers');
+    } else {
+      match(stdout, /│ NAME\s*│ VERSION\s*│ EOL\s*│ DAYS EOL\s*│ TYPE\s*|/, 'Should show table headers');
+    }
     match(stdout, /├.*┼.*┼.*┼.*┼.*┤/, 'Should show table header separator');
 
     // Match table content
