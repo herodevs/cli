@@ -7,6 +7,7 @@ import type {
   InsightsEolScanComponent,
   InsightsEolScanComponentInfo,
 } from '../api/types/nes.types.ts';
+import { config } from '../config/constants.ts';
 import { resolvePurlPackageName } from '../service/eol/eol.svc.ts';
 import { parseMomentToSimpleDate } from './date.ui.ts';
 import { INDICATORS, MAX_PURL_LENGTH, MAX_TABLE_COLUMN_WIDTH, STATUS_COLORS } from './shared.ui.ts';
@@ -44,13 +45,13 @@ function formatDetailedComponent(purl: string, info: InsightsEolScanComponentInf
   const eolAtString = parseMomentToSimpleDate(eolAt);
   const daysEolString = getDaysEolString(daysEol);
 
-  const output = [
-    `${simpleComponent}`,
-    `    ⮑  EOL Date: ${eolAtString} (${daysEolString})`,
-    `    ⮑  # of Vulns: ${vulnCount ?? ''}`,
-  ]
-    .filter(Boolean)
-    .join('\n');
+  const eolString = [`${simpleComponent}`, `    ⮑  EOL Date: ${eolAtString} (${daysEolString})`];
+
+  if (config.showVulnCount) {
+    eolString.push(`    ⮑  # of Vulns: ${vulnCount ?? ''}`);
+  }
+
+  const output = eolString.filter(Boolean).join('\n');
 
   return output;
 }
@@ -90,6 +91,19 @@ export function createTableForStatus(
   const data = grouped[status].map((component) => convertComponentToTableRow(component));
 
   if (status === 'EOL' || status === 'SUPPORTED') {
+    if (config.showVulnCount) {
+      return makeTable({
+        data,
+        columns: [
+          { key: 'name', name: 'NAME', width: MAX_TABLE_COLUMN_WIDTH },
+          { key: 'version', name: 'VERSION', width: 10 },
+          { key: 'eol', name: 'EOL', width: 12 },
+          { key: 'daysEol', name: 'DAYS EOL', width: 10 },
+          { key: 'type', name: 'TYPE', width: 12 },
+          { key: 'vulnCount', name: '# OF VULNS', width: 12 },
+        ],
+      });
+    }
     return makeTable({
       data,
       columns: [
@@ -98,17 +112,28 @@ export function createTableForStatus(
         { key: 'eol', name: 'EOL', width: 12 },
         { key: 'daysEol', name: 'DAYS EOL', width: 10 },
         { key: 'type', name: 'TYPE', width: 12 },
+      ],
+    });
+  }
+
+  if (config.showVulnCount) {
+    return makeTable({
+      data,
+      columns: [
+        { key: 'name', name: 'NAME', width: MAX_TABLE_COLUMN_WIDTH },
+        { key: 'version', name: 'VERSION', width: 10 },
+        { key: 'type', name: 'TYPE', width: 12 },
         { key: 'vulnCount', name: '# OF VULNS', width: 12 },
       ],
     });
   }
+
   return makeTable({
     data,
     columns: [
       { key: 'name', name: 'NAME', width: MAX_TABLE_COLUMN_WIDTH },
       { key: 'version', name: 'VERSION', width: 10 },
       { key: 'type', name: 'TYPE', width: 12 },
-      { key: 'vulnCount', name: '# OF VULNS', width: 12 },
     ],
   });
 }

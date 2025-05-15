@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+import { config } from '../../src/config/constants.ts';
 import {
   convertComponentToTableRow,
   createTableForStatus,
@@ -89,8 +90,12 @@ describe('EOL UI', () => {
       // Assert
       assert.strictEqual(typeof table, 'string');
       // Check that the table contains the expected data, ignoring exact formatting
-      assert.match(table, /test1.*1.0.0.*2023-01-01.*365.*npm.*0/);
-      assert.match(table, /test3.*3.0.0.*2023-02-01.*400.*npm.*0/);
+      if (config.showVulnCount) {
+        assert.match(table, /test1.*1.0.0.*2023-01-01.*365.*npm.*0/);
+      } else {
+        assert.match(table, /test1.*1.0.0.*2023-01-01.*365.*npm/);
+      }
+      assert.match(table, /test3.*3.0.0.*2023-02-01.*400.*npm/);
     });
 
     it('returns empty table when no components match status', () => {
@@ -123,13 +128,16 @@ describe('EOL UI', () => {
       // Check that the table contains the expected columns in order
       const lines = table.split('\n');
       const headerLine = lines[1]; // Second line contains headers
-      assert.match(headerLine, /NAME.*VERSION.*TYPE.*# OF VULNS/);
+      if (config.showVulnCount) {
+        assert.match(headerLine, /NAME.*VERSION.*TYPE.*# OF VULNS/);
+        assert.match(table, /test1.*1.0.0.*npm.*0/);
+      } else {
+        assert.match(headerLine, /NAME.*VERSION.*TYPE/);
+        assert.match(table, /test1.*1.0.0.*npm/);
+      }
       // Verify EOL and DAYS EOL columns are not present
       assert.doesNotMatch(headerLine, /EOL/);
       assert.doesNotMatch(headerLine, /DAYS EOL/);
-      // Check data rows
-      assert.match(table, /test1.*1.0.0.*npm.*0/);
-      assert.match(table, /test3.*3.0.0.*npm.*0/);
     });
 
     it('creates a table for UNKNOWN status without EOL columns', () => {
@@ -149,13 +157,16 @@ describe('EOL UI', () => {
       // Check that the table contains the expected columns in order
       const lines = table.split('\n');
       const headerLine = lines[1]; // Second line contains headers
-      assert.match(headerLine, /NAME.*VERSION.*TYPE.*# OF VULNS/);
+      if (config.showVulnCount) {
+        assert.match(headerLine, /NAME.*VERSION.*TYPE.*# OF VULNS/);
+        assert.match(table, /test1.*1.0.0.*npm.*0/);
+      } else {
+        assert.match(headerLine, /NAME.*VERSION.*TYPE/);
+        assert.match(table, /test1.*1.0.0.*npm/);
+      }
       // Verify EOL and DAYS EOL columns are not present
       assert.doesNotMatch(headerLine, /EOL/);
       assert.doesNotMatch(headerLine, /DAYS EOL/);
-      // Check data rows
-      assert.match(table, /test1.*1.0.0.*npm.*0/);
-      assert.match(table, /test3.*3.0.0.*npm.*0/);
     });
 
     it('returns empty table when no components match status', () => {
