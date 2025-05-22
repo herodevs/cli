@@ -30,7 +30,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.1 darwin-arm64 node-v22.14.0
+@herodevs/cli/2.0.0-beta.2 darwin-arm64 node-v22.15.1
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -95,7 +95,7 @@ EXAMPLES
   $ hd report committers --csv
 ```
 
-_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.1/src/commands/report/committers.ts)_
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.2/src/commands/report/committers.ts)_
 
 ## `hd report purls`
 
@@ -129,7 +129,7 @@ EXAMPLES
   $ hd report purls --save --csv
 ```
 
-_See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.1/src/commands/report/purls.ts)_
+_See code: [src/commands/report/purls.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.2/src/commands/report/purls.ts)_
 
 ## `hd scan eol`
 
@@ -163,7 +163,7 @@ EXAMPLES
   $ hd scan eol -a --dir=./my-project
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.1/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.2/src/commands/scan/eol.ts)_
 
 ## `hd scan sbom`
 
@@ -191,7 +191,7 @@ EXAMPLES
   $ hd scan sbom --file=path/to/sbom.json
 ```
 
-_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.1/src/commands/scan/sbom.ts)_
+_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.2/src/commands/scan/sbom.ts)_
 
 ## `hd update [CHANNEL]`
 
