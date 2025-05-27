@@ -60,7 +60,7 @@ export const batchSubmitPurls = async (
   batchSize = DEFAULT_SCAN_BATCH_SIZE,
 ): Promise<ScanResult> => {
   try {
-    const dedupedAndEncodedPurls = dedupeAndEncodePurls(purls)
+    const dedupedAndEncodedPurls = dedupeAndEncodePurls(purls);
     const batches = createBatches(dedupedAndEncodedPurls, batchSize);
     debugLogger('Processing %d batches', batches.length);
 
@@ -91,7 +91,7 @@ export const dedupeAndEncodePurls = (purls: string[]): string[] => {
       const encodedPurl = PackageURL.fromString(purl).toString();
       if (!dedupedAndEncodedPurls.has(encodedPurl)) {
         dedupedAndEncodedPurls.add(encodedPurl);
-      } 
+      }
     } catch (error) {
       debugLogger('Error encoding purl: %s', error);
     }
