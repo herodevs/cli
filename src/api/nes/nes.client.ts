@@ -1,4 +1,5 @@
 import type * as apollo from '@apollo/client/core/index.js';
+import { PackageURL } from 'packageurl-js';
 
 import { ApolloClient } from '../../api/client.ts';
 import type {
@@ -59,7 +60,8 @@ export const batchSubmitPurls = async (
   batchSize = DEFAULT_SCAN_BATCH_SIZE,
 ): Promise<ScanResult> => {
   try {
-    const batches = createBatches(purls, batchSize);
+    const dedupedAndEncodedPurls = dedupeAndEncodePurls(purls)
+    const batches = createBatches(dedupedAndEncodedPurls, batchSize);
     debugLogger('Processing %d batches', batches.length);
 
     if (batches.length === 0) {
@@ -78,6 +80,24 @@ export const batchSubmitPurls = async (
     debugLogger('Fatal error in batchSubmitPurls: %s', error);
     throw new Error(`Failed to process purls: ${error instanceof Error ? error.message : String(error)}`);
   }
+};
+
+export const dedupeAndEncodePurls = (purls: string[]): string[] => {
+  const dedupedAndEncodedPurls = new Set<string>();
+
+  for (const purl of purls) {
+    try {
+      // The PackageURL.fromString method encodes each part of the purl
+      const encodedPurl = PackageURL.fromString(purl).toString();
+      if (!dedupedAndEncodedPurls.has(encodedPurl)) {
+        dedupedAndEncodedPurls.add(encodedPurl);
+      } 
+    } catch (error) {
+      debugLogger('Error encoding purl: %s', error);
+    }
+  }
+
+  return Array.from(dedupedAndEncodedPurls);
 };
 
 export const createBatches = (items: string[], batchSize: number): string[][] => {
