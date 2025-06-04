@@ -12,7 +12,7 @@ The HeroDevs CLI
 
 ## Installation Instructions
 
-1. Install node v20 or higher: [https://github.com/nvm-sh/nvm?tab=readme-ov-file#installing-and-updating](https://nodejs.org/en/download)
+1. Install node v20 or higher: [Download Node](https://nodejs.org/en/download)
 1. Install the CLI using one of the following methods:
    - Globally: Refer to the [Usage](#usage) instructions on installing the CLI globally
    - Npx:`npx @herodevs/cli@beta <commands>`
