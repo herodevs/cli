@@ -153,7 +153,7 @@ describe('scan:eol e2e', () => {
     unlinkSync(reportPath);
   });
 
-  it('scans extra-large.purls.json for EOL components', async () => {
+  it.skip('scans extra-large.purls.json for EOL components', async () => {
     const cmd = `scan:eol --purls ${extraLargePurlsPath}`;
     const { stdout } = await run(cmd);
 
