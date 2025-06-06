@@ -20,6 +20,7 @@ export const M_SCAN = {
             diagnostics
             message
             scanId
+            createdOn
             success
             warnings {
               purl
