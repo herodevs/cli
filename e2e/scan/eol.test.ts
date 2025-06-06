@@ -1,4 +1,4 @@
-import { doesNotThrow } from 'node:assert';
+import { doesNotThrow, notStrictEqual } from 'node:assert';
 import { doesNotMatch, match, strictEqual } from 'node:assert/strict';
 import { exec } from 'node:child_process';
 import { existsSync, readFileSync, unlinkSync } from 'node:fs';
@@ -12,14 +12,19 @@ import { config } from '../../src/config/constants';
 
 const execAsync = promisify(exec);
 
-const GRAPHQL_HOST = 'https://api.dev.nes.herodevs.com';
+describe('environment', () => {
+  it('should not be configured to run against the production environment', () => {
+    notStrictEqual(process.env.GRAPHQL_HOST, 'https://api.nes.herodevs.com');
+    notStrictEqual(process.env.EOL_REPORT_URL, 'https://eol-report-card.apps.herodevs.io/reports');
+    notStrictEqual(config.graphqlHost, 'https://api.nes.herodevs.com');
+    notStrictEqual(config.eolReportUrl, 'https://eol-report-card.apps.herodevs.io/reports');
+  });
+});
 
 describe('default arguments', () => {
   it('defaults to scan:eol -t when no arguments are provided', async () => {
     // Run the CLI directly with no arguments
-    const { stdout } = await execAsync('node bin/run.js', {
-      env: { ...process.env, GRAPHQL_HOST },
-    });
+    const { stdout } = await execAsync('node bin/run.js');
 
     // Match table header
     match(stdout, /┌.*┬.*┬.*┬.*┬.*┐/, 'Should show table top border');
@@ -42,9 +47,7 @@ describe('default arguments', () => {
   });
 
   it('runs scan:eol -a -t when -a -t is passed in', async () => {
-    const { stdout, stderr } = await execAsync('node bin/run.js -a -t', {
-      env: { ...process.env, GRAPHQL_HOST },
-    });
+    const { stdout, stderr } = await execAsync('node bin/run.js -a -t');
 
     // Verify command executed successfully
     match(stdout, /components scanned/, 'Should show components scanned message');
@@ -52,9 +55,7 @@ describe('default arguments', () => {
 
   it('runs scan:eol --json when --json is passed in', async () => {
     // Run the CLI with --json flag
-    const { stdout } = await execAsync('node bin/run.js --json', {
-      env: { ...process.env, GRAPHQL_HOST },
-    });
+    const { stdout } = await execAsync('node bin/run.js --json');
 
     // Verify JSON output
     doesNotMatch(stdout, /Here are the results of the scan:/, 'Should not show results header');
@@ -62,9 +63,7 @@ describe('default arguments', () => {
   });
 
   it('shows help for scan:eol when --help is passed in', async () => {
-    const { stdout } = await execAsync('node bin/run.js --help', {
-      env: { ...process.env, GRAPHQL_HOST },
-    });
+    const { stdout } = await execAsync('node bin/run.js --help');
 
     // Verify help output
     match(stdout, /USAGE/, 'Should show usage section');
@@ -73,9 +72,7 @@ describe('default arguments', () => {
   });
 
   it('shows global help when help is passed in', async () => {
-    const { stdout } = await execAsync('node bin/run.js help', {
-      env: { ...process.env, GRAPHQL_HOST },
-    });
+    const { stdout } = await execAsync('node bin/run.js help');
 
     // Verify help output
     match(stdout, /USAGE/, 'Should show usage section');
@@ -96,9 +93,6 @@ describe('scan:eol e2e', () => {
   const angular17Purls = path.resolve(__dirname, '../fixtures/npm/angular-17.purls.json');
 
   async function run(cmd: string) {
-    // Set up environment
-    process.env.GRAPHQL_HOST = GRAPHQL_HOST;
-
     // Ensure fixtures directory exists and is clean
     await mkdir(fixturesDir, { recursive: true });
 
@@ -306,10 +300,6 @@ describe('scan:eol e2e directory', () => {
   const reportPath = path.join(simpleDir, 'eol.report.json');
 
   async function run(cmd: string) {
-    // Set up environment
-    process.env.GRAPHQL_HOST = GRAPHQL_HOST;
-    // process.env.GRAPHQL_HOST = 'http://localhost:3000';
-
     // Ensure test directory exists and is clean
     await mkdir(simpleDir, { recursive: true });
 

@@ -10,3 +10,4 @@ yarn.lock
 pnpm-lock.yaml
 **/packages/cli-*/bin/
 **/tsconfig.tsbuildinfo
+.envrc
