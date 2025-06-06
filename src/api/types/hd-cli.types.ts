@@ -27,6 +27,7 @@ export type ScanInput = {
 };
 export interface ScanResult {
   components: ScanResultComponentsMap;
+  createdOn?: string;
   diagnostics?: Record<string, unknown>;
   message: string;
   success: boolean;

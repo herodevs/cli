@@ -51,7 +51,7 @@ export default class ScanEol extends Command {
     }),
   };
 
-  public async run(): Promise<{ components: InsightsEolScanComponent[] }> {
+  public async run(): Promise<{ components: InsightsEolScanComponent[]; createdOn: string }> {
     const { flags } = await this.parse(ScanEol);
 
     const scan = await this.getScan(flags, this.config);
@@ -61,7 +61,7 @@ export default class ScanEol extends Command {
     const components = this.getFilteredComponents(scan, flags.all);
 
     if (flags.save) {
-      await this.saveReport(components);
+      await this.saveReport(components, scan.createdOn);
     }
 
     if (!this.jsonEnabled()) {
@@ -77,7 +77,7 @@ export default class ScanEol extends Command {
       }
     }
 
-    return { components };
+    return { components, createdOn: scan.createdOn ?? '' };
   }
 
   private async getScan(flags: Record<string, string>, config: Command['config']): Promise<ScanResult> {
@@ -136,26 +136,23 @@ export default class ScanEol extends Command {
     );
   }
 
-  private async saveReport(components: InsightsEolScanComponent[]): Promise<void> {
+  private async saveReport(components: InsightsEolScanComponent[], createdOn?: string): Promise<void> {
     const { flags } = await this.parse(ScanEol);
     const reportPath = path.join(flags.dir || process.cwd(), 'eol.report.json');
 
     try {
-      fs.writeFileSync(reportPath, JSON.stringify({ components }, null, 2));
+      fs.writeFileSync(reportPath, JSON.stringify({ components, createdOn }, null, 2));
       this.log('Report saved to eol.report.json');
     } catch (error) {
       if (!isErrnoException(error)) {
         this.error(`Failed to save report: ${getErrorMessage(error)}`);
       }
-      switch (error.code) {
-        case 'EACCES':
-          this.error('Permission denied. Unable to save report to eol.report.json');
-          break;
-        case 'ENOSPC':
-          this.error('No space left on device. Unable to save report to eol.report.json');
-          break;
-        default:
-          this.error(`Failed to save report: ${getErrorMessage(error)}`);
+      if (error.code === 'EACCES') {
+        this.error('Permission denied. Unable to save report to eol.report.json');
+      } else if (error.code === 'ENOSPC') {
+        this.error('No space left on device. Unable to save report to eol.report.json');
+      } else {
+        this.error(`Failed to save report: ${getErrorMessage(error)}`);
       }
     }
   }

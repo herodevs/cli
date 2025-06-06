@@ -149,6 +149,11 @@ describe('scan:eol e2e', () => {
     match(report, /"components":\s*\[/, 'Report should contain components array');
     match(report, /"purl":\s*"pkg:npm\/bootstrap@3\.1\.1"/, 'Report should contain bootstrap package');
     match(report, /"isEol":\s*true/, 'Bootstrap should be marked as EOL');
+    match(
+      report,
+      /"createdOn": "\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)"/,
+      'Report should contain a date created on property in ISO format',
+    );
 
     unlinkSync(reportPath);
   });
@@ -352,6 +357,11 @@ describe('scan:eol e2e directory', () => {
     match(report, /"components":\s*\[/, 'Report should contain components array');
     match(report, /"purl":\s*"pkg:npm\/bootstrap@3\.1\.1"/, 'Report should contain bootstrap package');
     match(report, /"isEol":\s*true/, 'Bootstrap should be marked as EOL');
+    match(
+      report,
+      /"createdOn": "\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)"/,
+      'Report should contain a date created on property in ISO format',
+    );
 
     unlinkSync(reportPath);
   });

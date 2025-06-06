@@ -72,6 +72,7 @@ export const batchSubmitPurls = async (
         success: true,
         warnings: [],
         scanId: undefined,
+        createdOn: undefined,
       } satisfies ScanResult;
     }
 

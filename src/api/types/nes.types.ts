@@ -26,6 +26,7 @@ export interface ScanResponse {
  */
 export interface InsightsEolScanResult {
   scanId?: string;
+  createdOn: string;
   success: boolean;
   message: string;
   components: InsightsEolScanComponent[];
