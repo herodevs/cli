@@ -10,6 +10,14 @@ The HeroDevs CLI
 * [@herodevs/cli](#herodevscli)
 <!-- tocstop -->
 
+## Installation Instructions
+
+1. Install node v20 or higher: [Download Node](https://nodejs.org/en/download)
+1. Install the CLI using one of the following methods:
+   - Globally: Refer to the [Usage](#usage) instructions on installing the CLI globally
+   - Npx:`npx @herodevs/cli@beta <commands>`
+1. Refer to the [Commands](#commands) section for a list of commands
+
 ## TERMS
 
 Use of this CLI is governed by the [HeroDevs End of Life Dataset Terms of Service and Data Policy](https://docs.herodevs.com/legal/end-of-life-dataset-terms).
