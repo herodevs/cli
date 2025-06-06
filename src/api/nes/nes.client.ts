@@ -50,6 +50,7 @@ function submitScan(purls: string[], options: ScanInputOptions): Promise<Insight
   const host = config.graphqlHost;
   const path = config.graphqlPath;
   const url = host + path;
+  debugLogger('Submitting scan to %s', url);
   const client = new NesApolloClient(url);
   return client.scan.purls(purls, options);
 }
