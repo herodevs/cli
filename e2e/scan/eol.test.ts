@@ -15,9 +15,9 @@ const execAsync = promisify(exec);
 describe('environment', () => {
   it('should not be configured to run against the production environment', () => {
     notStrictEqual(process.env.GRAPHQL_HOST, 'https://api.nes.herodevs.com');
-    notStrictEqual(process.env.EOL_REPORT_URL, 'https://eol-report-card.apps.herodevs.io/reports');
+    notStrictEqual(process.env.EOL_REPORT_URL, 'https://eol-report-card.apps.herodevs.com/reports');
     notStrictEqual(config.graphqlHost, 'https://api.nes.herodevs.com');
-    notStrictEqual(config.eolReportUrl, 'https://eol-report-card.apps.herodevs.io/reports');
+    notStrictEqual(config.eolReportUrl, 'https://eol-report-card.apps.herodevs.com/reports');
   });
 });
 

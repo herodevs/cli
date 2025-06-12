@@ -6,7 +6,6 @@ export const STATUS_COLORS: Record<ComponentStatus, string> = {
   UNKNOWN: 'default',
   OK: 'green',
   SUPPORTED: 'yellow',
-  NES_AVAILABLE: 'default',
 };
 
 export const INDICATORS: Record<ComponentStatus, string> = {
@@ -14,7 +13,6 @@ export const INDICATORS: Record<ComponentStatus, string> = {
   UNKNOWN: ux.colorize(STATUS_COLORS.UNKNOWN, '•'),
   OK: ux.colorize(STATUS_COLORS.OK, '✔'),
   SUPPORTED: ux.colorize(STATUS_COLORS.SUPPORTED, '⚡'),
-  NES_AVAILABLE: ux.colorize(STATUS_COLORS.NES_AVAILABLE, '!'),
 };
 
 export const SCAN_ID_KEY = 'eol-scan-v1-';
