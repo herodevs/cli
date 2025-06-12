@@ -172,7 +172,7 @@ describe('scan:eol e2e', () => {
 
     // Match EOL count
     match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
-    match(stdout, /1( .*)EOL Packages with HeroDevs NES Remediations Available/, 'Should show remediation count');
+    match(stdout, /1( .*)HeroDevs NES Remediations Available/, 'Should show remediation count');
   });
 
   describe('web report URL', () => {

@@ -178,7 +178,7 @@ export function countComponentsByStatus(components: InsightsEolScanComponent[]):
   for (const component of components) {
     grouped[component.info.status]++;
 
-    if (component.remediation) {
+    if (component.info.nesAvailable) {
       grouped.NES_AVAILABLE++;
     }
   }
