@@ -160,7 +160,7 @@ export default class ScanEol extends Command {
     this.log(
       ux.colorize(
         STATUS_COLORS.NES_AVAILABLE,
-        `${INDICATORS.NES_AVAILABLE} ${NES_AVAILABLE.toLocaleString().padEnd(5)} EOL Packages with HeroDevs NES Remediations Available`,
+        `${INDICATORS.NES_AVAILABLE} ${NES_AVAILABLE.toLocaleString().padEnd(5)} HeroDevs NES Remediations Available`,
       ),
     );
   }
