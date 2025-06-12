@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
+import terminalLink from 'terminal-link';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
 import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
@@ -10,7 +11,6 @@ import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
 import { INDICATORS, SCAN_ID_KEY, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
-import terminalLink from 'terminal-link';
 
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
