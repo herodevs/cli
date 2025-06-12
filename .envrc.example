@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 export GRAPHQL_HOST='https://api.nes.herodevs.com';
-export EOL_REPORT_URL='https://eol-report-card.apps.herodevs.com/reports';
+export EOL_REPORT_URL='https://eol-report-card.apps.herodevs.io/reports';
