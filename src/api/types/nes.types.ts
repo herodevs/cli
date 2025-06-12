@@ -48,6 +48,7 @@ export interface InsightsEolScanComponentInfo {
 export interface InsightsEolScanComponent {
   info: InsightsEolScanComponentInfo;
   purl: string;
+  remediation?: { id: string };
 }
 
 export interface ScanWarning {
@@ -59,4 +60,4 @@ export interface ScanWarning {
 }
 
 export type ComponentStatus = (typeof VALID_STATUSES)[number];
-export const VALID_STATUSES = ['UNKNOWN', 'OK', 'EOL', 'SUPPORTED'] as const;
+export const VALID_STATUSES = ['UNKNOWN', 'OK', 'EOL', 'SUPPORTED', 'NES_AVAILABLE'] as const;

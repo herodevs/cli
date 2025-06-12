@@ -136,7 +136,7 @@ export default class ScanEol extends Command {
   }
 
   private displayResults(components: InsightsEolScanComponent[]) {
-    const { UNKNOWN, OK, SUPPORTED, EOL } = countComponentsByStatus(components);
+    const { UNKNOWN, OK, SUPPORTED, EOL, NES_AVAILABLE } = countComponentsByStatus(components);
 
     if (!UNKNOWN && !OK && !SUPPORTED && !EOL) {
       this.log(ux.colorize('yellow', 'No components found in scan.'));
@@ -150,12 +150,18 @@ export default class ScanEol extends Command {
     this.log(
       ux.colorize(
         STATUS_COLORS.SUPPORTED,
-        `${INDICATORS.SUPPORTED}${SUPPORTED.toLocaleString().padEnd(5)} Scheduled End-of-Life (EOL)`,
+        `${INDICATORS.SUPPORTED}${SUPPORTED.toLocaleString().padEnd(5)} Scheduled EOL`,
       ),
     );
     this.log(ux.colorize(STATUS_COLORS.OK, `${INDICATORS.OK} ${OK.toLocaleString().padEnd(5)} OK`));
     this.log(
       ux.colorize(STATUS_COLORS.UNKNOWN, `${INDICATORS.UNKNOWN} ${UNKNOWN.toLocaleString().padEnd(5)} Unknown Status`),
+    );
+    this.log(
+      ux.colorize(
+        STATUS_COLORS.NES_AVAILABLE,
+        `${INDICATORS.NES_AVAILABLE} ${NES_AVAILABLE.toLocaleString().padEnd(5)} EOL Packages with HeroDevs NES Remediations Available`,
+      ),
     );
   }
 }
@@ -166,10 +172,15 @@ export function countComponentsByStatus(components: InsightsEolScanComponent[]):
     OK: 0,
     SUPPORTED: 0,
     EOL: 0,
+    NES_AVAILABLE: 0,
   };
 
   for (const component of components) {
     grouped[component.info.status]++;
+
+    if (component.remediation) {
+      grouped.NES_AVAILABLE++;
+    }
   }
 
   return grouped;

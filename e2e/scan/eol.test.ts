@@ -165,13 +165,14 @@ describe('scan:eol e2e', () => {
     doesNotThrow(() => JSON.parse(stdout));
   });
 
-  it('correctly identifies Angular 17 as having a EOL date', async () => {
+  it('correctly identifies Angular 17 as having a EOL date and remediations available', async () => {
     const angular17Purls = path.resolve(__dirname, '../fixtures/npm/angular-17.purls.json');
     const cmd = `scan:eol --purls=${angular17Purls}`;
     const { stdout } = await run(cmd);
 
     // Match EOL count
     match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
+    match(stdout, /1( .*)EOL Packages with HeroDevs NES Remediations Available/, 'Should show remediation count');
   });
 
   describe('web report URL', () => {

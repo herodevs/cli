@@ -16,6 +16,9 @@ export const M_SCAN = {
                 status
                 vulnCount
               }
+              remediation {
+                id
+              }
             }
             diagnostics
             message
