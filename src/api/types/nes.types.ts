@@ -43,12 +43,13 @@ export interface InsightsEolScanComponentInfo {
   status: ComponentStatus;
   daysEol: number | null;
   vulnCount: number | null;
+  nesAvailable?: boolean;
 }
 
 export interface InsightsEolScanComponent {
   info: InsightsEolScanComponentInfo;
   purl: string;
-  remediation?: { id: string };
+  remediation?: { id: string } | null;
 }
 
 export interface ScanWarning {
