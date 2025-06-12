@@ -15,8 +15,4 @@ export const INDICATORS: Record<ComponentStatus, string> = {
   SUPPORTED: ux.colorize(STATUS_COLORS.SUPPORTED, '⚡'),
 };
 
-export const MAX_PURL_LENGTH = 60;
-
-export const MAX_TABLE_COLUMN_WIDTH = 30;
-
 export const SCAN_ID_KEY = 'eol-scan-v1-';

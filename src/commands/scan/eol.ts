@@ -8,9 +8,9 @@ import { config } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
-import { createStatusDisplay, createTableForStatus, groupComponentsByStatus } from '../../ui/eol.ui.ts';
 import { INDICATORS, SCAN_ID_KEY, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
+import terminalLink from 'terminal-link';
 
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
@@ -39,42 +39,30 @@ export default class ScanEol extends Command {
       default: false,
       description: 'Save the generated report as eol.report.json in the scanned directory',
     }),
-    all: Flags.boolean({
-      char: 'a',
-      description: 'Show all components (default is EOL and SUPPORTED only)',
-      default: false,
-    }),
-    table: Flags.boolean({
-      char: 't',
-      description: 'Display the results in a table',
-      default: false,
-    }),
   };
 
   public async run(): Promise<{ components: InsightsEolScanComponent[]; createdOn: string }> {
     const { flags } = await this.parse(ScanEol);
 
     const scan = await this.getScan(flags, this.config);
+    const components = Array.from(scan.components.values());
 
-    ux.action.stop('\nScan completed');
-
-    const components = this.getFilteredComponents(scan, flags.all);
+    ux.action.stop();
 
     if (flags.save) {
       await this.saveReport(components, scan.createdOn);
     }
 
     if (!this.jsonEnabled()) {
-      if (flags.table) {
-        this.log(`${scan.components.size} components scanned`);
-        this.displayResultsInTable(scan, flags.all);
-      } else {
-        this.displayResults(scan, flags.all);
-      }
+      this.displayResults(components);
 
       if (scan.scanId) {
         this.printWebReportUrl(scan.scanId);
       }
+
+      this.log('* Use --json to output the report payload');
+      this.log('* Use --save to save the report to eol.report.json');
+      this.log('* Use --help for more commands or options');
     }
 
     return { components, createdOn: scan.createdOn ?? '' };
@@ -101,11 +89,11 @@ export default class ScanEol extends Command {
   }
 
   private printWebReportUrl(scanId: string): void {
-    this.logLine();
+    this.log(ux.colorize('bold', '-'.repeat(40)));
     const id = scanId.split(SCAN_ID_KEY)[1];
     const reportCardUrl = config.eolReportUrl;
-    const url = ux.colorize('blue', `${reportCardUrl}/${id}`);
-    this.log(`🌐 View your free EOL report at: ${ux.colorize('blue', url)}`);
+    const url = ux.colorize('blue', terminalLink(new URL(reportCardUrl).hostname, `${reportCardUrl}/${id}`));
+    this.log(`🌐 View your full EOL report at: ${url}\n`);
   }
 
   private async scanSbom(sbom: Sbom): Promise<ScanResult> {
@@ -123,17 +111,7 @@ export default class ScanEol extends Command {
       this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
     }
 
-    if (scan.components.size === 0) {
-      this.warn('No components found in scan');
-    }
-
     return scan;
-  }
-
-  private getFilteredComponents(scan: ScanResult, all: boolean) {
-    return Array.from(scan.components.values()).filter(
-      (component) => all || ['EOL', 'SUPPORTED'].includes(component.info.status),
-    );
   }
 
   private async saveReport(components: InsightsEolScanComponent[], createdOn?: string): Promise<void> {
@@ -157,74 +135,42 @@ export default class ScanEol extends Command {
     }
   }
 
-  private displayResults(scan: ScanResult, all: boolean) {
-    const { UNKNOWN, OK, SUPPORTED, EOL } = createStatusDisplay(scan.components, all);
+  private displayResults(components: InsightsEolScanComponent[]) {
+    const { UNKNOWN, OK, SUPPORTED, EOL } = countComponentsByStatus(components);
 
-    if (!UNKNOWN.length && !OK.length && !SUPPORTED.length && !EOL.length) {
-      this.displayNoComponentsMessage(all);
+    if (!UNKNOWN && !OK && !SUPPORTED && !EOL) {
+      this.log(ux.colorize('yellow', 'No components found in scan.'));
       return;
     }
 
-    this.log(ux.colorize('bold', 'Here are the results of the scan:'));
-    this.logLine();
-
-    // Display sections in order of increasing severity
-    for (const components of [UNKNOWN, OK, SUPPORTED, EOL]) {
-      this.displayStatusSection(components);
-    }
-
-    this.logLegend();
-  }
-
-  private displayResultsInTable(scan: ScanResult, all: boolean) {
-    const grouped = groupComponentsByStatus(scan.components);
-    const statuses: ComponentStatus[] = ['SUPPORTED', 'EOL'];
-
-    if (all) {
-      statuses.unshift('UNKNOWN', 'OK');
-    }
-
-    for (const status of statuses) {
-      const components = grouped[status];
-      if (components.length > 0) {
-        const table = createTableForStatus(grouped, status);
-        this.displayTable(table, components.length, status);
-      }
-    }
-    this.logLegend();
-  }
-
-  private displayTable(table: string, count: number, status: ComponentStatus): void {
-    this.log(ux.colorize(STATUS_COLORS[status], `${INDICATORS[status]} ${count} ${status} Component(s):`));
-    this.log(ux.colorize(STATUS_COLORS[status], table));
-  }
-
-  private displayNoComponentsMessage(all: boolean): void {
-    if (!all) {
-      this.log(ux.colorize('yellow', 'No End-of-Life or Supported components found in scan.'));
-      this.log(ux.colorize('yellow', 'Use --all flag to view all components.'));
-    } else {
-      this.log(ux.colorize('yellow', 'No components found in scan.'));
-    }
-  }
-
-  private logLine(): void {
-    this.log(ux.colorize('bold', '-'.repeat(50)));
-  }
-
-  private displayStatusSection(components: string[]): void {
-    if (components.length > 0) {
-      this.log(components.join('\n'));
-      this.logLine();
-    }
-  }
-
-  private logLegend(): void {
-    this.log(ux.colorize(STATUS_COLORS.UNKNOWN, `${INDICATORS.UNKNOWN} = No Known Issues`));
-    this.log(ux.colorize(STATUS_COLORS.OK, `${INDICATORS.OK} = OK`));
+    this.log(ux.colorize('bold', 'Scan results:'));
+    this.log(ux.colorize('bold', '-'.repeat(40)));
+    this.log(ux.colorize('bold', `${components.length.toLocaleString()} total packages scanned`));
+    this.log(ux.colorize(STATUS_COLORS.EOL, `${INDICATORS.EOL} ${EOL.toLocaleString().padEnd(5)} End-of-Life (EOL)`));
     this.log(
-      ux.colorize(STATUS_COLORS.SUPPORTED, `${INDICATORS.SUPPORTED}= Supported: End-of-Life (EOL) is scheduled`),
+      ux.colorize(
+        STATUS_COLORS.SUPPORTED,
+        `${INDICATORS.SUPPORTED}${SUPPORTED.toLocaleString().padEnd(5)} Scheduled End-of-Life (EOL)`,
+      ),
     );
-    this.log(ux.colorize(STATUS_COLORS.EOL, `${INDICATORS.EOL} = End of Life (EOL)`));
+    this.log(ux.colorize(STATUS_COLORS.OK, `${INDICATORS.OK} ${OK.toLocaleString().padEnd(5)} OK`));
+    this.log(
+      ux.colorize(STATUS_COLORS.UNKNOWN, `${INDICATORS.UNKNOWN} ${UNKNOWN.toLocaleString().padEnd(5)} Unknown Status`),
+    );
   }
+}
+
+export function countComponentsByStatus(components: InsightsEolScanComponent[]): Record<ComponentStatus, number> {
+  const grouped: Record<ComponentStatus, number> = {
+    UNKNOWN: 0,
+    OK: 0,
+    SUPPORTED: 0,
+    EOL: 0,
+  };
+
+  for (const component of components) {
+    grouped[component.info.status]++;
+  }
+
+  return grouped;
 }

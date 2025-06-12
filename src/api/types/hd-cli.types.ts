@@ -19,14 +19,12 @@ export const DEFAULT_SCAN_INPUT_OPTIONS: ScanInputOptions = {
   totalPages: 1,
 } satisfies ScanInputOptions;
 
-export type ScanResultComponentsMap = Map<string, InsightsEolScanComponent>;
-
 export type ScanInput = {
   components: string[];
   options: ScanInputOptions;
 };
 export interface ScanResult {
-  components: ScanResultComponentsMap;
+  components: Map<string, InsightsEolScanComponent>;
   createdOn?: string;
   diagnostics?: Record<string, unknown>;
   message: string;
