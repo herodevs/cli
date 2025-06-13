@@ -8,3 +8,5 @@ export const config = {
   graphqlPath: process.env.GRAPHQL_PATH || GRAPHQL_PATH,
   showVulnCount: true,
 };
+
+export const filenamePrefix = 'herodevs';

@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 
+import { filenamePrefix } from '../../config/constants.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, getPurlOutput } from '../../service/purls.svc.ts';
 import ScanSbom from '../scan/sbom.ts';
@@ -28,7 +29,7 @@ export default class ReportPurls extends Command {
     save: Flags.boolean({
       char: 's',
       default: false,
-      description: 'Save the list of purls as eol.purls.<output>',
+      description: `Save the list of purls as ${filenamePrefix}.purls.<output>`,
     }),
     csv: Flags.boolean({
       char: 'c',
@@ -57,7 +58,7 @@ export default class ReportPurls extends Command {
       if (save) {
         try {
           const outputFile = csv && !this.jsonEnabled() ? 'csv' : 'json';
-          const outputPath = path.join(_dirFlag || process.cwd(), `eol.purls.${outputFile}`);
+          const outputPath = path.join(_dirFlag || process.cwd(), `${filenamePrefix}.purls.${outputFile}`);
           const purlOutput = getPurlOutput(purls, outputFile);
           fs.writeFileSync(outputPath, purlOutput);
 

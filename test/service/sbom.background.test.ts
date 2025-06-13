@@ -25,5 +25,7 @@ test('ScanSbom - Run scan in the background', async () => {
 
   ok(parseStub.calledOnce);
 
-  ok(logSpy.calledWith('The scan is running in the background. The file will be saved at ./some-dir/eol.sbom.json'));
+  ok(
+    logSpy.calledWith('The scan is running in the background. The file will be saved at ./some-dir/herodevs.sbom.json'),
+  );
 });
