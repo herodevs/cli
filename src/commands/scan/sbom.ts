@@ -2,6 +2,7 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import { join, resolve } from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
+import { filenamePrefix } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
 import { getErrorMessage } from '../../service/error.svc.ts';
@@ -25,7 +26,7 @@ export default class ScanSbom extends Command {
     save: Flags.boolean({
       char: 's',
       default: false,
-      description: 'Save the generated SBOM as eol.sbom.json in the scanned directory',
+      description: `Save the generated SBOM as ${filenamePrefix}.sbom.json in the scanned directory`,
     }),
     background: Flags.boolean({
       char: 'b',
@@ -45,14 +46,13 @@ export default class ScanSbom extends Command {
   }
 
   static getSbomArgs(flags: Record<string, string>): string[] {
-    const { dir, file, save, json, background } = flags ?? {};
+    const { dir, file, background } = flags ?? {};
 
-    const sbomArgs = [];
+    const sbomArgs = ['--json'];
 
     if (file) sbomArgs.push('--file', file);
     if (dir) sbomArgs.push('--dir', dir);
     // if (save) sbomArgs.push('--save'); // only save if sbom command is used directly with -s flag
-    if (json) sbomArgs.push('--json');
     if (background) sbomArgs.push('--background');
 
     return sbomArgs;
@@ -75,15 +75,22 @@ export default class ScanSbom extends Command {
     const path = dir || process.cwd();
     if (file) {
       sbom = this._getSbomFromFile(file);
+      ux.action.stop();
     } else if (background) {
       this._getSbomInBackground(path);
-      this.log(`The scan is running in the background. The file will be saved at ${path}/eol.sbom.json`);
+      this.log(`The scan is running in the background. The file will be saved at ${path}/${filenamePrefix}.sbom.json`);
+      ux.action.stop();
       return;
     } else {
       sbom = await this._getSbomFromScan(path);
+      ux.action.stop();
       if (save) {
         this._saveSbom(path, sbom);
       }
+    }
+
+    if (!save) {
+      this.log(JSON.stringify(sbom, null, 2));
     }
 
     return sbom;
@@ -158,7 +165,7 @@ export default class ScanSbom extends Command {
 
   private _saveSbom(dir: string, sbom: Sbom) {
     try {
-      const outputPath = join(dir, 'eol.sbom.json');
+      const outputPath = join(dir, `${filenamePrefix}.sbom.json`);
       fs.writeFileSync(outputPath, JSON.stringify(sbom, null, 2));
       if (!this.jsonEnabled()) {
         this.log(`SBOM saved to ${outputPath}`);

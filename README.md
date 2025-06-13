@@ -85,7 +85,7 @@ USAGE
 FLAGS
   -c, --csv             Output in CSV format
   -m, --months=<value>  [default: 12] The number of months of git history to review
-  -s, --save            Save the committers report as eol.committers.<output>
+  -s, --save            Save the committers report as herodevs.committers.<output>
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -117,7 +117,7 @@ FLAGS
   -c, --csv           Save output in CSV format (only applies when using --save)
   -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
-  -s, --save          Save the list of purls as eol.purls.<output>
+  -s, --save          Save the list of purls as herodevs.purls.<output>
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -152,7 +152,7 @@ FLAGS
   -d, --dir=<value>    The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>   The file path of an existing cyclonedx sbom to scan for EOL
   -p, --purls=<value>  The file path of a list of purls to scan for EOL
-  -s, --save           Save the generated report as eol.report.json in the scanned directory
+  -s, --save           Save the generated report as herodevs.report.json in the scanned directory
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -184,7 +184,7 @@ FLAGS
   -b, --background    Run the scan in the background
   -d, --dir=<value>   The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>  The file path of an existing cyclonedx sbom to scan for EOL
-  -s, --save          Save the generated SBOM as eol.sbom.json in the scanned directory
+  -s, --save          Save the generated SBOM as herodevs.sbom.json in the scanned directory
 
 GLOBAL FLAGS
   --json  Format output as json.

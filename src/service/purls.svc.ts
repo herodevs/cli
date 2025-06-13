@@ -73,7 +73,7 @@ export function extractPurls(sbom: Sbom): string[] {
 
 /**
  * Parse a purls file in either JSON or text format, including the format of
- * eol.purls.json - { purls: [ 'pkg:npm/express@4.18.2', 'pkg:npm/react@18.3.1' ] }
+ * herodevs.purls.json - { purls: [ 'pkg:npm/express@4.18.2', 'pkg:npm/react@18.3.1' ] }
  * or a text file with one purl per line.
  */
 export function parsePurlsFile(purlsFileString: string): string[] {

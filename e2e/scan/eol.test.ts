@@ -8,7 +8,7 @@ import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { runCommand } from '@oclif/test';
-import { config } from '../../src/config/constants';
+import { config, filenamePrefix } from '../../src/config/constants';
 
 const execAsync = promisify(exec);
 
@@ -62,8 +62,8 @@ describe('scan:eol e2e', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const fixturesDir = path.resolve(__dirname, '../fixtures');
   const simplePurls = path.resolve(__dirname, '../fixtures/npm/simple.purls.json');
-  const simpleSbom = path.join(fixturesDir, 'npm/eol.sbom.json');
-  const reportPath = path.resolve(fixturesDir, 'eol.report.json');
+  const simpleSbom = path.join(fixturesDir, `npm/${filenamePrefix}.sbom.json`);
+  const reportPath = path.resolve(fixturesDir, `${filenamePrefix}.report.json`);
   const upToDatePurls = path.resolve(__dirname, '../fixtures/npm/up-to-date.purls.json');
   const emptyPurlsPath = path.resolve(__dirname, '../fixtures/npm/empty.purls.json');
 
@@ -213,7 +213,7 @@ describe('with directory flag', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const simpleDir = path.resolve(__dirname, '../fixtures/npm/simple');
   const upToDateDir = path.resolve(__dirname, '../fixtures/npm/up-to-date');
-  const reportPath = path.join(simpleDir, 'eol.report.json');
+  const reportPath = path.join(simpleDir, `${filenamePrefix}.report.json`);
 
   async function run(cmd: string) {
     // Ensure test directory exists and is clean
