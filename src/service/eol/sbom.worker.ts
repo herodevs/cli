@@ -1,6 +1,7 @@
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createBom } from '@cyclonedx/cdxgen';
+import { filenamePrefix } from '../../config/constants.ts';
 import { SBOM_DEFAULT__OPTIONS } from './cdx.svc.ts';
 
 process.on('uncaughtException', (err) => {
@@ -18,7 +19,7 @@ try {
   const options = JSON.parse(process.argv[2]);
   const { path, opts } = options;
   const { bomJson } = await createBom(path, { ...SBOM_DEFAULT__OPTIONS, ...opts });
-  const outputPath = join(path, 'eol.sbom.json');
+  const outputPath = join(path, `${filenamePrefix}.sbom.json`);
   writeFileSync(outputPath, JSON.stringify(bomJson, null, 2));
   process.exit(0);
 } catch (error: unknown) {
