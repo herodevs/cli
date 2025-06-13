@@ -45,14 +45,13 @@ export default class ScanSbom extends Command {
   }
 
   static getSbomArgs(flags: Record<string, string>): string[] {
-    const { dir, file, save, json, background } = flags ?? {};
+    const { dir, file, background } = flags ?? {};
 
-    const sbomArgs = [];
+    const sbomArgs = ['--json'];
 
     if (file) sbomArgs.push('--file', file);
     if (dir) sbomArgs.push('--dir', dir);
     // if (save) sbomArgs.push('--save'); // only save if sbom command is used directly with -s flag
-    if (json) sbomArgs.push('--json');
     if (background) sbomArgs.push('--background');
 
     return sbomArgs;
@@ -75,15 +74,22 @@ export default class ScanSbom extends Command {
     const path = dir || process.cwd();
     if (file) {
       sbom = this._getSbomFromFile(file);
+      ux.action.stop();
     } else if (background) {
       this._getSbomInBackground(path);
       this.log(`The scan is running in the background. The file will be saved at ${path}/eol.sbom.json`);
+      ux.action.stop();
       return;
     } else {
       sbom = await this._getSbomFromScan(path);
+      ux.action.stop();
       if (save) {
         this._saveSbom(path, sbom);
       }
+    }
+
+    if (!save) {
+      this.log(JSON.stringify(sbom, null, 2));
     }
 
     return sbom;
