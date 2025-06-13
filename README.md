@@ -153,7 +153,6 @@ FLAGS
   -f, --file=<value>   The file path of an existing cyclonedx sbom to scan for EOL
   -p, --purls=<value>  The file path of a list of purls to scan for EOL
   -s, --save           Save the generated report as eol.report.json in the scanned directory
-  -t, --table          Display the results in a table
 
 GLOBAL FLAGS
   --json  Format output as json.

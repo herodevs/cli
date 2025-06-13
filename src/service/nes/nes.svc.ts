@@ -12,7 +12,13 @@ import { debugLogger } from '../log.svc.ts';
 export const buildScanResult = (scan: InsightsEolScanResult): ScanResult => {
   const components = new Map<string, InsightsEolScanComponent>();
   for (const c of scan.components) {
-    components.set(c.purl, c);
+    components.set(c.purl, {
+      info: {
+        ...c.info,
+        nesAvailable: c.remediation !== null,
+      },
+      purl: c.purl,
+    });
   }
 
   return {

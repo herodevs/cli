@@ -113,13 +113,6 @@ rule "service-no-inquirer" {
   message = "UI interactions should be handled in the UI layer, not services"
 }
 
-rule "service-no-cli-table" {
-  # Prevent cli-table3 usage in service layer
-  matches = ["src/service/**/*.svc.ts"]
-  not_contains = ["cli-table3"]
-  message = "Table formatting should be handled in the UI layer, not services"
-}
-
 rule "service-no-apollo" {
   # Prevent Apollo Client usage in service layer
   matches = ["src/service/**/*.svc.ts"]
