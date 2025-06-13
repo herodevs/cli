@@ -165,14 +165,25 @@ describe('scan:eol e2e', () => {
     doesNotThrow(() => JSON.parse(stdout));
   });
 
-  it('correctly identifies Angular 17 as having a EOL date and remediations available', async () => {
-    const angular17Purls = path.resolve(__dirname, '../fixtures/npm/angular-17.purls.json');
-    const cmd = `scan:eol --purls=${angular17Purls}`;
+  it('correctly identifies Bootstrap as having EOL status and remediation available when using the --json flag', async () => {
+    const cmd = `scan:eol --purls=${simplePurls} --json`;
     const { stdout } = await run(cmd);
 
+    const json = JSON.parse(stdout);
+    const bootstrap = json.components.find((component) => component.purl.startsWith('pkg:npm/bootstrap@'));
+    strictEqual(bootstrap?.info.status, 'EOL', 'Should match EOL count');
+    strictEqual(bootstrap?.info.nesAvailable, true, 'Should match remediation count');
+  });
+
+  it('correctly identifies Angular 17 as having a EOL date when using --json flag', async () => {
+    const angular17Purls = path.resolve(__dirname, '../fixtures/npm/angular-17.purls.json');
+    const cmd = `scan:eol --purls=${angular17Purls} --json`;
+    const { stdout } = await run(cmd);
+
+    const json = JSON.parse(stdout);
+    const angular17 = json.components.find((component) => component.purl.startsWith('pkg:npm/%40angular/core@'));
     // Match EOL count
-    match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
-    match(stdout, /1( .*)HeroDevs NES Remediations Available/, 'Should show remediation count');
+    strictEqual(angular17?.info.status, 'EOL', 'Should match EOL status');
   });
 
   describe('web report URL', () => {
@@ -183,6 +194,14 @@ describe('scan:eol e2e', () => {
       // Match the key text and scan ID pattern
       match(stdout, /View your full EOL report at.*[a-zA-Z0-9-]+/, 'Should show web report text and scan ID');
     });
+
+    it('does not display web report URL when using --json flag', async () => {
+      const cmd = `scan:eol --purls=${simplePurls} --json`;
+      const { stdout } = await run(cmd);
+
+      // Verify URL text is not in output
+      doesNotMatch(stdout, /View your free EOL report/, 'Should not show web report text in JSON output');
+    });
   });
 });
 
@@ -190,7 +209,7 @@ describe('scan:eol e2e', () => {
  * Directory scan tests
  * Please see CONTRIBUTING.md before adding new tests to this section.
  */
-describe('scan:eol e2e directory', () => {
+describe('with directory flag', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
   const simpleDir = path.resolve(__dirname, '../fixtures/npm/simple');
   const upToDateDir = path.resolve(__dirname, '../fixtures/npm/up-to-date');
