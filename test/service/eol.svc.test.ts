@@ -1,6 +1,6 @@
-import { describe, it } from 'node:test';
-import { createSbom, validateIsCycloneDxSbom } from '../../src/service/eol/eol.svc.ts';
 import assert from 'node:assert';
+import { describe, it } from 'node:test';
+import { validateIsCycloneDxSbom } from '../../src/service/eol/eol.svc.ts';
 
 describe('eol.svc', () => {
   describe('validateIsCycloneDxSbom', () => {
