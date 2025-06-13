@@ -38,7 +38,7 @@
   "dependencies": {
     "@apollo/client": "^3.13.8",
     "@cyclonedx/cdxgen": "^11.3.2",
-    "@oclif/core": "^4.3.1",
+    "@oclif/core": "^4.3.3",
     "@oclif/plugin-help": "^6.2.28",
     "@oclif/plugin-update": "^4.6.42",
     "graphql": "^16.11.0",
