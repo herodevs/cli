@@ -17,7 +17,7 @@
     "ci": "biome ci",
     "ci:fix": "biome check --write",
     "clean": "shx rm -rf dist && npm run clean:files && shx rm -rf node_modules",
-    "clean:files": "shx rm -f herodevs.**.csv herodevs.**.json herodevs.**.text",
+    "clean:files": "shx rm -f herodevs.**.csv herodevs.**.json herodevs.**.txt",
     "dev": "npm run build && ./bin/dev.js",
     "dev:debug": "npm run build && DEBUG=oclif:* ./bin/dev.js",
     "format": "biome format --write",
