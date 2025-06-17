@@ -5,7 +5,7 @@ import terminalLink from 'terminal-link';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
 import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
-import { config } from '../../config/constants.ts';
+import { config, filenamePrefix } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
@@ -37,7 +37,7 @@ export default class ScanEol extends Command {
     save: Flags.boolean({
       char: 's',
       default: false,
-      description: 'Save the generated report as eol.report.json in the scanned directory',
+      description: `Save the generated report as ${filenamePrefix}.report.json in the scanned directory`,
     }),
   };
 
@@ -61,7 +61,7 @@ export default class ScanEol extends Command {
       }
 
       this.log('* Use --json to output the report payload');
-      this.log('* Use --save to save the report to eol.report.json');
+      this.log(`* Use --save to save the report to ${filenamePrefix}.report.json`);
       this.log('* Use --help for more commands or options');
     }
 
@@ -116,19 +116,19 @@ export default class ScanEol extends Command {
 
   private async saveReport(components: InsightsEolScanComponent[], createdOn?: string): Promise<void> {
     const { flags } = await this.parse(ScanEol);
-    const reportPath = path.join(flags.dir || process.cwd(), 'eol.report.json');
+    const reportPath = path.join(flags.dir || process.cwd(), `${filenamePrefix}.report.json`);
 
     try {
       fs.writeFileSync(reportPath, JSON.stringify({ components, createdOn }, null, 2));
-      this.log('Report saved to eol.report.json');
+      this.log(`Report saved to ${filenamePrefix}.report.json`);
     } catch (error) {
       if (!isErrnoException(error)) {
         this.error(`Failed to save report: ${getErrorMessage(error)}`);
       }
       if (error.code === 'EACCES') {
-        this.error('Permission denied. Unable to save report to eol.report.json');
+        this.error(`Permission denied. Unable to save report to ${filenamePrefix}.report.json`);
       } else if (error.code === 'ENOSPC') {
-        this.error('No space left on device. Unable to save report to eol.report.json');
+        this.error(`No space left on device. Unable to save report to ${filenamePrefix}.report.json`);
       } else {
         this.error(`Failed to save report: ${getErrorMessage(error)}`);
       }
