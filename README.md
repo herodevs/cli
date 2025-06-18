@@ -145,10 +145,9 @@ Scan a given sbom for EOL data
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value>] [-p <value>] [-d <value>] [-s] [-a] [-t]
+  $ hd scan eol [--json] [-f <value>] [-p <value>] [-d <value>] [-s]
 
 FLAGS
-  -a, --all            Show all components (default is EOL and SUPPORTED only)
   -d, --dir=<value>    The directory to scan in order to create a cyclonedx sbom
   -f, --file=<value>   The file path of an existing cyclonedx sbom to scan for EOL
   -p, --purls=<value>  The file path of a list of purls to scan for EOL
@@ -166,8 +165,6 @@ EXAMPLES
   $ hd scan eol --file=path/to/sbom.json
 
   $ hd scan eol --purls=path/to/purls.json
-
-  $ hd scan eol -a --dir=./my-project
 ```
 
 _See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.3/src/commands/scan/eol.ts)_
