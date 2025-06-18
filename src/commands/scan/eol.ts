@@ -92,7 +92,10 @@ export default class ScanEol extends Command {
     this.log(ux.colorize('bold', '-'.repeat(40)));
     const id = scanId.split(SCAN_ID_KEY)[1];
     const reportCardUrl = config.eolReportUrl;
-    const url = ux.colorize('blue', terminalLink(new URL(reportCardUrl).hostname, `${reportCardUrl}/${id}`));
+    const url = ux.colorize(
+      'blue',
+      terminalLink(new URL(reportCardUrl).hostname, `${reportCardUrl}/${id}`, { fallback: (url) => url }),
+    );
     this.log(`🌐 View your full EOL report at: ${url}\n`);
   }
 
