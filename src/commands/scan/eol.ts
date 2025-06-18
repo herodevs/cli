@@ -92,7 +92,10 @@ export default class ScanEol extends Command {
     this.log(ux.colorize('bold', '-'.repeat(40)));
     const id = scanId.split(SCAN_ID_KEY)[1];
     const reportCardUrl = config.eolReportUrl;
-    const url = ux.colorize('blue', terminalLink(new URL(reportCardUrl).hostname, `${reportCardUrl}/${id}`));
+    const url = ux.colorize(
+      'blue',
+      terminalLink(new URL(reportCardUrl).hostname, `${reportCardUrl}/${id}`, { fallback: (url) => url }),
+    );
     this.log(`🌐 View your full EOL report at: ${url}\n`);
   }
 
@@ -136,9 +139,9 @@ export default class ScanEol extends Command {
   }
 
   private displayResults(components: InsightsEolScanComponent[]) {
-    const { UNKNOWN, OK, SUPPORTED, EOL, NES_AVAILABLE } = countComponentsByStatus(components);
+    const { UNKNOWN, OK, EOL_UPCOMING, EOL, NES_AVAILABLE } = countComponentsByStatus(components);
 
-    if (!UNKNOWN && !OK && !SUPPORTED && !EOL) {
+    if (!UNKNOWN && !OK && !EOL_UPCOMING && !EOL) {
       this.log(ux.colorize('yellow', 'No components found in scan.'));
       return;
     }
@@ -149,8 +152,8 @@ export default class ScanEol extends Command {
     this.log(ux.colorize(STATUS_COLORS.EOL, `${INDICATORS.EOL} ${EOL.toLocaleString().padEnd(5)} End-of-Life (EOL)`));
     this.log(
       ux.colorize(
-        STATUS_COLORS.SUPPORTED,
-        `${INDICATORS.SUPPORTED}${SUPPORTED.toLocaleString().padEnd(5)} Scheduled EOL`,
+        STATUS_COLORS.EOL_UPCOMING,
+        `${INDICATORS.EOL_UPCOMING}${EOL_UPCOMING.toLocaleString().padEnd(5)} EOL Upcoming`,
       ),
     );
     this.log(ux.colorize(STATUS_COLORS.OK, `${INDICATORS.OK} ${OK.toLocaleString().padEnd(5)} OK`));
@@ -172,7 +175,7 @@ export function countComponentsByStatus(
   const grouped: Record<ComponentStatus | 'NES_AVAILABLE', number> = {
     UNKNOWN: 0,
     OK: 0,
-    SUPPORTED: 0,
+    EOL_UPCOMING: 0,
     EOL: 0,
     NES_AVAILABLE: 0,
   };
