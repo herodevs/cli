@@ -94,7 +94,7 @@ export default class ScanEol extends Command {
     const reportCardUrl = config.eolReportUrl;
     const url = ux.colorize(
       'blue',
-      terminalLink(new URL(reportCardUrl).hostname, `${reportCardUrl}/${id}`, { fallback: (url) => url }),
+      terminalLink(new URL(reportCardUrl).hostname, `${reportCardUrl}/${id}`, { fallback: (_, url) => url }),
     );
     this.log(`🌐 View your full EOL report at: ${url}\n`);
   }
