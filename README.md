@@ -26,7 +26,7 @@ Use of this CLI is governed by the [HeroDevs End of Life Dataset Terms of Servic
 
 The CLI's scanning commands (`hd scan eol` and `hd scan sbom`) are designed to be non-invasive:
 
-* They do not install dependencies or modify package manager files (package-lock.json, yarn.lock, etc.)
+* They do not install dependencies or modify package manager files (package-lock.json, yarn.lock, etc.) test
 * They analyze the project in its current state
 * If you need dependencies installed for accurate scanning, please install them manually before running the scan
 
