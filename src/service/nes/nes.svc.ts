@@ -2,6 +2,7 @@ import type { NesApolloClient } from '../../api/nes/nes.client.ts';
 import { M_SCAN } from '../../api/queries/nes/sbom.ts';
 import type { ScanInputOptions, ScanResult } from '../../api/types/hd-cli.types.ts';
 import type {
+  ComponentStatus,
   InsightsEolScanComponent,
   InsightsEolScanInput,
   InsightsEolScanResult,
@@ -12,10 +13,12 @@ import { debugLogger } from '../log.svc.ts';
 export const buildScanResult = (scan: InsightsEolScanResult): ScanResult => {
   const components = new Map<string, InsightsEolScanComponent>();
   for (const c of scan.components) {
+    const status = c.info.status as ComponentStatus | 'SUPPORTED';
     components.set(c.purl, {
       info: {
         ...c.info,
         nesAvailable: c.remediation !== null,
+        status: status === 'SUPPORTED' ? 'EOL_UPCOMING' : status,
       },
       purl: c.purl,
     });
