@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
+import ora from 'ora';
 import terminalLink from 'terminal-link';
 import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
 import type { ScanResult } from '../../api/types/hd-cli.types.js';
@@ -11,7 +12,6 @@ import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
 import { INDICATORS, SCAN_ID_KEY, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
-import ora from 'ora';
 
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
@@ -71,10 +71,8 @@ export default class ScanEol extends Command {
 
   private async getScan(flags: Record<string, string>, config: Command['config']): Promise<ScanResult> {
     if (flags.purls) {
-      const spinner = ora().start('Loading purls file');
       const purls = this.getPurlsFromFile(flags.purls);
-      spinner.succeed('Loaded purls file');
-      return batchSubmitPurls(purls);
+      return this.scanPurls(purls);
     }
 
     const sbom = await ScanSbom.loadSbom(flags, config);
@@ -82,10 +80,14 @@ export default class ScanEol extends Command {
   }
 
   private getPurlsFromFile(filePath: string): string[] {
+    const spinner = ora().start(`Loading purls from \`${filePath}\``);
     try {
       const purlsFileString = fs.readFileSync(filePath, 'utf8');
-      return parsePurlsFile(purlsFileString);
+      const purls = parsePurlsFile(purlsFileString);
+      spinner.succeed(`Loaded purls from \`${filePath}\``);
+      return purls;
     } catch (error) {
+      spinner.fail(`Failed to read purls from \`${filePath}\``);
       this.error(`Failed to read purls file. ${getErrorMessage(error)}`);
     }
   }
@@ -102,25 +104,24 @@ export default class ScanEol extends Command {
   }
 
   private async scanSbom(sbom: Sbom): Promise<ScanResult> {
-    let scan: ScanResult;
-    let purls: string[];
-
     try {
-      purls = await extractPurls(sbom);
+      const purls = await extractPurls(sbom);
+      return this.scanPurls(purls);
     } catch (error) {
       this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
     }
+  }
 
+  private async scanPurls(purls: string[]): Promise<ScanResult> {
     const spinner = ora().start('Scanning for EOL packages');
     try {
-      scan = await batchSubmitPurls(purls);
+      const scan = await batchSubmitPurls(purls);
       spinner.succeed('Scan completed');
+      return scan;
     } catch (error) {
       spinner.fail('Scanning failed');
-      this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
+      this.error(`Failed to submit scan to NES. ${getErrorMessage(error)}`);
     }
-
-    return scan;
   }
 
   private async saveReport(components: InsightsEolScanComponent[], createdOn?: string): Promise<void> {

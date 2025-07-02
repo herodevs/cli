@@ -2,11 +2,11 @@ import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import { join, resolve } from 'node:path';
 import { Command, Flags } from '@oclif/core';
+import ora from 'ora';
 import { filenamePrefix } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
 import { getErrorMessage } from '../../service/error.svc.ts';
-import ora from 'ora';
 
 export default class ScanSbom extends Command {
   static override description = 'Scan a SBOM for purls';
