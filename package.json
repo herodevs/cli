@@ -42,6 +42,7 @@
     "@oclif/plugin-help": "^6.2.29",
     "@oclif/plugin-update": "^4.6.45",
     "graphql": "^16.11.0",
+    "ora": "^8.2.0",
     "packageurl-js": "^2.0.1",
     "terminal-link": "^4.0.0",
     "update-notifier": "^7.3.1"

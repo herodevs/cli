@@ -1,11 +1,12 @@
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import { join, resolve } from 'node:path';
-import { Command, Flags, ux } from '@oclif/core';
+import { Command, Flags } from '@oclif/core';
 import { filenamePrefix } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { createSbom, validateIsCycloneDxSbom } from '../../service/eol/eol.svc.ts';
 import { getErrorMessage } from '../../service/error.svc.ts';
+import ora from 'ora';
 
 export default class ScanSbom extends Command {
   static override description = 'Scan a SBOM for purls';
@@ -73,20 +74,29 @@ export default class ScanSbom extends Command {
     }
     let sbom: Sbom;
     const path = dir || process.cwd();
+
+    const spinner = ora();
+    if (!background) {
+      spinner.start(flags.file ? 'Loading SBOM file' : 'Generating SBOM');
+    }
+
     if (file) {
       sbom = this._getSbomFromFile(file);
-      ux.action.stop();
     } else if (background) {
       this._getSbomInBackground(path);
       this.log(`The scan is running in the background. The file will be saved at ${path}/${filenamePrefix}.sbom.json`);
-      ux.action.stop();
       return;
     } else {
       sbom = await this._getSbomFromScan(path);
-      ux.action.stop();
       if (save) {
         this._saveSbom(path, sbom);
       }
+    }
+
+    if (sbom) {
+      spinner.succeed(flags.file ? 'Loaded SBOM file' : 'Generated SBOM');
+    } else {
+      spinner.fail(flags.file ? 'Failed to load SBOM file' : 'Failed to generate SBOM');
     }
 
     if (!save) {
@@ -106,8 +116,6 @@ export default class ScanSbom extends Command {
       if (!stats.isDirectory()) {
         this.error(`Path is not a directory: ${dir}`);
       }
-
-      ux.action.start(`Scanning ${dir}`);
 
       const options = this.getScanOptions();
       const sbom = await createSbom(dir, options);
@@ -148,8 +156,6 @@ export default class ScanSbom extends Command {
       if (!fs.existsSync(file)) {
         this.error(`SBOM file not found: ${file}`);
       }
-
-      ux.action.start(`Loading sbom from ${file}`);
 
       const fileContent = fs.readFileSync(file, {
         encoding: 'utf8',

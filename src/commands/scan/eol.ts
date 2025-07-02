@@ -11,6 +11,7 @@ import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
 import { INDICATORS, SCAN_ID_KEY, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
+import ora from 'ora';
 
 export default class ScanEol extends Command {
   static override description = 'Scan a given sbom for EOL data';
@@ -70,8 +71,9 @@ export default class ScanEol extends Command {
 
   private async getScan(flags: Record<string, string>, config: Command['config']): Promise<ScanResult> {
     if (flags.purls) {
-      ux.action.start(`Scanning purls from ${flags.purls}`);
+      const spinner = ora().start('Loading purls file');
       const purls = this.getPurlsFromFile(flags.purls);
+      spinner.succeed('Loaded purls file');
       return batchSubmitPurls(purls);
     }
 
@@ -108,9 +110,13 @@ export default class ScanEol extends Command {
     } catch (error) {
       this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
     }
+
+    const spinner = ora().start('Scanning for EOL packages');
     try {
       scan = await batchSubmitPurls(purls);
+      spinner.succeed('Scan completed');
     } catch (error) {
+      spinner.fail('Scanning failed');
       this.error(`Failed to submit scan to NES from sbom. ${getErrorMessage(error)}`);
     }
 
