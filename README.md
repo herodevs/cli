@@ -246,8 +246,8 @@ You can use `@herodevs/cli` in your CI/CD pipelines to automate EOL scanning.
 
 #### Using the Docker Image (recommended)
 
-We provide a Docker image that's pre-configured to run EOL scans. Based on `cdxgen`, it contains build tools
-for most project types and will provide best results when generating an SBOM.
+We provide a Docker image that's pre-configured to run EOL scans. Based on [`cdxgen`](https://github.com/CycloneDX/cdxgen), 
+it contains build tools for most project types and will provide best results when generating an SBOM.
 
 Pass any arguments supported by [`scan:eol`](#hd-scan-eol) using `with: args:`.
 
