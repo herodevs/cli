@@ -327,5 +327,5 @@ image: alpine
 eol-scan:
   script:
     - echo # Prepare environment, install tooling, perform setup, etc.
-    - npx@herodevs/cli@beta
+    - npx @herodevs/cli@beta
 ```
