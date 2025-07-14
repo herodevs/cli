@@ -242,17 +242,15 @@ _See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4
 
 You can use `@herodevs/cli` in your CI/CD pipelines to automate EOL scanning.
 
-### GitHub Actions
-
-#### Using the Docker Image (recommended)
+### Using the Docker Image (recommended)
 
 We provide a Docker image that's pre-configured to run EOL scans. Based on [`cdxgen`](https://github.com/CycloneDX/cdxgen), 
 it contains build tools for most project types and will provide best results when generating an SBOM.
 
-Pass any arguments supported by [`scan:eol`](#hd-scan-eol) using `with: args:`.
+#### GitHub Actions
 
 ```yaml
-# .github/workflows/herodevs-scan.yml
+# .github/workflows/herodevs-eol-scan.yml
 name: HeroDevs EOL Scan
 
 on:
@@ -273,9 +271,28 @@ jobs:
           args: "--json"
 ```
 
-#### Using npx
+#### GitLab CI/CD
+
+```yaml
+eol-scan: 
+  image: 
+    name: "ghcr.io/herodevs/eol-scan"
+    # Entrypoint or base command must be disabled due 
+    # to GitLab's execution mechanism and run manually
+    entrypoint: [""] 
+  script: "npx @herodevs/cli@beta --json"
+```
+
+### Using `npx`
 
 You can use `npx` to run the CLI just like you'd run it locally.
+
+> [!NOTE] 
+> The development environment is expected to be ready to run the app. For best results, 
+prefer [using the prebuilt image](#using-the-docker-image-recommended), but otherwise, prepare 
+all requirements before the scan step.
+
+#### GitHub Actions
 
 ```yaml
 # .github/workflows/herodevs-eol-scan.yml
@@ -296,10 +313,19 @@ jobs:
         with:
           node-version: '20'
 
+      - run: echo # Prepare environment, install tooling, perform setup, etc.
+
       - name: Run EOL Scan
         run: npx @herodevs/cli@beta
 ```
 
-**Note**: Just like when running locally, in some cases the development environment is expected to be able 
-to run the app. For best results, prefer [using the prebuilt image](#using-the-docker-image-recommended), but 
-otherwise, install all requirements before the scan step.
+#### GitLab CI/CD
+
+```yaml
+image: alpine
+
+eol-scan:
+  script:
+    - echo # Prepare environment, install tooling, perform setup, etc.
+    - npx@herodevs/cli@beta
+```
