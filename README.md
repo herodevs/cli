@@ -237,3 +237,69 @@ EXAMPLES
 
 _See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.6.45/src/commands/update.ts)_
 <!-- commandsstop -->
+
+## CI/CD Usage
+
+You can use `@herodevs/cli` in your CI/CD pipelines to automate EOL scanning.
+
+### GitHub Actions
+
+#### Using the Docker Image (recommended)
+
+We provide a Docker image that's pre-configured to run EOL scans. Based on `cdxgen`, it contains build tools
+for most project types and will provide best results when generating an SBOM.
+
+Pass any arguments supported by [`scan:eol`](#hd-scan-eol) using `with: args:`.
+
+```yaml
+# .github/workflows/herodevs-scan.yml
+name: HeroDevs EOL Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run EOL Scan with Docker
+        uses: docker://ghcr.io/herodevs/eol-scan
+        with:
+          args: "--json"
+```
+
+#### Using npx
+
+You can use `npx` to run the CLI just like you'd run it locally.
+
+```yaml
+# .github/workflows/herodevs-eol-scan.yml
+name: HeroDevs EOL Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run EOL Scan
+        run: npx @herodevs/cli@beta
+```
+
+**Note**: Just like when running locally, in some cases the development environment is expected to be able 
+to run the app. For best results, prefer [using the prebuilt image](#using-the-docker-image-recommended), but 
+otherwise, install all requirements before the scan step.
