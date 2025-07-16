@@ -237,3 +237,95 @@ EXAMPLES
 
 _See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.6.45/src/commands/update.ts)_
 <!-- commandsstop -->
+
+## CI/CD Usage
+
+You can use `@herodevs/cli` in your CI/CD pipelines to automate EOL scanning.
+
+### Using the Docker Image (recommended)
+
+We provide a Docker image that's pre-configured to run EOL scans. Based on [`cdxgen`](https://github.com/CycloneDX/cdxgen), 
+it contains build tools for most project types and will provide best results when generating an SBOM.
+
+#### GitHub Actions
+
+```yaml
+# .github/workflows/herodevs-eol-scan.yml
+name: HeroDevs EOL Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run EOL Scan with Docker
+        uses: docker://ghcr.io/herodevs/eol-scan
+        with:
+          args: "--json"
+```
+
+#### GitLab CI/CD
+
+```yaml
+eol-scan: 
+  image: 
+    name: "ghcr.io/herodevs/eol-scan"
+    # Entrypoint or base command must be disabled due 
+    # to GitLab's execution mechanism and run manually
+    entrypoint: [""] 
+  script: "npx @herodevs/cli@beta --json"
+```
+
+### Using `npx`
+
+You can use `npx` to run the CLI just like you'd run it locally.
+
+> [!NOTE] 
+> The development environment is expected to be ready to run the app. For best results, 
+prefer [using the prebuilt image](#using-the-docker-image-recommended), but otherwise, prepare 
+all requirements before the scan step.
+
+#### GitHub Actions
+
+```yaml
+# .github/workflows/herodevs-eol-scan.yml
+name: HeroDevs EOL Scan
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - run: echo # Prepare environment, install tooling, perform setup, etc.
+
+      - name: Run EOL Scan
+        run: npx @herodevs/cli@beta
+```
+
+#### GitLab CI/CD
+
+```yaml
+image: alpine
+
+eol-scan:
+  script:
+    - echo # Prepare environment, install tooling, perform setup, etc.
+    - npx @herodevs/cli@beta
+```
