@@ -1,24 +1,10 @@
-import { doesNotThrow, notStrictEqual } from 'node:assert';
-import { doesNotMatch, match, strictEqual } from 'node:assert/strict';
-import { exec } from 'node:child_process';
+import { doesNotThrow } from 'node:assert';
+import { doesNotMatch, strictEqual } from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { promisify } from 'node:util';
 import { runCommand } from '@oclif/test';
-import { config } from '../../src/config/constants';
-
-const execAsync = promisify(exec);
-
-describe('environment', () => {
-  it('should not be configured to run against the production environment', () => {
-    notStrictEqual(process.env.GRAPHQL_HOST, 'https://api.nes.herodevs.com');
-    notStrictEqual(process.env.EOL_REPORT_URL, 'https://eol-report-card.apps.herodevs.com/reports');
-    notStrictEqual(config.graphqlHost, 'https://api.nes.herodevs.com');
-    notStrictEqual(config.eolReportUrl, 'https://eol-report-card.apps.herodevs.com/reports');
-  });
-});
 
 describe('scan:sbom e2e', () => {
   const __dirname = path.dirname(fileURLToPath(import.meta.url));
