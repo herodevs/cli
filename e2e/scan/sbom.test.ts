@@ -3,13 +3,11 @@ import { doesNotMatch, strictEqual } from 'node:assert/strict';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import { fileURLToPath } from 'node:url';
 import { runCommand } from '@oclif/test';
 
 describe('scan:sbom e2e', () => {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const fixturesDir = path.resolve(__dirname, '../fixtures');
-  const simpleDir = path.resolve(__dirname, '../fixtures/npm/simple');
+  const fixturesDir = path.resolve(import.meta.dirname, '../fixtures');
+  const simpleDir = path.resolve(fixturesDir, 'npm/simple');
 
   async function run(cmd: string) {
     // Ensure fixtures directory exists and is clean
