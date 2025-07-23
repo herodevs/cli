@@ -19,6 +19,8 @@ export interface Sbom {
   dependencies: SbomDependency[];
 }
 
+const author = process.env.npm_package_author ?? 'HeroDevs, Inc.';
+
 export const SBOM_DEFAULT__OPTIONS = {
   $0: 'cdxgen',
   _: [],
@@ -51,7 +53,7 @@ export const SBOM_DEFAULT__OPTIONS = {
   o: 'bom.json',
   output: 'bom.json',
   outputFormat: 'json', // or "xml"
-  author: ['HeroDevs, Inc.'],
+  author: [author],
   profile: 'generic',
   project: undefined,
   'project-version': '',
@@ -72,7 +74,7 @@ export const SBOM_DEFAULT__OPTIONS = {
   tools: [
     {
       name: '@herodevs/cli',
-      publisher: 'HeroDevs, Inc.',
+      publisher: author,
       version: process.env.npm_package_version ?? 'unknown',
     },
   ],
