@@ -1,63 +1,57 @@
 /**
  * Input parameters for the EOL scan operation
  */
-export interface InsightsEolScanInput {
-  scanId?: string;
+export interface CreateEolReportInput {
   /** Array of package URLs in purl format to scan */
   components: string[];
-  /** The type of scan being performed (e.g. 'SBOM') */
-  type: string;
-
-  // if it's chunked
-  page: number;
-  totalPages: number;
 }
 
 export interface ScanResponse {
-  insights: {
-    scan: {
-      eol: InsightsEolScanResult;
+  eol: {
+    createReport: {
+      success: boolean;
+      report: EolReport;
     };
   };
+}
+
+export interface ReportMetadata {
+  totalComponentsCount: number;
+  unknownComponentsCount: number;
 }
 
 /**
  * Result of the EOL scan operation
  */
-export interface InsightsEolScanResult {
-  scanId?: string;
+export interface EolReport {
+  id?: string;
   createdOn: string;
-  success: boolean;
-  message: string;
-  components: InsightsEolScanComponent[];
-  warnings: ScanWarning[];
+  components: EolScanComponent[];
+  metadata: ReportMetadata;
+}
+
+export interface CveStats {
+  cveId: string;
+  cvssScore: number;
+  publishedAt: Date;
 }
 
 /**
  * Information about a component's EOL status
  */
-export interface InsightsEolScanComponentInfo {
+export interface EolScanComponentMetadata {
   isEol: boolean;
   isUnsafe: boolean;
   eolAt: Date | null;
-  status: ComponentStatus;
   daysEol: number | null;
-  vulnCount: number | null;
-  nesAvailable?: boolean;
+  eolReasons: string[];
+  cve: CveStats[];
 }
 
-export interface InsightsEolScanComponent {
-  info: InsightsEolScanComponentInfo;
+export interface EolScanComponent {
+  metadata: EolScanComponentMetadata | null;
   purl: string;
-  remediation?: { id: string } | null;
-}
-
-export interface ScanWarning {
-  purl: string;
-  message: string;
-  type?: string;
-  error?: unknown;
-  diagnostics?: Record<string, unknown>;
+  nesRemediation?: { target: string } | null;
 }
 
 export type ComponentStatus = (typeof VALID_STATUSES)[number];
