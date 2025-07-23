@@ -3,14 +3,13 @@ import path from 'node:path';
 import { Command, Flags, ux } from '@oclif/core';
 import ora from 'ora';
 import terminalLink from 'terminal-link';
-import { batchSubmitPurls } from '../../api/nes/nes.client.ts';
-import type { ScanResult } from '../../api/types/hd-cli.types.js';
-import type { ComponentStatus, InsightsEolScanComponent } from '../../api/types/nes.types.ts';
+import { submitPurls } from '../../api/nes/nes.client.ts';
+import type { ComponentStatus, EolReport, EolScanComponent } from '../../api/types/nes.types.ts';
 import { config, filenamePrefix } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
-import { INDICATORS, SCAN_ID_KEY, STATUS_COLORS } from '../../ui/shared.ui.ts';
+import { INDICATORS, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
 
 export default class ScanEol extends Command {
@@ -42,23 +41,22 @@ export default class ScanEol extends Command {
     }),
   };
 
-  public async run(): Promise<{ components: InsightsEolScanComponent[]; createdOn: string }> {
+  public async run(): Promise<EolReport> {
     const { flags } = await this.parse(ScanEol);
 
     const scan = await this.getScan(flags, this.config);
-    const components = Array.from(scan.components.values());
 
     ux.action.stop();
 
     if (flags.save) {
-      await this.saveReport(components, scan.createdOn);
+      await this.saveReport(scan);
     }
 
     if (!this.jsonEnabled()) {
-      this.displayResults(components);
+      this.displayResults(scan);
 
-      if (scan.scanId) {
-        this.printWebReportUrl(scan.scanId);
+      if (scan.id) {
+        this.printWebReportUrl(scan.id);
       }
 
       this.log('* Use --json to output the report payload');
@@ -66,10 +64,10 @@ export default class ScanEol extends Command {
       this.log('* Use --help for more commands or options');
     }
 
-    return { components, createdOn: scan.createdOn ?? '' };
+    return scan;
   }
 
-  private async getScan(flags: Record<string, string>, config: Command['config']): Promise<ScanResult> {
+  private async getScan(flags: Record<string, string>, config: Command['config']): Promise<EolReport> {
     if (flags.purls) {
       const purls = this.getPurlsFromFile(flags.purls);
       return this.scanPurls(purls);
@@ -92,9 +90,8 @@ export default class ScanEol extends Command {
     }
   }
 
-  private printWebReportUrl(scanId: string): void {
+  private printWebReportUrl(id: string): void {
     this.log(ux.colorize('bold', '-'.repeat(40)));
-    const id = scanId.split(SCAN_ID_KEY)[1];
     const reportCardUrl = config.eolReportUrl;
     const url = ux.colorize(
       'blue',
@@ -103,7 +100,7 @@ export default class ScanEol extends Command {
     this.log(`🌐 View your full EOL report at: ${url}\n`);
   }
 
-  private async scanSbom(sbom: Sbom): Promise<ScanResult> {
+  private async scanSbom(sbom: Sbom): Promise<EolReport> {
     try {
       const purls = await extractPurls(sbom);
       return this.scanPurls(purls);
@@ -112,10 +109,10 @@ export default class ScanEol extends Command {
     }
   }
 
-  private async scanPurls(purls: string[]): Promise<ScanResult> {
+  private async scanPurls(purls: string[]): Promise<EolReport> {
     const spinner = ora().start('Scanning for EOL packages');
     try {
-      const scan = await batchSubmitPurls(purls);
+      const scan = await submitPurls(purls);
       spinner.succeed('Scan completed');
       return scan;
     } catch (error) {
@@ -124,12 +121,12 @@ export default class ScanEol extends Command {
     }
   }
 
-  private async saveReport(components: InsightsEolScanComponent[], createdOn?: string): Promise<void> {
+  private async saveReport(report: EolReport): Promise<void> {
     const { flags } = await this.parse(ScanEol);
     const reportPath = path.join(flags.dir || process.cwd(), `${filenamePrefix}.report.json`);
 
     try {
-      fs.writeFileSync(reportPath, JSON.stringify({ components, createdOn }, null, 2));
+      fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
       this.log(`Report saved to ${filenamePrefix}.report.json`);
     } catch (error) {
       if (!isErrnoException(error)) {
@@ -145,8 +142,8 @@ export default class ScanEol extends Command {
     }
   }
 
-  private displayResults(components: InsightsEolScanComponent[]) {
-    const { UNKNOWN, OK, EOL_UPCOMING, EOL, NES_AVAILABLE } = countComponentsByStatus(components);
+  private displayResults(report: EolReport) {
+    const { UNKNOWN, OK, EOL_UPCOMING, EOL, NES_AVAILABLE } = countComponentsByStatus(report);
 
     if (!UNKNOWN && !OK && !EOL_UPCOMING && !EOL) {
       this.log(ux.colorize('yellow', 'No components found in scan.'));
@@ -155,7 +152,7 @@ export default class ScanEol extends Command {
 
     this.log(ux.colorize('bold', 'Scan results:'));
     this.log(ux.colorize('bold', '-'.repeat(40)));
-    this.log(ux.colorize('bold', `${components.length.toLocaleString()} total packages scanned`));
+    this.log(ux.colorize('bold', `${report.components.length.toLocaleString()} total packages scanned`));
     this.log(ux.colorize(STATUS_COLORS.EOL, `${INDICATORS.EOL} ${EOL.toLocaleString().padEnd(5)} End-of-Life (EOL)`));
     this.log(
       ux.colorize(
@@ -177,20 +174,28 @@ export default class ScanEol extends Command {
 }
 
 export function countComponentsByStatus(
-  components: InsightsEolScanComponent[],
+  report: EolReport,
 ): Record<ComponentStatus | 'NES_AVAILABLE', number> {
   const grouped: Record<ComponentStatus | 'NES_AVAILABLE', number> = {
-    UNKNOWN: 0,
+    UNKNOWN: report.metadata.unknownComponentsCount,
     OK: 0,
     EOL_UPCOMING: 0,
     EOL: 0,
     NES_AVAILABLE: 0,
   };
 
-  for (const component of components) {
-    grouped[component.info.status]++;
+  const now = new Date();
 
-    if (component.info.nesAvailable) {
+  for (const component of report.components) {
+    if (component.metadata?.isEol) {
+      grouped.EOL++;
+    } else if (component.metadata?.eolAt && new Date(component.metadata.eolAt) > now) {
+      grouped.EOL_UPCOMING++;
+    } else if (component.metadata) {
+      grouped.OK++;
+    }
+
+    if (component.nesRemediation) {
       grouped.NES_AVAILABLE++;
     }
   }

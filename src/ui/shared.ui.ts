@@ -15,4 +15,3 @@ export const INDICATORS: Record<ComponentStatus, string> = {
   EOL_UPCOMING: ux.colorize(STATUS_COLORS.EOL_UPCOMING, '⚡'),
 };
 
-export const SCAN_ID_KEY = 'eol-scan-v1-';
