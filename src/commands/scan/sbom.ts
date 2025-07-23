@@ -101,6 +101,8 @@ export default class ScanSbom extends Command {
 
     if (!save) {
       this.log(JSON.stringify(sbom, null, 2));
+    } else if (sbom && !this.jsonEnabled()) {
+      this.log(`SBOM saved to ${path}/${filenamePrefix}.sbom.json`);
     }
 
     return sbom;
@@ -173,9 +175,6 @@ export default class ScanSbom extends Command {
     try {
       const outputPath = join(dir, `${filenamePrefix}.sbom.json`);
       fs.writeFileSync(outputPath, JSON.stringify(sbom, null, 2));
-      if (!this.jsonEnabled()) {
-        this.log(`SBOM saved to ${outputPath}`);
-      }
     } catch (error) {
       this.error(`Failed to save SBOM: ${getErrorMessage(error)}`);
     }
