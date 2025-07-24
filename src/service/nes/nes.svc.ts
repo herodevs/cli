@@ -1,10 +1,6 @@
 import type { NesApolloClient } from '../../api/nes/nes.client.ts';
 import { M_SCAN } from '../../api/queries/nes/sbom.ts';
-import type {
-  CreateEolReportInput,
-  EolReport,
-  ScanResponse,
-} from '../../api/types/nes.types.ts';
+import type { CreateEolReportInput, EolReport, ScanResponse } from '../../api/types/nes.types.ts';
 import { debugLogger } from '../log.svc.ts';
 
 export const SbomScanner =
