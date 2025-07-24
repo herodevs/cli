@@ -173,9 +173,7 @@ export default class ScanEol extends Command {
   }
 }
 
-export function countComponentsByStatus(
-  report: EolReport,
-): Record<ComponentStatus | 'NES_AVAILABLE', number> {
+export function countComponentsByStatus(report: EolReport): Record<ComponentStatus | 'NES_AVAILABLE', number> {
   const grouped: Record<ComponentStatus | 'NES_AVAILABLE', number> = {
     UNKNOWN: report.metadata.unknownComponentsCount,
     OK: 0,

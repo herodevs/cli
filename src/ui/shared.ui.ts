@@ -14,4 +14,3 @@ export const INDICATORS: Record<ComponentStatus, string> = {
   OK: ux.colorize(STATUS_COLORS.OK, '✔'),
   EOL_UPCOMING: ux.colorize(STATUS_COLORS.EOL_UPCOMING, '⚡'),
 };
-
