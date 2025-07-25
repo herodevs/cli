@@ -1,6 +1,6 @@
+import type { CreateEolReportInput, EolReport, EolReportMutationResponse } from '@herodevs/eol-shared';
 import type { NesApolloClient } from '../../api/nes/nes.client.ts';
 import { M_SCAN } from '../../api/queries/nes/sbom.ts';
-import type { CreateEolReportInput, EolReport, EolReportMutationResponse } from '@herodevs/eol-shared';
 import { debugLogger } from '../log.svc.ts';
 
 export const SbomScanner =
