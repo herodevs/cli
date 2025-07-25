@@ -2,7 +2,7 @@ import type * as apollo from '@apollo/client/core/index.js';
 import { PackageURL } from 'packageurl-js';
 
 import { ApolloClient } from '../../api/client.ts';
-import type { EolReport } from '../../api/types/nes.types.ts';
+import type { EolReport } from '@herodevs/eol-shared';
 import { config } from '../../config/constants.ts';
 import { debugLogger } from '../../service/log.svc.ts';
 import { SbomScanner } from '../../service/nes/nes.svc.ts';

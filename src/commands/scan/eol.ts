@@ -4,7 +4,8 @@ import { Command, Flags, ux } from '@oclif/core';
 import ora from 'ora';
 import terminalLink from 'terminal-link';
 import { submitPurls } from '../../api/nes/nes.client.ts';
-import type { ComponentStatus, EolReport, EolScanComponent } from '../../api/types/nes.types.ts';
+import { deriveComponentStatus } from '@herodevs/eol-shared';
+import type { ComponentStatus, EolReport } from '@herodevs/eol-shared';
 import { config, filenamePrefix } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
@@ -175,23 +176,16 @@ export default class ScanEol extends Command {
 
 export function countComponentsByStatus(report: EolReport): Record<ComponentStatus | 'NES_AVAILABLE', number> {
   const grouped: Record<ComponentStatus | 'NES_AVAILABLE', number> = {
-    UNKNOWN: report.metadata.unknownComponentsCount,
+    UNKNOWN: 0,
     OK: 0,
     EOL_UPCOMING: 0,
     EOL: 0,
     NES_AVAILABLE: 0,
   };
 
-  const now = new Date().toISOString();
-
   for (const component of report.components) {
-    if (component.metadata?.isEol) {
-      grouped.EOL++;
-    } else if ((component.metadata?.eolAt ?? '') > now) {
-      grouped.EOL_UPCOMING++;
-    } else if (component.metadata) {
-      grouped.OK++;
-    }
+    const status = deriveComponentStatus(component.metadata);
+    grouped[status]++;
 
     if (component.nesRemediation) {
       grouped.NES_AVAILABLE++;

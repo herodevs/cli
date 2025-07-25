@@ -1,5 +1,5 @@
 import { ux } from '@oclif/core';
-import type { ComponentStatus } from '../api/types/nes.types.ts';
+import type { ComponentStatus } from '@herodevs/eol-shared';
 
 export const STATUS_COLORS: Record<ComponentStatus, string> = {
   EOL: 'red',
