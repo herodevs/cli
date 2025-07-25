@@ -1,5 +1,5 @@
-import { ux } from '@oclif/core';
 import type { ComponentStatus } from '@herodevs/eol-shared';
+import { ux } from '@oclif/core';
 
 export const STATUS_COLORS: Record<ComponentStatus, string> = {
   EOL: 'red',

@@ -1,11 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { deriveComponentStatus } from '@herodevs/eol-shared';
+import type { ComponentStatus, EolReport } from '@herodevs/eol-shared';
 import { Command, Flags, ux } from '@oclif/core';
 import ora from 'ora';
 import terminalLink from 'terminal-link';
 import { submitPurls } from '../../api/nes/nes.client.ts';
-import { deriveComponentStatus } from '@herodevs/eol-shared';
-import type { ComponentStatus, EolReport } from '@herodevs/eol-shared';
 import { config, filenamePrefix } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
