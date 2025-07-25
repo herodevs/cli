@@ -182,12 +182,12 @@ export function countComponentsByStatus(report: EolReport): Record<ComponentStat
     NES_AVAILABLE: 0,
   };
 
-  const now = new Date();
+  const now = new Date().toISOString();
 
   for (const component of report.components) {
     if (component.metadata?.isEol) {
       grouped.EOL++;
-    } else if (component.metadata?.eolAt && new Date(component.metadata.eolAt) > now) {
+    } else if ((component.metadata?.eolAt ?? '') > now) {
       grouped.EOL_UPCOMING++;
     } else if (component.metadata) {
       grouped.OK++;

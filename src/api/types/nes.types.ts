@@ -33,7 +33,7 @@ export interface EolReport {
 export interface CveStats {
   cveId: string;
   cvssScore: number;
-  publishedAt: Date;
+  publishedAt: string;
 }
 
 /**
@@ -42,7 +42,7 @@ export interface CveStats {
 export interface EolScanComponentMetadata {
   isEol: boolean;
   isUnsafe: boolean;
-  eolAt: Date | null;
+  eolAt: string | null;
   daysEol: number | null;
   eolReasons: string[];
   cve: CveStats[];
