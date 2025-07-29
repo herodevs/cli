@@ -1,19 +1,25 @@
 {
   "bomFormat": "CycloneDX",
   "specVersion": "1.6",
-  "serialNumber": "urn:uuid:c82634ad-0f4c-4bd7-b06c-e253f7f34fda",
+  "serialNumber": "urn:uuid:fdd23705-1780-4dd3-a72b-27c7f1fdb21c",
   "version": 1,
   "metadata": {
-    "timestamp": "2025-03-11T04:01:04Z",
+    "timestamp": "2025-07-22T14:43:41Z",
     "tools": {
       "components": [
         {
+          "name": "@herodevs/cli",
+          "publisher": "HeroDevs, Inc.",
+          "version": "2.0.0-beta.4",
+          "type": "application"
+        },
+        {
           "group": "@cyclonedx",
           "name": "cdxgen",
-          "version": "11.2.0",
-          "purl": "pkg:npm/%40cyclonedx/cdxgen@11.2.0",
+          "version": "11.4.3",
+          "purl": "pkg:npm/%40cyclonedx/cdxgen@11.4.3",
           "type": "application",
-          "bom-ref": "pkg:npm/@cyclonedx/cdxgen@11.2.0",
+          "bom-ref": "pkg:npm/@cyclonedx/cdxgen@11.4.3",
           "publisher": "OWASP Foundation",
           "authors": [
             {
@@ -25,7 +31,7 @@
     },
     "authors": [
       {
-        "name": "OWASP Foundation"
+        "name": "HeroDevs, Inc."
       }
     ],
     "lifecycles": [
@@ -50,17 +56,7 @@
           }
         }
       ]
-    },
-    "properties": [
-      {
-        "name": "cdx:bom:componentTypes",
-        "value": "npm"
-      },
-      {
-        "name": "cdx:bom:componentSrcFiles",
-        "value": "test/fixtures/npm/simple/package-lock.json"
-      }
-    ]
+    }
   },
   "components": [
     {
@@ -87,7 +83,7 @@
       "properties": [
         {
           "name": "SrcFile",
-          "value": "test/fixtures/npm/simple/package-lock.json"
+          "value": "/Users/rafael/dev/herodevs/cli/e2e/fixtures/npm/simple/package-lock.json"
         },
         {
           "name": "ResolvedUrl",
@@ -107,14 +103,65 @@
               {
                 "technique": "manifest-analysis",
                 "confidence": 1,
-                "value": "/Users/welch/Code/herodevs/cli/test/fixtures/npm/simple/package-lock.json"
+                "value": "/Users/rafael/dev/herodevs/cli/e2e/fixtures/npm/simple/package-lock.json"
               }
             ],
-            "concludedValue": "/Users/welch/Code/herodevs/cli/test/fixtures/npm/simple/package-lock.json"
+            "concludedValue": "/Users/rafael/dev/herodevs/cli/e2e/fixtures/npm/simple/package-lock.json"
           }
         ]
-      },
-      "tags": ["registry"]
+      }
+    },
+    {
+      "group": "",
+      "name": "vue",
+      "version": "3.5.13",
+      "hashes": [
+        {
+          "alg": "SHA-512",
+          "content": "c267a248cc6464249cf8f336c36551b0e600642f06762a4d1514ec2d27e8755a88f666de8ca797106afc49c92e2e7ad03c67b7a093797372b4be9a14f6aff009"
+        }
+      ],
+      "licenses": [
+        {
+          "license": {
+            "id": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+          }
+        }
+      ],
+      "purl": "pkg:npm/vue@3.5.13",
+      "type": "framework",
+      "bom-ref": "pkg:npm/vue@3.5.13",
+      "properties": [
+        {
+          "name": "SrcFile",
+          "value": "/Users/rafael/dev/herodevs/cli/e2e/fixtures/npm/simple/package-lock.json"
+        },
+        {
+          "name": "ResolvedUrl",
+          "value": "https://registry.npmjs.org/vue/-/vue-3.5.13.tgz"
+        },
+        {
+          "name": "LocalNodeModulesPath",
+          "value": "node_modules/vue"
+        }
+      ],
+      "evidence": {
+        "identity": [
+          {
+            "field": "purl",
+            "confidence": 1,
+            "methods": [
+              {
+                "technique": "manifest-analysis",
+                "confidence": 1,
+                "value": "/Users/rafael/dev/herodevs/cli/e2e/fixtures/npm/simple/package-lock.json"
+              }
+            ],
+            "concludedValue": "/Users/rafael/dev/herodevs/cli/e2e/fixtures/npm/simple/package-lock.json"
+          }
+        ]
+      }
     }
   ],
   "services": [],
@@ -124,32 +171,15 @@
       "dependsOn": []
     },
     {
-      "ref": "pkg:npm/simple@1.0.0",
-      "dependsOn": ["pkg:npm/bootstrap@3.1.1"]
-    }
-  ],
-  "annotations": [
+      "ref": "pkg:npm/vue@3.5.13",
+      "dependsOn": []
+    },
     {
-      "bom-ref": "metadata-annotations",
-      "subjects": ["pkg:npm/simple@1.0.0"],
-      "annotator": {
-        "component": {
-          "group": "@cyclonedx",
-          "name": "cdxgen",
-          "version": "11.2.0",
-          "purl": "pkg:npm/%40cyclonedx/cdxgen@11.2.0",
-          "type": "application",
-          "bom-ref": "pkg:npm/@cyclonedx/cdxgen@11.2.0",
-          "publisher": "OWASP Foundation",
-          "authors": [
-            {
-              "name": "OWASP Foundation"
-            }
-          ]
-        }
-      },
-      "timestamp": "2025-03-11T04:01:04Z",
-      "text": "This Software Bill-of-Materials (SBOM) document was created on Monday, March 10, 2025 with cdxgen. The data was captured during the pre-build lifecycle phase without building the application. The document describes an application named 'simple' with version '1.0.0'. There are 1 components."
+      "ref": "pkg:npm/simple@1.0.0",
+      "dependsOn": [
+        "pkg:npm/bootstrap@3.1.1",
+        "pkg:npm/vue@3.5.13"
+      ]
     }
   ]
 }

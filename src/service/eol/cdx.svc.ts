@@ -19,6 +19,8 @@ export interface Sbom {
   dependencies: SbomDependency[];
 }
 
+const author = process.env.npm_package_author ?? 'HeroDevs, Inc.';
+
 export const SBOM_DEFAULT__OPTIONS = {
   $0: 'cdxgen',
   _: [],
@@ -51,7 +53,7 @@ export const SBOM_DEFAULT__OPTIONS = {
   o: 'bom.json',
   output: 'bom.json',
   outputFormat: 'json', // or "xml"
-  // author: ['OWASP Foundation'],
+  author: [author],
   profile: 'generic',
   project: undefined,
   'project-version': '',
@@ -69,6 +71,13 @@ export const SBOM_DEFAULT__OPTIONS = {
   skipDtTlsCheck: true,
   'spec-version': 1.6,
   specVersion: 1.6,
+  tools: [
+    {
+      name: '@herodevs/cli',
+      publisher: author,
+      version: process.env.npm_package_version ?? 'unknown',
+    },
+  ],
   'usages-slices-file': 'usages.slices.json',
   usagesSlicesFile: 'usages.slices.json',
   validate: true,
