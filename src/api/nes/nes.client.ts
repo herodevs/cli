@@ -1,7 +1,7 @@
 import type * as apollo from '@apollo/client/core/index.js';
 import { PackageURL } from 'packageurl-js';
 
-import type { EolReport } from '@herodevs/eol-shared';
+import type { CreateEolReportInput, EolReport } from '@herodevs/eol-shared';
 import { ApolloClient } from '../../api/client.ts';
 import { config } from '../../config/constants.ts';
 import { debugLogger } from '../../service/log.svc.ts';
@@ -9,7 +9,7 @@ import { SbomScanner } from '../../service/nes/nes.svc.ts';
 
 export interface NesClient {
   scan: {
-    purls: (purls: string[]) => Promise<EolReport>;
+    purls: (input: CreateEolReportInput) => Promise<EolReport>;
   };
 }
 
@@ -35,13 +35,13 @@ export class NesApolloClient implements NesClient {
 /**
  * Submit a scan for a list of purls
  */
-function submitScan(purls: string[]): Promise<EolReport> {
+export function submitScan(input: CreateEolReportInput): Promise<EolReport> {
   const host = config.graphqlHost;
   const path = config.graphqlPath;
   const url = host + path;
   debugLogger('Submitting scan to %s', url);
   const client = new NesApolloClient(url);
-  return client.scan.purls(purls);
+  return client.scan.purls(input);
 }
 
 export const submitPurls = async (purls: string[]): Promise<EolReport> => {
@@ -61,7 +61,7 @@ export const submitPurls = async (purls: string[]): Promise<EolReport> => {
       } satisfies EolReport;
     }
 
-    return submitScan(dedupedAndEncodedPurls);
+    return submitScan({ components: dedupedAndEncodedPurls });
   } catch (error) {
     debugLogger('Fatal error in submitPurls: %s', error);
     throw new Error(`Failed to process purls: ${error instanceof Error ? error.message : String(error)}`);

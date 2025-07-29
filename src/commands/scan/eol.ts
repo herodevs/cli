@@ -1,15 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { deriveComponentStatus } from '@herodevs/eol-shared';
-import type { ComponentStatus, EolReport } from '@herodevs/eol-shared';
+import { deriveComponentStatus, trimCdxBom } from '@herodevs/eol-shared';
+import type { CdxBom, ComponentStatus, EolReport } from '@herodevs/eol-shared';
 import { Command, Flags, ux } from '@oclif/core';
 import ora from 'ora';
 import terminalLink from 'terminal-link';
-import { submitPurls } from '../../api/nes/nes.client.ts';
+import { submitPurls, submitScan } from '../../api/nes/nes.client.ts';
 import { config, filenamePrefix } from '../../config/constants.ts';
 import type { Sbom } from '../../service/eol/cdx.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
-import { extractPurls, parsePurlsFile } from '../../service/purls.svc.ts';
+import { parsePurlsFile } from '../../service/purls.svc.ts';
 import { INDICATORS, STATUS_COLORS } from '../../ui/shared.ui.ts';
 import ScanSbom from './sbom.ts';
 
@@ -102,11 +102,14 @@ export default class ScanEol extends Command {
   }
 
   private async scanSbom(sbom: Sbom): Promise<EolReport> {
+    const spinner = ora().start('Scanning for EOL packages');
     try {
-      const purls = await extractPurls(sbom);
-      return this.scanPurls(purls);
+      const scan = await submitScan({ sbom: trimCdxBom(sbom as CdxBom) });
+      spinner.succeed('Scan completed');
+      return scan;
     } catch (error) {
-      this.error(`Failed to extract purls from sbom. ${getErrorMessage(error)}`);
+      spinner.fail('Scanning failed');
+      this.error(`Failed to submit scan to NES. ${getErrorMessage(error)}`);
     }
   }
 
