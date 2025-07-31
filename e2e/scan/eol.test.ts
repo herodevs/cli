@@ -168,7 +168,11 @@ describe('scan:eol e2e', () => {
     const json = JSON.parse(stdout);
     const bootstrap = json.components.find((component) => component.purl.startsWith('pkg:npm/bootstrap@'));
     strictEqual(bootstrap?.metadata.isEol, true, 'Bootstrap should be marked as EOL');
-    strictEqual(!!bootstrap?.nesRemediation, true, 'Bootstrap should have NES remediation available');
+    strictEqual(
+      !!bootstrap?.nesRemediation?.remediations?.length,
+      true,
+      'Bootstrap should have NES remediation available',
+    );
   });
 
   it('correctly identifies Angular 17 as having a EOL date when using --json flag', async () => {

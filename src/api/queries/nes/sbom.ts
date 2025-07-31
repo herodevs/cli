@@ -14,7 +14,11 @@ export const M_SCAN = {
               purl
               metadata
               nesRemediation {
-                target
+                remediations {
+                  urls {
+                    main
+                  }
+                }
               }
             }
           }

@@ -190,7 +190,7 @@ export function countComponentsByStatus(report: EolReport): Record<ComponentStat
     const status = deriveComponentStatus(component.metadata);
     grouped[status]++;
 
-    if (component.nesRemediation) {
+    if (component.nesRemediation?.remediations?.length) {
       grouped.NES_AVAILABLE++;
     }
   }
