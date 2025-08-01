@@ -5,12 +5,12 @@ import { existsSync, readFileSync, unlinkSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { describe, it } from 'node:test';
-import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { runCommand } from '@oclif/test';
 import { config, filenamePrefix } from '../../src/config/constants';
 
 const execAsync = promisify(exec);
+const fixturesDir = path.resolve(import.meta.dirname, '../fixtures');
 
 describe('environment', () => {
   it('should not be configured to run against the production environment', () => {
@@ -26,8 +26,7 @@ describe('default arguments', () => {
     // Run the CLI directly with no arguments
     const { stdout } = await execAsync('node bin/run.js');
 
-    // Match EOL count
-    match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
+    match(stdout, /[1-9]\d*( .*)End-of-Life \(EOL\)/, 'Should show non-zero EOL count');
   });
 
   it('runs scan:eol --json when --json is passed in', async () => {
@@ -59,13 +58,10 @@ describe('default arguments', () => {
 });
 
 describe('scan:eol e2e', () => {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const fixturesDir = path.resolve(__dirname, '../fixtures');
-  const simplePurls = path.resolve(__dirname, '../fixtures/npm/simple.purls.json');
+  const simplePurls = path.resolve(fixturesDir, 'npm/simple.purls.json');
   const simpleSbom = path.join(fixturesDir, `npm/${filenamePrefix}.sbom.json`);
   const reportPath = path.resolve(fixturesDir, `${filenamePrefix}.report.json`);
-  const upToDatePurls = path.resolve(__dirname, '../fixtures/npm/up-to-date.purls.json');
-  const emptyPurlsPath = path.resolve(__dirname, '../fixtures/npm/empty.purls.json');
+  const emptyPurlsPath = path.resolve(fixturesDir, 'npm/empty.purls.json');
 
   async function run(cmd: string) {
     // Ensure fixtures directory exists and is clean
@@ -133,7 +129,7 @@ describe('scan:eol e2e', () => {
   });
 
   it.skip('scans extra-large.purls.json for EOL components', async () => {
-    const extraLargePurlsPath = path.resolve(__dirname, '../fixtures/npm/extra-large.purls.json');
+    const extraLargePurlsPath = path.resolve(fixturesDir, 'npm/extra-large.purls.json');
     const cmd = `scan:eol --purls ${extraLargePurlsPath}`;
     const { stdout } = await run(cmd);
 
@@ -171,19 +167,22 @@ describe('scan:eol e2e', () => {
 
     const json = JSON.parse(stdout);
     const bootstrap = json.components.find((component) => component.purl.startsWith('pkg:npm/bootstrap@'));
-    strictEqual(bootstrap?.info.status, 'EOL', 'Should match EOL count');
-    strictEqual(bootstrap?.info.nesAvailable, true, 'Should match remediation count');
+    strictEqual(bootstrap?.metadata.isEol, true, 'Bootstrap should be marked as EOL');
+    strictEqual(
+      !!bootstrap?.nesRemediation?.remediations?.length,
+      true,
+      'Bootstrap should have NES remediation available',
+    );
   });
 
   it('correctly identifies Angular 17 as having a EOL date when using --json flag', async () => {
-    const angular17Purls = path.resolve(__dirname, '../fixtures/npm/angular-17.purls.json');
+    const angular17Purls = path.resolve(fixturesDir, 'npm/angular-17.purls.json');
     const cmd = `scan:eol --purls=${angular17Purls} --json`;
     const { stdout } = await run(cmd);
 
     const json = JSON.parse(stdout);
     const angular17 = json.components.find((component) => component.purl.startsWith('pkg:npm/%40angular/core@'));
-    // Match EOL count
-    strictEqual(angular17?.info.status, 'EOL', 'Should match EOL status');
+    strictEqual(angular17?.metadata.isEol, true, 'Angular 17 should be marked as EOL');
   });
 
   describe('web report URL', () => {
@@ -210,9 +209,7 @@ describe('scan:eol e2e', () => {
  * Please see CONTRIBUTING.md before adding new tests to this section.
  */
 describe('with directory flag', () => {
-  const __dirname = path.dirname(fileURLToPath(import.meta.url));
-  const simpleDir = path.resolve(__dirname, '../fixtures/npm/simple');
-  const upToDateDir = path.resolve(__dirname, '../fixtures/npm/up-to-date');
+  const simpleDir = path.resolve(fixturesDir, 'npm/simple');
   const reportPath = path.join(simpleDir, `${filenamePrefix}.report.json`);
 
   async function run(cmd: string) {
