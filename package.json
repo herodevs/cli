@@ -23,6 +23,7 @@
     "format": "biome format --write",
     "lint": "biome lint --write",
     "postpack": "shx rm -f oclif.manifest.json",
+    "prepare": "npm run build",
     "prepack": "oclif manifest && oclif readme",
     "pretest": "npm run lint && npm run typecheck",
     "readme": "npm run ci:fix && npm run build && npm exec oclif readme",
