@@ -1,35 +1,57 @@
 import assert from 'node:assert';
-import { describe, it } from 'node:test';
-import { dedupeAndEncodePurls } from '../../src/api/nes/nes.client.ts';
+import { afterEach, beforeEach, describe, it } from 'node:test';
+import type { CreateEolReportInput } from '@herodevs/eol-shared';
+import { submitScan } from '../../src/api/nes.client.ts';
+import { FetchMock } from '../utils/mocks/fetch.mock.ts';
 
 describe('nes.client', () => {
-  describe('dedupeAndEncodePurls', () => {
-    const inputs = [
-      {
-        purls: ['pkg:npm/@angular/core@14.3.0', 'pkg:npm/npm-bundled@2.0.1', 'pkg:npm/%40angular/core@14.3.0'],
-        expected: ['pkg:npm/%40angular/core@14.3.0', 'pkg:npm/npm-bundled@2.0.1'],
-        description: 'should dedupe angular core purls',
-      },
-      {
-        purls: ['pkg:npm/@angular/core@14.3.0', 'pkg:npm/npm-bundled@2.0.1', 'pkg:npm/rxjs@6.6.7'],
-        expected: ['pkg:npm/%40angular/core@14.3.0', 'pkg:npm/npm-bundled@2.0.1', 'pkg:npm/rxjs@6.6.7'],
-        description: 'should not dedupe unique purls',
-      },
-      {
-        purls: [
-          'pkg:maven/org.apache.commons/commons-lang3@3.12.0',
-          'pkg:maven/org.apache.commons/commons-lang3@3.12.0',
-          'pkg:maven/org.apache.commons/commons-lang3@3.12.0',
-        ],
-        expected: ['pkg:maven/org.apache.commons/commons-lang3@3.12.0'],
-        description: 'should dedupe maven purls',
-      },
-    ];
-    for (const input of inputs) {
-      it(`should dedupe and encode purls: ${input.description}`, () => {
-        const result = dedupeAndEncodePurls(input.purls);
-        assert.deepStrictEqual(result, input.expected);
-      });
-    }
+  let fetchMock: FetchMock;
+
+  beforeEach(() => {
+    fetchMock = new FetchMock();
+  });
+
+  afterEach(() => {
+    fetchMock.restore();
+  });
+
+  it('returns report on successful createReport mutation', async () => {
+    const report = {
+      id: 'test-123',
+      createdOn: new Date().toISOString(),
+      metadata: {},
+      components: [
+        { purl: 'pkg:npm/bootstrap@3.1.1', metadata: { isEol: true } },
+        {
+          purl: 'pkg:npm/is-core-module@2.11.0',
+          metadata: {},
+          nesRemediation: { remediations: [{ urls: { main: 'https://example.com' } }] },
+        },
+      ],
+    };
+
+    fetchMock.addGraphQL({
+      eol: { createReport: { success: true, report } },
+    });
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    const res = await submitScan(input);
+
+    assert.strictEqual(res.id, report.id);
+    assert.strictEqual(Array.isArray(res.components), true);
+    assert.strictEqual(res.components.length, 2);
+  });
+
+  it('throws when mutation returns unsuccessful response or no report', async () => {
+    fetchMock.addGraphQL({
+      eol: { createReport: { success: false, report: null } },
+    });
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    await assert.rejects(() => submitScan(input), /Failed to create EOL report/);
   });
 });
