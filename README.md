@@ -26,7 +26,7 @@ Use of this CLI is governed by the [HeroDevs End of Life Dataset Terms of Servic
 
 The CLI is designed to be non-invasive:
 
-* It does install dependencies or modify package manager files (package-lock.json, yarn.lock, etc.)
+* It does not install dependencies or modify package manager files (package-lock.json, yarn.lock, etc.)
 * It analyzes the project in its current state
 * If you need dependencies installed for accurate scanning, please install them manually before running the scan
 
@@ -59,13 +59,13 @@ Scan a given SBOM for EOL data.
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value>] [-p <value>] [-d <value>] [-s]
+  $ hd scan eol [--json] [-f <value>] [-d <value>] [-s] [-b]
 
 FLAGS
   -d, --dir=<value>    The directory to scan in order to create a CycloneDX SBOM
   -f, --file=<value>   The file path of an existing CycloneDX SBOM to scan for EOL
   -s, --save           Save the generated report as herodevs.report.json in the scanned directory
-  -s, --save-sbom      Save the generated SBOM as herodevs.sbom.json in the scanned directory
+  -b, --save-sbom      Save the generated SBOM as herodevs.sbom.json in the scanned directory
 
 GLOBAL FLAGS
   --json  Format output as JSON.

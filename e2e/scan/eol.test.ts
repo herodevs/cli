@@ -6,11 +6,11 @@ import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import { promisify } from 'node:util';
+import type { DeepPartial } from '@apollo/client/utilities';
+import type { EolScanComponent } from '@herodevs/eol-shared';
 import { runCommand } from '@oclif/test';
 import { config, filenamePrefix } from '../../src/config/constants.ts';
 import { FetchMock } from '../../test/utils/mocks/fetch.mock.ts';
-import { DeepPartial } from '@apollo/client/utilities';
-import { EolScanComponent } from '@herodevs/eol-shared';
 
 const execAsync = promisify(exec);
 const fixturesDir = path.resolve(import.meta.dirname, '../fixtures');
@@ -58,14 +58,16 @@ describe('scan:eol e2e', () => {
 
   beforeEach(async () => {
     await mkdir(fixturesDir, { recursive: true });
-    fetchMock = new FetchMock().addGraphQL(mockReport([
-      { purl: 'pkg:npm/bootstrap@3.1.1', metadata: { isEol: true } },
-      {
-        purl: 'pkg:npm/is-core-module@2.11.0',
-        metadata: {},
-        nesRemediation: { remediations: [{ urls: { main: 'https://example.com' } }] },
-      },
-    ]));
+    fetchMock = new FetchMock().addGraphQL(
+      mockReport([
+        { purl: 'pkg:npm/bootstrap@3.1.1', metadata: { isEol: true } },
+        {
+          purl: 'pkg:npm/is-core-module@2.11.0',
+          metadata: {},
+          nesRemediation: { remediations: [{ urls: { main: 'https://example.com' } }] },
+        },
+      ]),
+    );
   });
 
   afterEach(() => {
@@ -165,10 +167,12 @@ describe('scan:eol e2e', () => {
 
   it('shows zero EOL components when scanning up-to-date packages', async () => {
     fetchMock.restore();
-    fetchMock = new FetchMock().addGraphQL(mockReport([
-      { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
-      { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
-    ]));
+    fetchMock = new FetchMock().addGraphQL(
+      mockReport([
+        { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
+        { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
+      ]),
+    );
     const cmd = `scan:eol --file ${upToDateSbom}`;
     const { stdout } = await run(cmd);
     match(stdout, /Scan results:/, 'Should show results header');
@@ -225,10 +229,12 @@ describe('scan:eol e2e', () => {
 
   it('scans up-to-date directory and shows modern packages', async () => {
     fetchMock.restore();
-    fetchMock = new FetchMock().addGraphQL(mockReport([
-      { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
-      { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
-    ]));
+    fetchMock = new FetchMock().addGraphQL(
+      mockReport([
+        { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
+        { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
+      ]),
+    );
     const cmd = `scan:eol --dir ${upToDateDir}`;
     const { stdout } = await run(cmd);
     match(stdout, /Scan results:/, 'Should show results header');

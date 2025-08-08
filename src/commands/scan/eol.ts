@@ -13,9 +13,12 @@ export default class ScanEol extends Command {
   static override description = 'Scan a given SBOM for EOL data';
   static enableJsonFlag = true;
   static override examples = [
+    '<%= config.bin %> <%= command.id %>',
     '<%= config.bin %> <%= command.id %> --dir=./my-project',
     '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
-    '<%= config.bin %> <%= command.id %> -a --dir=./my-project',
+    '<%= config.bin %> <%= command.id %> --json',
+    '<%= config.bin %> <%= command.id %> --save',
+    '<%= config.bin %> <%= command.id %> --saveSbom',
   ];
   static override flags = {
     file: Flags.string({
@@ -58,9 +61,7 @@ export default class ScanEol extends Command {
       this.log(`SBOM saved to ${sbomPath}`);
     }
 
-    if (this.jsonEnabled()) {
-      this.log(JSON.stringify(sbom, null, 2));
-    } else {
+    if (!this.jsonEnabled()) {
       this.displayResults(scan);
     }
 
