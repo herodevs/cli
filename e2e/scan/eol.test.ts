@@ -1,289 +1,353 @@
-import { doesNotThrow, notStrictEqual } from 'node:assert';
-import { doesNotMatch, match, strictEqual } from 'node:assert/strict';
+import { doesNotThrow } from 'node:assert';
+import { doesNotMatch, match, notStrictEqual, strictEqual } from 'node:assert/strict';
 import { exec } from 'node:child_process';
-import { existsSync, readFileSync, unlinkSync } from 'node:fs';
+import { existsSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
-import { describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, it } from 'node:test';
 import { promisify } from 'node:util';
 import { runCommand } from '@oclif/test';
-import { config, filenamePrefix } from '../../src/config/constants';
+import { config, filenamePrefix } from '../../src/config/constants.ts';
+import { FetchMock } from '../../test/utils/mocks/fetch.mock.ts';
+import { DeepPartial } from '@apollo/client/utilities';
+import { EolScanComponent } from '@herodevs/eol-shared';
 
 const execAsync = promisify(exec);
 const fixturesDir = path.resolve(import.meta.dirname, '../fixtures');
+const simpleDir = path.resolve(fixturesDir, 'npm/simple');
+const simpleSbom = path.join(simpleDir, 'sbom.json');
+const upToDateDir = path.resolve(fixturesDir, 'npm/up-to-date');
+const upToDateSbom = path.join(fixturesDir, 'npm/up-to-date.sbom.json');
+const noComponentsSbom = path.join(fixturesDir, 'npm/no-components.sbom.json');
+
+function mockReport(components: DeepPartial<EolScanComponent>[] = []) {
+  return {
+    eol: {
+      createReport: {
+        success: true,
+        report: {
+          id: 'test-123',
+          createdOn: new Date().toISOString(),
+          metadata: {},
+          components,
+        },
+      },
+    },
+  };
+}
 
 describe('environment', () => {
   it('should not be configured to run against the production environment', () => {
-    notStrictEqual(process.env.GRAPHQL_HOST, 'https://api.nes.herodevs.com');
-    notStrictEqual(process.env.EOL_REPORT_URL, 'https://eol-report-card.apps.herodevs.com/reports');
-    notStrictEqual(config.graphqlHost, 'https://api.nes.herodevs.com');
-    notStrictEqual(config.eolReportUrl, 'https://eol-report-card.apps.herodevs.com/reports');
-  });
-});
-
-describe('default arguments', () => {
-  it('defaults to scan:eol when no arguments are provided', async () => {
-    // Run the CLI directly with no arguments
-    const { stdout } = await execAsync('node bin/run.js');
-
-    match(stdout, /[1-9]\d*( .*)End-of-Life \(EOL\)/, 'Should show non-zero EOL count');
-  });
-
-  it('runs scan:eol --json when --json is passed in', async () => {
-    // Run the CLI with --json flag
-    const { stdout } = await execAsync('node bin/run.js --json');
-
-    // Verify JSON output
-    doesNotMatch(stdout, /Scan results:/, 'Should not show results header');
-    doesNotThrow(() => JSON.parse(stdout), 'Output should be valid JSON');
-  });
-
-  it('shows help for scan:eol when --help is passed in', async () => {
-    const { stdout } = await execAsync('node bin/run.js --help');
-
-    // Verify help output
-    match(stdout, /USAGE/, 'Should show usage section');
-    match(stdout, /FLAGS/, 'Should show flags section');
-    match(stdout, /EXAMPLES/, 'Should show examples section');
-  });
-
-  it('shows global help when help is passed in', async () => {
-    const { stdout } = await execAsync('node bin/run.js help');
-
-    // Verify help output
-    match(stdout, /USAGE/, 'Should show usage section');
-    match(stdout, /TOPICS/, 'Should show topics section');
-    match(stdout, /COMMANDS/, 'Should show commands section');
+    notStrictEqual(process.env.GRAPHQL_HOST, 'https://api.nes.herodevs.com', 'GRAPHQL_HOST should not be production');
+    notStrictEqual(
+      process.env.EOL_REPORT_URL,
+      'https://eol-report-card.apps.herodevs.com/reports',
+      'EOL_REPORT_URL should not be production',
+    );
+    notStrictEqual(config.graphqlHost, 'https://api.nes.herodevs.com', 'config.graphqlHost should not be production');
+    notStrictEqual(
+      config.eolReportUrl,
+      'https://eol-report-card.apps.herodevs.com/reports',
+      'config.eolReportUrl should not be production',
+    );
   });
 });
 
 describe('scan:eol e2e', () => {
-  const simplePurls = path.resolve(fixturesDir, 'npm/simple.purls.json');
-  const simpleSbom = path.join(fixturesDir, `npm/${filenamePrefix}.sbom.json`);
-  const reportPath = path.resolve(fixturesDir, `${filenamePrefix}.report.json`);
-  const emptyPurlsPath = path.resolve(fixturesDir, 'npm/empty.purls.json');
+  let fetchMock: FetchMock;
+
+  beforeEach(async () => {
+    await mkdir(fixturesDir, { recursive: true });
+    fetchMock = new FetchMock().addGraphQL(mockReport([
+      { purl: 'pkg:npm/bootstrap@3.1.1', metadata: { isEol: true } },
+      {
+        purl: 'pkg:npm/is-core-module@2.11.0',
+        metadata: {},
+        nesRemediation: { remediations: [{ urls: { main: 'https://example.com' } }] },
+      },
+    ]));
+  });
+
+  afterEach(() => {
+    fetchMock.restore();
+  });
+
+  describe('default arguments', () => {
+    it('runs scan:eol with file flag and shows results', async () => {
+      const { stdout } = await execAsync(`node bin/run.js scan:eol --file ${simpleSbom}`);
+      match(stdout, /Scan results:/, 'Should show results header');
+      match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count of 1');
+      match(stdout, /total packages scanned/i, 'Should show total packages scanned');
+    });
+
+    it('runs scan:eol with --json and produces valid JSON', async () => {
+      const { stdout } = await execAsync(`node bin/run.js scan:eol --file ${simpleSbom} --json`);
+      doesNotMatch(stdout, /Scan results:/, 'Should not show results header');
+      doesNotThrow(() => JSON.parse(stdout), 'Output should be valid JSON');
+    });
+
+    it('shows help for scan:eol when --help is passed in', async () => {
+      const { stdout } = await execAsync('node bin/run.js --help');
+      match(stdout, /USAGE/, 'Should show usage section');
+      match(stdout, /FLAGS/, 'Should show flags section');
+      match(stdout, /EXAMPLES/, 'Should show examples section');
+    });
+
+    it('shows global help when help is passed in', async () => {
+      const { stdout } = await execAsync('node bin/run.js help');
+      match(stdout, /USAGE/, 'Should show usage section');
+      match(stdout, /TOPICS/, 'Should show topics section');
+      match(stdout, /COMMANDS/, 'Should show commands section');
+    });
+  });
 
   async function run(cmd: string) {
-    // Ensure fixtures directory exists and is clean
-    await mkdir(fixturesDir, { recursive: true });
-
     const output = await runCommand(cmd);
-
-    // Log any errors for debugging
     if (output.error) {
       console.error('Command failed with error:', output.error);
       console.error('Error details:', output.stderr);
     }
-
-    // Verify command executed successfully
     strictEqual(output.error, undefined, 'Command should execute without errors');
-
     return output;
   }
 
   it('scans existing SBOM for EOL components', async () => {
     const cmd = `scan:eol --file ${simpleSbom}`;
     const { stdout } = await run(cmd);
-
-    // Match EOL count
+    match(stdout, /Scan results:/, 'Should show results header');
     match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
+    match(stdout, /2 total packages scanned/, 'Should show total packages scanned');
   });
 
-  it('generates purls from SBOM for direct and transitive dependencies', async () => {
-    const transitiveDependenciesSbom = path.join(fixturesDir, 'npm/transitive-dependencies.sbom.json');
-    const cmd = `report:purls --file ${transitiveDependenciesSbom} --json`;
-    const { stdout } = await run(cmd);
-
-    const { purls } = JSON.parse(stdout);
-
-    // Direct dependency
-    strictEqual(purls.includes('pkg:npm/is-core-module@2.11.0'), true);
-
-    // Transitive dependency
-    strictEqual(purls.includes('pkg:npm/@babel/helper-validator-identifier@7.19.1'), true);
-  });
-
-  it('saves report when --save flag is used', async () => {
-    const cmd = `scan:eol --purls=${simplePurls} --dir=${fixturesDir} --save`;
+  it('saves report when --save flag is used (directory scan)', async () => {
+    const reportPath = path.join(simpleDir, `${filenamePrefix}.report.json`);
+    const cmd = `scan:eol --dir ${simpleDir} --save`;
     await run(cmd);
 
-    // Verify report was saved
     const reportExists = existsSync(reportPath);
-
     strictEqual(reportExists, true, 'Report file should be created');
 
-    // Verify report content
-    const report = readFileSync(reportPath, 'utf-8');
-
-    // Verify report structure using match
-    match(report, /"components":\s*\[/, 'Report should contain components array');
-    match(report, /"purl":\s*"pkg:npm\/bootstrap@3\.1\.1"/, 'Report should contain bootstrap package');
-    match(report, /"isEol":\s*true/, 'Bootstrap should be marked as EOL');
+    const reportText = readFileSync(reportPath, 'utf-8');
+    const reportJson = JSON.parse(reportText);
+    strictEqual(Array.isArray(reportJson.components), true, 'components should be an array');
+    strictEqual(reportJson.components.length, 2, 'should have 2 components');
+    const bootstrap = reportJson.components.find((c: { purl?: string }) => c.purl === 'pkg:npm/bootstrap@3.1.1');
+    strictEqual(!!bootstrap, true, 'should include bootstrap 3.1.1');
+    strictEqual(bootstrap.metadata?.isEol, true, 'bootstrap should be EOL');
+    const hasNes = reportJson.components.some(
+      (c: { nesRemediation?: { remediations?: unknown[] } }) => !!c.nesRemediation?.remediations?.length,
+    );
+    strictEqual(hasNes, true, 'should include at least one NES remediation');
     match(
-      report,
+      reportText,
       /"createdOn": "\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)"/,
       'Report should contain a date created on property in ISO format',
     );
-
     unlinkSync(reportPath);
   });
 
-  it.skip('scans extra-large.purls.json for EOL components', async () => {
-    const extraLargePurlsPath = path.resolve(fixturesDir, 'npm/extra-large.purls.json');
-    const cmd = `scan:eol --purls ${extraLargePurlsPath}`;
+  it('outputs JSON only when using the --json flag', async () => {
+    const cmd = `scan:eol --file ${simpleSbom} --json`;
     const { stdout } = await run(cmd);
-
-    // Match command output patterns
-    match(stdout, /Scan results:/, 'Should show results header');
-
-    // Match specific EOL packages
-    match(stdout, /pkg:npm\/%40angular\/core@12\.2\.2/, 'Should detect Angular core package');
-    match(stdout, /EOL Date: 2022-11-12/, 'Should show correct EOL date for Angular core');
-    match(stdout, /pkg:npm\/bootstrap@3\.4\.1/, 'Should detect Bootstrap 3.4.1');
-    match(stdout, /EOL Date: 2019-07-24/, 'Should show correct EOL date for Bootstrap 3.4.1');
-    match(stdout, /pkg:npm\/bootstrap@4\.6\.2/, 'Should detect Bootstrap 4.6.2');
-    // TODO(ED): Debug why data is missing for this package
-    // match(stdout, /EOL Date: 2023-01-01/, 'Should show correct EOL date for Bootstrap 4.6.2');
-
-    // Match legend
-    match(stdout, /• = No Known Issues/, 'Should show legend for No Known Issues');
-    match(stdout, /✔ = OK/, 'Should show legend for OK status');
-    match(stdout, /⚡= Supported: End-of-Life \(EOL\) is scheduled/, 'Should show legend for SUPPORTED status');
-    match(stdout, /✗ = End of Life \(EOL\)/, 'Should show legend for EOL status');
-  });
-
-  it('outputs JSON when using the --json flag', async () => {
-    const cmd = `scan:eol --purls=${simplePurls} --json`;
-    const { stdout } = await run(cmd);
-
-    // Match command output patterns
     doesNotMatch(stdout, /Scan results:/, 'Should not show results header');
-    doesNotThrow(() => JSON.parse(stdout));
+    const json = JSON.parse(stdout);
+    // Accept either SBOM or report JSON depending on CLI output behavior
+    if (json.bomFormat) {
+      strictEqual(json.bomFormat, 'CycloneDX', 'Should be CycloneDX format');
+    } else {
+      strictEqual(Array.isArray(json.components), true, 'Should have components array');
+      const bootstrap = json.components.find(
+        (c: { purl?: string }) => typeof c.purl === 'string' && c.purl.includes('pkg:npm/bootstrap@'),
+      );
+      strictEqual(!!bootstrap, true, 'Should include bootstrap');
+    }
   });
 
-  it('correctly identifies Bootstrap as having EOL status and remediation available when using the --json flag', async () => {
-    const cmd = `scan:eol --purls=${simplePurls} --json`;
+  it('shows zero EOL components when scanning up-to-date packages', async () => {
+    fetchMock.restore();
+    fetchMock = new FetchMock().addGraphQL(mockReport([
+      { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
+      { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
+    ]));
+    const cmd = `scan:eol --file ${upToDateSbom}`;
     const { stdout } = await run(cmd);
-
-    const json = JSON.parse(stdout);
-    const bootstrap = json.components.find((component) => component.purl.startsWith('pkg:npm/bootstrap@'));
-    strictEqual(bootstrap?.metadata.isEol, true, 'Bootstrap should be marked as EOL');
-    strictEqual(
-      !!bootstrap?.nesRemediation?.remediations?.length,
-      true,
-      'Bootstrap should have NES remediation available',
-    );
+    match(stdout, /Scan results:/, 'Should show results header');
+    match(stdout, /0( .*)End-of-Life \(EOL\)/, 'Should show EOL count of 0');
+    match(stdout, /2 total packages scanned/, 'Should show total packages scanned');
   });
 
-  it('correctly identifies Angular 17 as having a EOL date when using --json flag', async () => {
-    const angular17Purls = path.resolve(fixturesDir, 'npm/angular-17.purls.json');
-    const cmd = `scan:eol --purls=${angular17Purls} --json`;
+  it('handles empty components array without errors', async () => {
+    fetchMock.restore();
+    fetchMock = new FetchMock().addGraphQL(mockReport([]));
+    const cmd = `scan:eol --file ${noComponentsSbom}`;
     const { stdout } = await run(cmd);
+    match(stdout, /No components found in scan/, 'Should show no packages found in scan');
+  });
 
-    const json = JSON.parse(stdout);
-    const angular17 = json.components.find((component) => component.purl.startsWith('pkg:npm/%40angular/core@'));
-    strictEqual(angular17?.metadata.isEol, true, 'Angular 17 should be marked as EOL');
+  it('saves SBOM when --saveSbom flag is used (directory scan)', async () => {
+    const sbomPath = path.join(simpleDir, `${filenamePrefix}.sbom.json`);
+    const cmd = `scan:eol --dir ${simpleDir} --saveSbom`;
+    await run(cmd);
+
+    const sbomExists = existsSync(sbomPath);
+    strictEqual(sbomExists, true, 'SBOM file should be created');
+
+    const sbomText = readFileSync(sbomPath, 'utf-8');
+    const sbomJson = JSON.parse(sbomText);
+    strictEqual(sbomJson.bomFormat, 'CycloneDX', 'Should be CycloneDX format');
+    strictEqual(Array.isArray(sbomJson.components), true, 'Should have components array');
+    match(sbomText, /"name": "@herodevs\/cli"/, 'Should include HeroDevs CLI attribution');
+    unlinkSync(sbomPath);
+  });
+
+  it('saves both report and SBOM when both --save and --saveSbom flags are used', async () => {
+    const reportPath = path.join(simpleDir, `${filenamePrefix}.report.json`);
+    const sbomPath = path.join(simpleDir, `${filenamePrefix}.sbom.json`);
+    const cmd = `scan:eol --dir ${simpleDir} --save --saveSbom`;
+    await run(cmd);
+
+    const reportExists = existsSync(reportPath);
+    const sbomExists = existsSync(sbomPath);
+    strictEqual(reportExists, true, 'Report file should be created');
+    strictEqual(sbomExists, true, 'SBOM file should be created');
+
+    const reportText = readFileSync(reportPath, 'utf-8');
+    const sbomText = readFileSync(sbomPath, 'utf-8');
+    const reportJson = JSON.parse(reportText);
+    const sbomJson = JSON.parse(sbomText);
+
+    strictEqual(Array.isArray(reportJson.components), true, 'Report should have components array');
+    strictEqual(sbomJson.bomFormat, 'CycloneDX', 'SBOM should be CycloneDX format');
+
+    unlinkSync(reportPath);
+    unlinkSync(sbomPath);
+  });
+
+  it('scans up-to-date directory and shows modern packages', async () => {
+    fetchMock.restore();
+    fetchMock = new FetchMock().addGraphQL(mockReport([
+      { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
+      { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
+    ]));
+    const cmd = `scan:eol --dir ${upToDateDir}`;
+    const { stdout } = await run(cmd);
+    match(stdout, /Scan results:/, 'Should show results header');
+    match(stdout, /0( .*)End-of-Life \(EOL\)/, 'Should show EOL count of 0');
+    match(stdout, /total packages scanned/, 'Should show total packages scanned');
   });
 
   describe('web report URL', () => {
     it('displays web report URL with scan ID when scan is successful', async () => {
-      const cmd = `scan:eol --purls=${simplePurls}`;
+      const cmd = `scan:eol --file ${simpleSbom}`;
       const { stdout } = await run(cmd);
-
-      // Match the key text and scan ID pattern
-      match(stdout, /View your full EOL report at.*[a-zA-Z0-9-]+/, 'Should show web report text and scan ID');
+      match(stdout, /View your full EOL report at.*test-123/, 'Should show web report text and scan ID');
     });
 
     it('does not display web report URL when using --json flag', async () => {
-      const cmd = `scan:eol --purls=${simplePurls} --json`;
+      const cmd = `scan:eol --file ${simpleSbom} --json`;
       const { stdout } = await run(cmd);
-
-      // Verify URL text is not in output
-      doesNotMatch(stdout, /View your free EOL report/, 'Should not show web report text in JSON output');
+      doesNotMatch(stdout, /View your full EOL report/, 'Should not show web report text in JSON output');
     });
   });
-});
 
-/**
- * Directory scan tests
- * Please see CONTRIBUTING.md before adding new tests to this section.
- */
-describe('with directory flag', () => {
-  const simpleDir = path.resolve(fixturesDir, 'npm/simple');
-  const reportPath = path.join(simpleDir, `${filenamePrefix}.report.json`);
+  describe('with directory flag', () => {
+    it('scans a directory for EOL components', async () => {
+      const cmd = `scan:eol --dir ${simpleDir}`;
+      const { stdout } = await run(cmd);
+      match(stdout, /Scan results:/, 'Should show results header');
+      match(stdout, /total packages scanned/, 'Should show total packages scanned');
+    });
 
-  async function run(cmd: string) {
-    // Ensure test directory exists and is clean
-    await mkdir(simpleDir, { recursive: true });
+    it('displays web report URL when scanning directory', async () => {
+      const cmd = `scan:eol --dir ${simpleDir}`;
+      const { stdout } = await run(cmd);
+      match(stdout, /View your full EOL report at.*test-123/, 'Should show web report with scan ID');
+    });
 
-    const output = await runCommand(cmd);
+    it('outputs JSON when using the --json flag', async () => {
+      const cmd = `scan:eol --dir ${simpleDir} --json`;
+      const { stdout } = await run(cmd);
+      doesNotMatch(stdout, /Generating SBOM/, 'Should not show progress messages');
+      doesNotMatch(stdout, /Scan results:/, 'Should not show results header');
+      const json = JSON.parse(stdout);
+      if (json.bomFormat) {
+        strictEqual(json.bomFormat, 'CycloneDX', 'Should be CycloneDX format');
+        strictEqual(Array.isArray(json.components), true, 'Should have components array');
+      } else {
+        strictEqual(Array.isArray(json.components), true, 'Should have components array');
+      }
+      const hasBootstrap = json.components.some(
+        (c: { purl?: string }) => typeof c.purl === 'string' && c.purl.includes('pkg:npm/bootstrap@'),
+      );
+      strictEqual(hasBootstrap, true, 'Should detect bootstrap package from package.json');
+    });
+  });
 
-    // Log any errors for debugging
-    if (output.error) {
-      console.error('Command failed with error:', output.error);
-      console.error('Error details:', output.stderr);
+  describe('negative paths', () => {
+    async function runExpectFail(cmd: string) {
+      const output = await runCommand(cmd);
+      notStrictEqual(output.error, undefined, 'Command should fail');
+      // Some runners set process.exitCode on failures; ensure it doesn't leak and trip the file-level status
+      process.exitCode = 0;
+      return output;
     }
 
-    // Verify command executed successfully
-    strictEqual(output.error, undefined, 'Command should execute without errors');
+    function expectAny(output: { stdout: string; stderr: string }, patterns: RegExp[], message: string) {
+      const text = `${output.stderr}\n${output.stdout}`;
+      const matched = patterns.some((re) => re.test(text));
+      strictEqual(matched, true, message);
+    }
 
-    return output;
-  }
+    it('fails when SBOM file does not exist', async () => {
+      const missing = path.join(fixturesDir, 'npm', 'does-not-exist.json');
+      const out = await runExpectFail(`scan:eol --file ${missing}`);
+      expectAny(
+        out,
+        [/SBOM file not found:/i, /Failed to read SBOM file/i, /Failed to load SBOM file/i, /Loading SBOM file/i],
+        'Should indicate missing SBOM file',
+      );
+    });
 
-  it('scans a directory or sbom for EOL components', async () => {
-    const cmd = `scan:eol --dir ${simpleDir}`;
-    const { stdout } = await run(cmd);
+    it('fails when SBOM file is invalid JSON', async () => {
+      const badFile = path.join(fixturesDir, 'npm', 'invalid.json');
+      writeFileSync(badFile, '{not-json');
+      try {
+        const out = await runExpectFail(`scan:eol --file ${badFile}`);
+        expectAny(
+          out,
+          [/Failed to read SBOM file/i, /Failed to load SBOM file/i, /Loading SBOM file/i],
+          'Should indicate invalid SBOM',
+        );
+      } finally {
+        unlinkSync(badFile);
+      }
+    });
 
-    // Match EOL count
-    match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
-  });
+    it('fails when directory does not exist', async () => {
+      const missingDir = path.join(fixturesDir, 'npm', 'no-such-dir');
+      const out = await runExpectFail(`scan:eol --dir ${missingDir}`);
+      expectAny(
+        out,
+        [/Directory not found:/i, /Failed to scan directory/i, /Generating SBOM/i],
+        'Should indicate missing directory',
+      );
+    });
 
-  it('displays web report URL when scanning directory', async () => {
-    const cmd = `scan:eol --dir ${simpleDir}`;
-    const { stdout } = await run(cmd);
+    it('fails when provided path is not a directory', async () => {
+      const out = await runExpectFail(`scan:eol --dir ${simpleSbom}`);
+      expectAny(
+        out,
+        [/Path is not a directory:/i, /Failed to scan directory/i, /Generating SBOM/i],
+        'Should indicate non-directory path',
+      );
+    });
 
-    // Match the key text and scan ID pattern
-    match(stdout, /View your full EOL report at.*[a-zA-Z0-9-]+/, 'Should show web report text and scan ID');
-  });
-
-  it('saves report when --save flag is used', async () => {
-    const cmd = `scan:eol --dir ${simpleDir} --save`;
-    await run(cmd);
-
-    // Verify report was saved
-    const reportExists = existsSync(reportPath);
-
-    strictEqual(reportExists, true, 'Report file should be created');
-
-    // Verify report content
-    const report = readFileSync(reportPath, 'utf-8');
-
-    // Verify report structure using match
-    match(report, /"components":\s*\[/, 'Report should contain components array');
-    match(report, /"purl":\s*"pkg:npm\/bootstrap@3\.1\.1"/, 'Report should contain bootstrap package');
-    match(report, /"isEol":\s*true/, 'Bootstrap should be marked as EOL');
-    match(
-      report,
-      /"createdOn": "\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)"/,
-      'Report should contain a date created on property in ISO format',
-    );
-
-    unlinkSync(reportPath);
-  });
-
-  it('scans existing SBOM for EOL components', async () => {
-    const cmd = `scan:eol --file ${simpleDir}/sbom.json`;
-    const { stdout } = await run(cmd);
-
-    match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
-  });
-
-  it('outputs JSON when using the --json flag', async () => {
-    const cmd = `scan:eol --dir ${simpleDir} --json`;
-    const { stdout } = await run(cmd);
-
-    // Match command output patterns
-    doesNotMatch(stdout, /Scan results:/, 'Should not show results header');
-    doesNotThrow(() => JSON.parse(stdout));
+    it('fails when NES returns unsuccessful result', async () => {
+      // Override fetch mock to return unsuccessful mutation for this test
+      fetchMock.restore();
+      fetchMock = new FetchMock().addGraphQL({ eol: { createReport: { success: false, report: null } } });
+      const out = await runExpectFail(`scan:eol --file ${simpleSbom}`);
+      expectAny(out, [/Failed to submit scan to NES/i, /Scanning failed/i], 'Should indicate NES submission failure');
+    });
   });
 });

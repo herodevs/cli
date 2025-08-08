@@ -6,3 +6,6 @@ import debug from 'debug';
  * All user-facing output should be handled by commands.
  */
 export const debugLogger = debug('oclif:herodevs-debug');
+
+export const getErrorMessage = (error: unknown): string =>
+  error instanceof Error ? error.message : String(error) || 'Unknown error';
