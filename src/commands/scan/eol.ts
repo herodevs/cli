@@ -13,12 +13,20 @@ export default class ScanEol extends Command {
   static override description = 'Scan a given SBOM for EOL data';
   static enableJsonFlag = true;
   static override examples = [
-    '<%= config.bin %> <%= command.id %>',
-    '<%= config.bin %> <%= command.id %> --dir=./my-project',
-    '<%= config.bin %> <%= command.id %> --file=path/to/sbom.json',
-    '<%= config.bin %> <%= command.id %> --json',
-    '<%= config.bin %> <%= command.id %> --save',
-    '<%= config.bin %> <%= command.id %> --saveSbom',
+    { description: 'Default behavior (no command or flags specified)', command: '<%= config.bin %>' },
+    { description: 'Equivalent to', command: '<%= config.bin %> <%= command.id %> --dir .' },
+    {
+      description: 'Skip SBOM generation and specify an existing file',
+      command: '<%= config.bin %> <%= command.id %> --file /path/to/sbom.json',
+    },
+    {
+      description: 'Save the report or SBOM to a file',
+      command: '<%= config.bin %> <%= command.id %> --save --saveSbom',
+    },
+    {
+      description: 'Output the report in JSON format (for APIs, CI, etc.)',
+      command: '<%= config.bin %> <%= command.id %> --json',
+    },
   ];
   static override flags = {
     file: Flags.string({
@@ -29,6 +37,7 @@ export default class ScanEol extends Command {
     dir: Flags.string({
       char: 'd',
       default: process.cwd(),
+      defaultHelp: async () => '<current directory>',
       description: 'The directory to scan in order to create a cyclonedx SBOM',
       exclusive: ['file'],
     }),
@@ -38,7 +47,6 @@ export default class ScanEol extends Command {
       description: `Save the generated report as ${filenamePrefix}.report.json in the scanned directory`,
     }),
     saveSbom: Flags.boolean({
-      char: 'b',
       default: false,
       description: `Save the generated SBOM as ${filenamePrefix}.sbom.json in the scanned directory`,
     }),

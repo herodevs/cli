@@ -38,7 +38,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.4 darwin-arm64 node-v22.15.1
+@herodevs/cli/2.0.0-beta.4 darwin-arm64 node-v22.18.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -47,50 +47,13 @@ USAGE
 <!-- usagestop -->
 ## Commands
 <!-- commands -->
-* [`hd scan eol`](#hd-scan-eol)
 * [`hd help [COMMAND]`](#hd-help-command)
+* [`hd scan eol`](#hd-scan-eol)
 * [`hd update [CHANNEL]`](#hd-update-channel)
-
-## `hd scan eol`
-
-Scan a given SBOM for EOL data. 
-- `scan eol` is the default command and can be omitted.
-- If no `--dir` or `--file` are specified, it defaults to `--dir .` (current path).
-
-```
-USAGE
-  $ hd scan eol [--json] [-f <value>] [-d <value>] [-s] [-b]
-
-FLAGS
-  -d, --dir=<value>    The directory to scan in order to create a CycloneDX SBOM
-  -f, --file=<value>   The file path of an existing CycloneDX SBOM to scan for EOL
-  -s, --save           Save the generated report as herodevs.report.json in the scanned directory
-  -b, --save-sbom      Save the generated SBOM as herodevs.sbom.json in the scanned directory
-
-GLOBAL FLAGS
-  --json  Format output as JSON.
-
-DESCRIPTION
-  Scan a given SBOM for EOL data
-
-EXAMPLES
-  Default behavior (no command or flags specified)
-    $ hd
-  Equivalent to
-    $ hd scan eol --dir .
-  Skip SBOM generation and specify an existing file
-    $ hd scan eol --file /path/to/SBOM.json
-  Optionally save report and/or SBOM
-    $ hd --dir ./my-project --save --save-sbom
-  JSON output (for APIs, CI, etc.)
-    $ hd --json
-```
-
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.4/src/commands/scan/eol.ts)_
 
 ## `hd help [COMMAND]`
 
-Display help.
+Display help for hd.
 
 ```
 USAGE
@@ -103,10 +66,54 @@ FLAGS
   -n, --nested-commands  Include all nested commands in the output.
 
 DESCRIPTION
-  Displays global help or for a specific command.
+  Display help for hd.
 ```
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.29/src/commands/help.ts)_
+
+## `hd scan eol`
+
+Scan a given SBOM for EOL data
+
+```
+USAGE
+  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [--saveSbom]
+
+FLAGS
+  -d, --dir=<value>   [default: <current directory>] The directory to scan in order to create a cyclonedx SBOM
+  -f, --file=<value>  The file path of an existing cyclonedx SBOM to scan for EOL
+  -s, --save          Save the generated report as herodevs.report.json in the scanned directory
+      --saveSbom      Save the generated SBOM as herodevs.sbom.json in the scanned directory
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Scan a given SBOM for EOL data
+
+EXAMPLES
+  Default behavior (no command or flags specified)
+
+    $ hd
+
+  Equivalent to
+
+    $ hd scan eol --dir .
+
+  Skip SBOM generation and specify an existing file
+
+    $ hd scan eol --file /path/to/sbom.json
+
+  Save the report or SBOM to a file
+
+    $ hd scan eol --save --saveSbom
+
+  Output the report in JSON format (for APIs, CI, etc.)
+
+    $ hd scan eol --json
+```
+
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.4/src/commands/scan/eol.ts)_
 
 ## `hd update [CHANNEL]`
 
@@ -128,12 +135,19 @@ DESCRIPTION
 
 EXAMPLES
   Update to the stable channel:
+
     $ hd update stable
+
   Update to a specific version:
+
     $ hd update --version 1.0.0
+
   Interactively select version:
+
     $ hd update --interactive
+
   See available versions:
+
     $ hd update --available
 ```
 
@@ -152,7 +166,7 @@ it contains build tools for most project types and will provide best results whe
 #### GitHub Actions
 
 ```yaml
-# .github/workflows/herodevs-eol-scan.yml
+ # .github/workflows/herodevs-eol-scan.yml
 name: HeroDevs EOL Scan
 
 on:
@@ -197,7 +211,7 @@ all requirements before the scan step.
 #### GitHub Actions
 
 ```yaml
-# .github/workflows/herodevs-eol-scan.yml
+ # .github/workflows/herodevs-eol-scan.yml
 name: HeroDevs EOL Scan
 
 on:
