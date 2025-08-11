@@ -53,10 +53,15 @@ export default class ScanEol extends Command {
     }),
   };
 
-  public async run(): Promise<EolReport> {
+  public async run(): Promise<EolReport | undefined> {
     const { flags } = await this.parse(ScanEol);
 
     const sbom = await this.loadSbom();
+
+    if (!sbom.components?.length) {
+      this.log('No components found in scan. Report not generated.');
+      return;
+    }
 
     const scan = await this.scanSbom(sbom);
 

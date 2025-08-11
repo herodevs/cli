@@ -121,6 +121,16 @@ describe('scan:eol e2e', () => {
     match(stdout, /2 total packages scanned/, 'Should show total packages scanned');
   });
 
+  it('shows warning and does not generate report when no components are found in scan', async () => {
+    const cmd = `scan:eol --file ${noComponentsSbom}`;
+    const { stdout } = await run(cmd);
+    match(
+      stdout,
+      /No components found in scan. Report not generated./,
+      'Should show warning, no results header or package totals',
+    );
+  });
+
   it('saves report when --save flag is used (directory scan)', async () => {
     const reportPath = path.join(simpleDir, `${filenamePrefix}.report.json`);
     const cmd = `scan:eol --dir ${simpleDir} --save`;
