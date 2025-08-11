@@ -23,12 +23,13 @@ export default class ScanEol extends Command {
   static override flags = {
     file: Flags.string({
       char: 'f',
-      description: 'The file path of an existing cyclonedx sbom to scan for EOL',
+      description: 'The file path of an existing cyclonedx SBOM to scan for EOL',
       exclusive: ['dir'],
     }),
     dir: Flags.string({
       char: 'd',
-      description: 'The directory to scan in order to create a cyclonedx sbom',
+      default: process.cwd(),
+      description: 'The directory to scan in order to create a cyclonedx SBOM',
       exclusive: ['file'],
     }),
     save: Flags.boolean({
@@ -45,19 +46,18 @@ export default class ScanEol extends Command {
 
   public async run(): Promise<EolReport> {
     const { flags } = await this.parse(ScanEol);
-    const dir = flags.dir || process.cwd();
 
     const sbom = await this.loadSbom();
 
     const scan = await this.scanSbom(sbom);
 
     if (flags.save) {
-      const reportPath = this.saveReport(scan, dir);
+      const reportPath = this.saveReport(scan, flags.dir);
       this.log(`Report saved to ${reportPath}`);
     }
 
     if (flags.saveSbom && !flags.file) {
-      const sbomPath = this.saveSbom(dir, sbom);
+      const sbomPath = this.saveSbom(flags.dir, sbom);
       this.log(`SBOM saved to ${sbomPath}`);
     }
 
@@ -70,12 +70,11 @@ export default class ScanEol extends Command {
 
   private async loadSbom(): Promise<CdxBom> {
     const { flags } = await this.parse(ScanEol);
-    const path = flags.dir || process.cwd();
 
     const spinner = ora();
     spinner.start(flags.file ? 'Loading SBOM file' : 'Generating SBOM');
 
-    const sbom = flags.file ? this.getSbomFromFile(flags.file) : await this.getSbomFromScan(path);
+    const sbom = flags.file ? this.getSbomFromFile(flags.file) : await this.getSbomFromScan(flags.dir);
     if (!sbom) {
       spinner.fail(flags.file ? 'Failed to load SBOM file' : 'Failed to generate SBOM');
       throw new Error('SBOM not generated');

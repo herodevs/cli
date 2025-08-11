@@ -8,6 +8,10 @@ describe('log.svc', () => {
     assert.strictEqual(msg, 'boom');
   });
 
+  it('getErrorMessage stringifies non-Error objects', () => {
+    assert.strictEqual(getErrorMessage({ bad: 'x' }), '{"bad":"x"}');
+  });
+
   it('getErrorMessage stringifies non-Error', () => {
     assert.strictEqual(getErrorMessage('x'), 'x');
   });

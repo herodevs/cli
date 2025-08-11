@@ -7,5 +7,12 @@ import debug from 'debug';
  */
 export const debugLogger = debug('oclif:herodevs-debug');
 
-export const getErrorMessage = (error: unknown): string =>
-  error instanceof Error ? error.message : String(error) || 'Unknown error';
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  if (error && typeof error === 'object') {
+    return JSON.stringify(error);
+  }
+  return String(error) || 'Unknown error';
+}

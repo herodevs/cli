@@ -22,7 +22,9 @@ export function readSbomFromFile(filePath: string): CdxBom {
   try {
     const fileContent = fs.readFileSync(file, 'utf8');
     const sbom = JSON.parse(fileContent) as CdxBom;
-    isCdxBom(sbom);
+    if (!isCdxBom(sbom)) {
+      throw new Error(`Invalid SBOM file: ${file}`);
+    }
     return sbom;
   } catch (error) {
     throw new Error(`Failed to read SBOM file: ${getErrorMessage(error)}`);
