@@ -166,7 +166,7 @@ it contains build tools for most project types and will provide best results whe
 #### GitHub Actions
 
 ```yaml
- # .github/workflows/herodevs-eol-scan.yml
+## .github/workflows/herodevs-eol-scan.yml
 name: HeroDevs EOL Scan
 
 on:
@@ -211,7 +211,7 @@ all requirements before the scan step.
 #### GitHub Actions
 
 ```yaml
- # .github/workflows/herodevs-eol-scan.yml
+## .github/workflows/herodevs-eol-scan.yml
 name: HeroDevs EOL Scan
 
 on:

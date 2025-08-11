@@ -47,6 +47,7 @@ export default class ScanEol extends Command {
       description: `Save the generated report as ${filenamePrefix}.report.json in the scanned directory`,
     }),
     saveSbom: Flags.boolean({
+      aliases: ['save-sbom'],
       default: false,
       description: `Save the generated SBOM as ${filenamePrefix}.sbom.json in the scanned directory`,
     }),
