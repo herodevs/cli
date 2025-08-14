@@ -26,7 +26,7 @@
     "prepack": "oclif manifest && oclif readme",
     "pretest": "npm run lint && npm run typecheck",
     "readme": "npm run ci:fix && npm run build && npm exec oclif readme",
-    "test": "globstar -- node --import tsx --test \"test/**/*.test.ts\"",
+    "test": "globstar -- node --import tsx --test --experimental-test-module-mocks \"test/**/*.test.ts\"",
     "test:e2e": "globstar -- node --import tsx --test \"e2e/**/*.test.ts\"",
     "typecheck": "tsc --noEmit"
   },
@@ -36,6 +36,7 @@
     "herodevs cli"
   ],
   "dependencies": {
+    "@amplitude/analytics-node": "^1.5.0",
     "@apollo/client": "^3.13.8",
     "@cyclonedx/cdxgen": "^11.4.3",
     "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.4",
@@ -43,6 +44,7 @@
     "@oclif/plugin-help": "^6.2.29",
     "@oclif/plugin-update": "^4.6.45",
     "graphql": "^16.11.0",
+    "node-machine-id": "^1.1.12",
     "ora": "^8.2.0",
     "packageurl-js": "^2.0.1",
     "terminal-link": "^4.0.0",
@@ -84,7 +86,8 @@
     ],
     "hooks": {
       "init": "./dist/hooks/npm-update-notifier.js",
-      "prerun": "./dist/hooks/prerun.js"
+      "prerun": "./dist/hooks/prerun.js",
+      "finally": "./dist/hooks/finally.js"
     },
     "topicSeparator": " ",
     "macos": {
