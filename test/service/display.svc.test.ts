@@ -37,10 +37,28 @@ describe('display.svc', () => {
         purl: 'pkg:npm/test3@3.0.0',
         metadata: null,
       },
+      {
+        purl: 'pkg:npm/%40scoped/package@1.0.0',
+        metadata: {
+          isEol: false,
+          eolAt: null,
+          eolReasons: [],
+          cve: [],
+        },
+      },
+      {
+        purl: 'pkg:maven/org.springframework/spring-core@5.3.21',
+        metadata: {
+          isEol: true,
+          eolAt: '2023-01-01T00:00:00.000Z',
+          eolReasons: ['End of life'],
+          cve: [],
+        },
+      },
     ],
     createdOn: new Date().toISOString(),
     metadata: {
-      totalComponentsCount: 3,
+      totalComponentsCount: 5,
       unknownComponentsCount: 1,
     },
   };
@@ -49,11 +67,20 @@ describe('display.svc', () => {
     it('should count components by status correctly', () => {
       const counts = countComponentsByStatus(mockReport);
 
-      assert.strictEqual(counts.EOL, 1);
-      assert.strictEqual(counts.OK, 1);
+      assert.strictEqual(counts.EOL, 2);
+      assert.strictEqual(counts.OK, 2);
       assert.strictEqual(counts.UNKNOWN, 1);
       assert.strictEqual(counts.EOL_UPCOMING, 0);
       assert.strictEqual(counts.NES_AVAILABLE, 1);
+    });
+
+    it('should extract ecosystems correctly from various PURL formats', () => {
+      const counts = countComponentsByStatus(mockReport);
+
+      // Should extract both npm and maven ecosystems
+      assert.ok(counts.ECOSYSTEMS.includes('npm'));
+      assert.ok(counts.ECOSYSTEMS.includes('maven'));
+      assert.strictEqual(counts.ECOSYSTEMS.length, 2);
     });
 
     it('should handle empty report', () => {
@@ -83,7 +110,7 @@ describe('display.svc', () => {
 
       assert.ok(lines.length > 0);
       assert.ok(lines.some((line) => line.includes('Scan results:')));
-      assert.ok(lines.some((line) => line.includes('3 total packages scanned')));
+      assert.ok(lines.some((line) => line.includes('5 total packages scanned')));
     });
 
     it('should handle empty scan results', () => {

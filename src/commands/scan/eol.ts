@@ -4,8 +4,9 @@ import { Command, Flags } from '@oclif/core';
 import ora from 'ora';
 import { submitScan } from '../../api/nes.client.ts';
 import { config, filenamePrefix } from '../../config/constants.ts';
+import { track } from '../../service/analytics.svc.ts';
 import { createSbom } from '../../service/cdx.svc.ts';
-import { formatScanResults, formatWebReportUrl } from '../../service/display.svc.ts';
+import { countComponentsByStatus, formatScanResults, formatWebReportUrl } from '../../service/display.svc.ts';
 import { readSbomFromFile, saveReportToFile, saveSbomToFile, validateDirectory } from '../../service/file.svc.ts';
 import { getErrorMessage } from '../../service/log.svc.ts';
 
@@ -56,23 +57,72 @@ export default class ScanEol extends Command {
   public async run(): Promise<EolReport | undefined> {
     const { flags } = await this.parse(ScanEol);
 
+    track('CLI EOL Scan Started', (context) => ({
+      command: context.command,
+      command_flags: context.command_flags,
+      scan_location: flags.dir,
+    }));
+
+    const sbomStartTime = performance.now();
     const sbom = await this.loadSbom();
+    const sbomEndTime = performance.now();
+
+    if (!flags.file) {
+      track('CLI SBOM Generated', (context) => ({
+        command: context.command,
+        command_flags: context.command_flags,
+        scan_location: flags.dir,
+        sbom_generation_time: (sbomEndTime - sbomStartTime) / 1000,
+      }));
+    }
 
     if (!sbom.components?.length) {
+      track('CLI EOL Scan Ended, No Components Found', (context) => ({
+        command: context.command,
+        command_flags: context.command_flags,
+        scan_location: flags.dir,
+      }));
       this.log('No components found in scan. Report not generated.');
       return;
     }
 
+    const scanStartTime = performance.now();
     const scan = await this.scanSbom(sbom);
+    const scanEndTime = performance.now();
+
+    const componentCounts = countComponentsByStatus(scan);
+    track('CLI EOL Scan Completed', (context) => ({
+      command: context.command,
+      command_flags: context.command_flags,
+      eol_true_count: componentCounts.EOL,
+      eol_unknown_count: componentCounts.UNKNOWN,
+      nes_available_count: componentCounts.NES_AVAILABLE,
+      number_of_packages: componentCounts.TOTAL,
+      sbom_created: !flags.file,
+      scan_location: flags.dir,
+      scan_load_time: (scanEndTime - scanStartTime) / 1000,
+      scanned_ecosystems: componentCounts.ECOSYSTEMS,
+      web_report_link: scan.id ? `${config.eolReportUrl}/${scan.id}` : undefined,
+    }));
 
     if (flags.save) {
       const reportPath = this.saveReport(scan, flags.dir);
       this.log(`Report saved to ${reportPath}`);
+      track('CLI JSON Scan Output Saved', (context) => ({
+        command: context.command,
+        command_flags: context.command_flags,
+        report_output_path: reportPath,
+      }));
     }
 
     if (flags.saveSbom && !flags.file) {
       const sbomPath = this.saveSbom(flags.dir, sbom);
       this.log(`SBOM saved to ${sbomPath}`);
+      track('CLI SBOM Output Saved', (context) => ({
+        command: context.command,
+        command_flags: context.command_flags,
+        sbom_output_path: sbomPath,
+      }));
     }
 
     if (!this.jsonEnabled()) {
@@ -107,7 +157,14 @@ export default class ScanEol extends Command {
       return scan;
     } catch (error) {
       spinner.fail('Scanning failed');
-      this.error(`Failed to submit scan to NES. ${getErrorMessage(error)}`);
+      const errorMessage = getErrorMessage(error);
+      track('CLI EOL Scan Failed', (context) => ({
+        command: context.command,
+        command_flags: context.command_flags,
+        scan_location: context.scan_location,
+        scan_failure_reason: errorMessage,
+      }));
+      this.error(`Failed to submit scan to NES. ${errorMessage}`);
     }
   }
 
@@ -115,7 +172,9 @@ export default class ScanEol extends Command {
     try {
       return saveReportToFile(dir, report);
     } catch (error) {
-      this.error(getErrorMessage(error));
+      const errorMessage = getErrorMessage(error);
+      track('CLI Error Encountered', () => ({ error: errorMessage }));
+      this.error(errorMessage);
     }
   }
 
@@ -123,7 +182,9 @@ export default class ScanEol extends Command {
     try {
       return saveSbomToFile(dir, sbom);
     } catch (error) {
-      this.error(getErrorMessage(error));
+      const errorMessage = getErrorMessage(error);
+      track('CLI Error Encountered', () => ({ error: errorMessage }));
+      this.error(errorMessage);
     }
   }
 
@@ -154,7 +215,9 @@ export default class ScanEol extends Command {
       }
       return sbom;
     } catch (error) {
-      this.error(`Failed to scan directory: ${getErrorMessage(error)}`);
+      const errorMessage = getErrorMessage(error);
+      track('CLI Error Encountered', () => ({ error: errorMessage }));
+      this.error(`Failed to scan directory: ${errorMessage}`);
     }
   }
 
@@ -162,7 +225,9 @@ export default class ScanEol extends Command {
     try {
       return readSbomFromFile(filePath);
     } catch (error) {
-      this.error(getErrorMessage(error));
+      const errorMessage = getErrorMessage(error);
+      track('CLI Error Encountered', () => ({ error: errorMessage }));
+      this.error(errorMessage);
     }
   }
 }

@@ -2,3 +2,4 @@
 
 export GRAPHQL_HOST='https://api.nes.herodevs.com';
 export EOL_REPORT_URL='https://eol-report-card.apps.herodevs.com/reports';
+export ANALYTICS_URL='https://eol-api.herodevs.com/track';

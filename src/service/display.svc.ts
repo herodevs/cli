@@ -20,17 +20,27 @@ export const getStatusRowText: Record<ComponentStatus, (text: string) => string>
   EOL_UPCOMING: (text: string) => ux.colorize(STATUS_COLORS.EOL_UPCOMING, `! ${text}`),
 };
 
+export type ComponentCounts = Record<ComponentStatus, number> & {
+  NES_AVAILABLE: number;
+  TOTAL: number;
+  ECOSYSTEMS: string[];
+};
+
 /**
  * Counts components by their status, including NES remediation availability
  */
-export function countComponentsByStatus(report: EolReport): Record<ComponentStatus | 'NES_AVAILABLE', number> {
-  const grouped: Record<ComponentStatus | 'NES_AVAILABLE', number> = {
+export function countComponentsByStatus(report: EolReport): ComponentCounts {
+  const grouped: ComponentCounts = {
     UNKNOWN: 0,
     OK: 0,
     EOL_UPCOMING: 0,
     EOL: 0,
     NES_AVAILABLE: 0,
+    ECOSYSTEMS: [],
+    TOTAL: report.components.length,
   };
+
+  const ecosystems = new Set<string>();
 
   for (const component of report.components) {
     const status = deriveComponentStatus(component.metadata);
@@ -39,8 +49,14 @@ export function countComponentsByStatus(report: EolReport): Record<ComponentStat
     if (component.nesRemediation?.remediations?.length) {
       grouped.NES_AVAILABLE++;
     }
+
+    const ecosystem = component.purl.match(/^pkg:([^/]+)\//)?.[1];
+    if (ecosystem) {
+      ecosystems.add(ecosystem);
+    }
   }
 
+  grouped.ECOSYSTEMS = Array.from(ecosystems);
   return grouped;
 }
 
@@ -60,7 +76,7 @@ export function formatScanResults(report: EolReport): string[] {
     ux.colorize('bold', `${report.components.length.toLocaleString()} total packages scanned`),
     getStatusRowText.EOL(`${EOL.toLocaleString().padEnd(5)} End-of-Life (EOL)`),
     getStatusRowText.EOL_UPCOMING(`${EOL_UPCOMING.toLocaleString().padEnd(5)} EOL Upcoming`),
-    getStatusRowText.OK(`${OK.toLocaleString().padEnd(5)} OK`),
+    getStatusRowText.OK(`${OK.toLocaleString().padEnd(5)} Not End-of-Life`),
     getStatusRowText.UNKNOWN(`${UNKNOWN.toLocaleString().padEnd(5)} Unknown Status`),
     getStatusRowText.UNKNOWN(
       `${NES_AVAILABLE.toLocaleString().padEnd(5)} HeroDevs NES Remediation${NES_AVAILABLE !== 1 ? 's' : ''} Available`,
