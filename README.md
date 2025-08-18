@@ -30,7 +30,6 @@ The CLI is designed to be non-invasive:
 * It analyzes the project in its current state
 * If you need dependencies installed for accurate scanning, please install them manually before running the scan
 
-
 ## Usage
 <!-- usage -->
 ```sh-session
@@ -244,4 +243,13 @@ eol-scan:
   script:
     - echo # Prepare environment, install tooling, perform setup, etc.
     - npx @herodevs/cli@beta
+```
+
+## Local Docker image scans
+
+The same pre-configured image can be pulled locally to scan in an optimized environment. Mount your code
+to `/app` or a specified working directory to perform the scan:
+
+```shell
+docker run -v "$PWD":/app ghcr.io/herodevs/eol-scan
 ```
