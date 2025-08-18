@@ -6,13 +6,13 @@ export const CONCURRENT_PAGE_REQUESTS = 3;
 export const PAGE_SIZE = 500;
 
 let concurrentPageRequests = CONCURRENT_PAGE_REQUESTS;
-const parsed = Number.parseInt(process.env.CONCURRENT_PAGE_REQUESTS!, 10);
+const parsed = Number.parseInt(process.env.CONCURRENT_PAGE_REQUESTS ?? '0', 10);
 if (parsed > 0) {
   concurrentPageRequests = parsed;
 }
 
 let pageSize = PAGE_SIZE;
-const parsedPageSize = Number.parseInt(process.env.PAGE_SIZE!, 10);
+const parsedPageSize = Number.parseInt(process.env.PAGE_SIZE ?? '0', 10);
 if (parsedPageSize > 0) {
   pageSize = parsedPageSize;
 }
