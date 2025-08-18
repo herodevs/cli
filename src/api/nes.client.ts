@@ -1,16 +1,25 @@
-import { ApolloClient, ApolloLink, HttpLink, InMemoryCache } from '@apollo/client/core/index.js';
-import type { CreateEolReportInput, EolReport, EolReportMutationResponse } from '@herodevs/eol-shared';
+import { ApolloClient, InMemoryCache } from '@apollo/client/core/index.js';
+import type {
+  CreateEolReportInput,
+  EolReport,
+  EolReportMutationResponse,
+  EolReportQueryResponse,
+  GetEolReportInput,
+} from '@herodevs/eol-shared';
 import { config } from '../config/constants.ts';
 import { debugLogger } from '../service/log.svc.ts';
-import { createReportMutation } from './gql-operations.ts';
+import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
 
 export const createApollo = (uri: string) =>
   new ApolloClient({
     cache: new InMemoryCache({ addTypename: false }),
+    defaultOptions: {
+      query: { fetchPolicy: 'no-cache' },
+    },
     headers: {
       'User-Agent': `hdcli/${process.env.npm_package_version ?? 'unknown'}`,
     },
-    link: ApolloLink.from([new HttpLink({ uri })]),
+    uri,
   });
 
 export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
@@ -21,12 +30,45 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
     });
 
     const result = res.data?.eol?.createReport;
-    if (!result?.success || !result.report) {
+    if (!result?.success || !result.id) {
       debugLogger('failed scan %o', result || {});
       throw new Error('Failed to create EOL report');
     }
 
-    return result.report;
+    const totalRecords = result.totalRecords || 0;
+    const totalPages = Math.ceil(totalRecords / config.pageSize);
+    const pages = Array.from({ length: totalPages }, (_, index) =>
+      client.query<EolReportQueryResponse, { input: GetEolReportInput }>({
+        query: getEolReportQuery,
+        variables: {
+          input: {
+            id: result.id,
+            page: index + 1,
+            size: config.pageSize,
+          },
+        },
+      }),
+    );
+
+    const components: EolReport['components'] = [];
+    let reportMetadata: EolReport | null = null;
+
+    for (let i = 0; i < pages.length; i += config.concurrentPageRequests) {
+      const batch = pages.slice(i, i + config.concurrentPageRequests);
+      const batchResponses = await Promise.all(batch);
+
+      for (const response of batchResponses) {
+        const report = response.data.eol.report;
+        reportMetadata ??= report;
+        components.push(...(report?.components ?? []));
+      }
+    }
+
+    if (!reportMetadata) {
+      throw new Error('Failed to fetch EOL report');
+    }
+
+    return { ...reportMetadata, components };
   };
 };
 

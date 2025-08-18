@@ -5,22 +5,33 @@ mutation createReport($input: CreateEolReportInput) {
   eol {
     createReport(input: $input) {
       success
-      report {
-        createdOn
-        id 
+      id
+      totalRecords
+    }
+  }
+}
+`;
+
+export const getEolReportQuery = gql`
+query GetEolReport($input: GetEolReportInput) {
+  eol {
+    report(input: $input) {
+      id
+      createdOn
+      metadata
+      components {
+        purl
         metadata
-        components {
-          purl
-          metadata
-          nesRemediation {
-            remediations {
-              urls {
-                main
-              }
+        nesRemediation {
+          remediations {
+            urls {
+              main
             }
           }
         }
       }
+      page
+      totalRecords
     }
   }
 }

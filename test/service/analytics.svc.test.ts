@@ -21,7 +21,7 @@ describe('analytics.svc', () => {
       namedExports: { config: { analyticsUrl: 'https://test-analytics.com' } },
     });
 
-    return import(import.meta.resolve(`../../src/service/analytics.svc.ts?${Math.random().toFixed(3)}`));
+    return import(import.meta.resolve(`../../src/service/analytics.svc.ts?${Math.random().toFixed(4)}`));
   }
 
   beforeEach(() => {
