@@ -14,8 +14,8 @@ The HeroDevs CLI
 
 1. Install node v20 or higher: [Download Node](https://nodejs.org/en/download)
 1. Install the CLI using one of the following methods:
-   - Globally: Refer to the [Usage](#usage) instructions on installing the CLI globally
-   - npx: `npx @herodevs/cli@beta`
+   * Globally: Refer to the [Usage](#usage) instructions on installing the CLI globally
+   * npx: `npx @herodevs/cli@beta`
 1. Refer to the [Commands](#commands) section for a list of commands
 
 ## TERMS
@@ -159,8 +159,8 @@ You can use `@herodevs/cli` in your CI/CD pipelines to automate EOL scanning.
 
 ### Using the Docker Image (recommended)
 
-We provide a Docker image that's pre-configured to run EOL scans. Based on [`cdxgen`](https://github.com/CycloneDX/cdxgen), 
-it contains build tools for most project types and will provide best results when generating an SBOM.
+We provide a Docker image that's pre-configured to run EOL scans. Based on [`cdxgen`](https://github.com/CycloneDX/cdxgen),
+it contains build tools for most project types and will provide best results when generating an SBOM. Use these templates to generate a report and save it to your CI job artifact for analysis and processing after your scan runs.
 
 #### GitHub Actions
 
@@ -183,7 +183,13 @@ jobs:
       - name: Run EOL Scan with Docker
         uses: docker://ghcr.io/herodevs/eol-scan
         with:
-          args: "--json"
+          args: "-s"
+      
+      - name: Upload   artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-eol-report
+          path: herodevs.report.json
 ```
 
 #### GitLab CI/CD
@@ -195,16 +201,19 @@ eol-scan:
     # Entrypoint or base command must be disabled due 
     # to GitLab's execution mechanism and run manually
     entrypoint: [""] 
-  script: "npx @herodevs/cli@beta --json"
+  script: "npx @herodevs/cli@beta scan eol -s"
+  artifacts:
+    paths:
+      - herodevs.report.json
 ```
 
 ### Using `npx`
 
 You can use `npx` to run the CLI just like you'd run it locally.
 
-> [!NOTE] 
-> The development environment is expected to be ready to run the app. For best results, 
-prefer [using the prebuilt image](#using-the-docker-image-recommended), but otherwise, prepare 
+> [!NOTE]
+> The development environment is expected to be ready to run the app. For best results,
+prefer [using the prebuilt image](#using-the-docker-image-recommended), but otherwise, prepare
 all requirements before the scan step.
 
 #### GitHub Actions
@@ -232,6 +241,12 @@ jobs:
 
       - name: Run EOL Scan
         run: npx @herodevs/cli@beta
+
+      - name: Upload   artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-eol-report
+          path: herodevs.report.json
 ```
 
 #### GitLab CI/CD
@@ -242,7 +257,10 @@ image: alpine
 eol-scan:
   script:
     - echo # Prepare environment, install tooling, perform setup, etc.
-    - npx @herodevs/cli@beta
+    - npx @herodevs/cli@beta scan eol -s
+  artifacts:
+    paths:
+      - herodevs.report.json
 ```
 
 ## Local Docker image scans
