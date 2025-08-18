@@ -25,12 +25,27 @@ function mockReport(components: DeepPartial<EolScanComponent>[] = []) {
     eol: {
       createReport: {
         success: true,
-        report: {
-          id: 'test-123',
-          createdOn: new Date().toISOString(),
-          metadata: {},
-          components,
+        id: 'test-123',
+        totalRecords: components.length,
+      },
+    },
+  };
+}
+
+function mockGetReport(components: DeepPartial<EolScanComponent>[] = []) {
+  return {
+    eol: {
+      report: {
+        id: 'test-123',
+        createdOn: new Date().toISOString(),
+        metadata: {
+          totalComponentsCount: components.length,
+          unknownComponentsCount: 0,
+          totalUniqueComponentsCount: components.length,
         },
+        components,
+        page: 1,
+        totalRecords: components.length,
       },
     },
   };
@@ -58,16 +73,15 @@ describe('scan:eol e2e', () => {
 
   beforeEach(async () => {
     await mkdir(fixturesDir, { recursive: true });
-    fetchMock = new FetchMock().addGraphQL(
-      mockReport([
-        { purl: 'pkg:npm/bootstrap@3.1.1', metadata: { isEol: true } },
-        {
-          purl: 'pkg:npm/is-core-module@2.11.0',
-          metadata: {},
-          nesRemediation: { remediations: [{ urls: { main: 'https://example.com' } }] },
-        },
-      ]),
-    );
+    const components = [
+      { purl: 'pkg:npm/bootstrap@3.1.1', metadata: { isEol: true } },
+      {
+        purl: 'pkg:npm/is-core-module@2.11.0',
+        metadata: {},
+        nesRemediation: { remediations: [{ urls: { main: 'https://example.com' } }] },
+      },
+    ];
+    fetchMock = new FetchMock().addGraphQL(mockReport(components)).addGraphQL(mockGetReport(components));
   });
 
   afterEach(() => {
@@ -176,13 +190,12 @@ describe('scan:eol e2e', () => {
   });
 
   it('shows zero EOL components when scanning up-to-date packages', async () => {
+    const components = [
+      { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
+      { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
+    ];
     fetchMock.restore();
-    fetchMock = new FetchMock().addGraphQL(
-      mockReport([
-        { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
-        { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
-      ]),
-    );
+    fetchMock = new FetchMock().addGraphQL(mockReport(components)).addGraphQL(mockGetReport(components));
     const cmd = `scan:eol --file ${upToDateSbom}`;
     const { stdout } = await run(cmd);
     match(stdout, /Scan results:/, 'Should show results header');
@@ -192,7 +205,7 @@ describe('scan:eol e2e', () => {
 
   it('handles empty components array without errors', async () => {
     fetchMock.restore();
-    fetchMock = new FetchMock().addGraphQL(mockReport([]));
+    fetchMock = new FetchMock().addGraphQL(mockReport([])).addGraphQL(mockGetReport([]));
     const cmd = `scan:eol --file ${noComponentsSbom}`;
     const { stdout } = await run(cmd);
     match(stdout, /No components found in scan/, 'Should show no packages found in scan');
@@ -239,12 +252,11 @@ describe('scan:eol e2e', () => {
 
   it('scans up-to-date directory and shows modern packages', async () => {
     fetchMock.restore();
-    fetchMock = new FetchMock().addGraphQL(
-      mockReport([
-        { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
-        { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
-      ]),
-    );
+    const components = [
+      { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
+      { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
+    ];
+    fetchMock = new FetchMock().addGraphQL(mockReport(components)).addGraphQL(mockGetReport(components));
     const cmd = `scan:eol --dir ${upToDateDir}`;
     const { stdout } = await run(cmd);
     match(stdout, /Scan results:/, 'Should show results header');
@@ -361,7 +373,7 @@ describe('scan:eol e2e', () => {
     it('fails when NES returns unsuccessful result', async () => {
       // Override fetch mock to return unsuccessful mutation for this test
       fetchMock.restore();
-      fetchMock = new FetchMock().addGraphQL({ eol: { createReport: { success: false, report: null } } });
+      fetchMock = new FetchMock().addGraphQL({ eol: { createReport: { success: false, id: null, totalRecords: 0 } } });
       const out = await runExpectFail(`scan:eol --file ${simpleSbom}`);
       expectAny(out, [/Failed to submit scan to NES/i, /Scanning failed/i], 'Should indicate NES submission failure');
     });

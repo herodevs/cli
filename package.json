@@ -39,7 +39,7 @@
     "@amplitude/analytics-node": "^1.5.0",
     "@apollo/client": "^3.13.8",
     "@cyclonedx/cdxgen": "^11.4.3",
-    "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.4",
+    "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.10",
     "@oclif/core": "^4.4.0",
     "@oclif/plugin-help": "^6.2.29",
     "@oclif/plugin-update": "^4.6.45",
