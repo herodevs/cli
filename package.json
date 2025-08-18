@@ -41,7 +41,7 @@
     "@cyclonedx/cdxgen": "^11.4.3",
     "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.10",
     "@oclif/core": "^4.4.0",
-    "@oclif/plugin-help": "^6.2.29",
+    "@oclif/plugin-help": "^6.2.32",
     "@oclif/plugin-update": "^4.6.45",
     "graphql": "^16.11.0",
     "node-machine-id": "^1.1.12",
