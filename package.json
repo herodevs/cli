@@ -54,7 +54,7 @@
     "@biomejs/biome": "^1.9.4",
     "@oclif/test": "^4.1.13",
     "@types/inquirer": "^9.0.8",
-    "@types/node": "^22.15.32",
+    "@types/node": "^24.3.0",
     "@types/sinon": "^17.0.4",
     "@types/update-notifier": "^6.0.8",
     "globstar": "^1.0.0",
