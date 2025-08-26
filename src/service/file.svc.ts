@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path, { join, resolve } from 'node:path';
-import { isCdxBom } from '@herodevs/eol-shared';
 import type { CdxBom, EolReport } from '@herodevs/eol-shared';
+import { isCdxBom } from '@herodevs/eol-shared';
 import { filenamePrefix } from '../config/constants.ts';
 import { getErrorMessage } from './log.svc.ts';
 

@@ -1,5 +1,5 @@
-import { deriveComponentStatus } from '@herodevs/eol-shared';
 import type { ComponentStatus, EolReport } from '@herodevs/eol-shared';
+import { deriveComponentStatus } from '@herodevs/eol-shared';
 import { ux } from '@oclif/core';
 import terminalLink from 'terminal-link';
 

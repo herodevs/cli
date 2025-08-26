@@ -1,5 +1,5 @@
 import os from 'node:os';
-import { Identify, Types, track as _track, identify, init, setOptOut } from '@amplitude/analytics-node';
+import { track as _track, Identify, identify, init, setOptOut, Types } from '@amplitude/analytics-node';
 import NodeMachineId from 'node-machine-id';
 import { config } from '../config/constants.ts';
 

@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { type TestContext, afterEach, beforeEach, describe, it, mock } from 'node:test';
+import { afterEach, beforeEach, describe, it, type TestContext } from 'node:test';
 import sinon from 'sinon';
 
 describe('analytics.svc', () => {
