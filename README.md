@@ -33,7 +33,7 @@ The CLI is designed to be non-invasive:
 ## Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @herodevs/cli
+$ npm install -g @herodevs/cli@beta
 $ hd COMMAND
 running command...
 $ hd (--version)
