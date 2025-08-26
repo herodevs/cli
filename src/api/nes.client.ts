@@ -1,4 +1,4 @@
-import { ApolloClient, InMemoryCache } from '@apollo/client/core/index.js';
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core/index.js';
 import type {
   CreateEolReportInput,
   EolReport,
@@ -16,10 +16,12 @@ export const createApollo = (uri: string) =>
     defaultOptions: {
       query: { fetchPolicy: 'no-cache' },
     },
-    headers: {
-      'User-Agent': `hdcli/${process.env.npm_package_version ?? 'unknown'}`,
-    },
-    uri,
+    link: new HttpLink({
+      uri,
+      headers: {
+        'User-Agent': `hdcli/${process.env.npm_package_version ?? 'unknown'}`,
+      },
+    }),
   });
 
 export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
