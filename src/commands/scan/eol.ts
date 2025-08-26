@@ -1,5 +1,5 @@
-import { trimCdxBom } from '@herodevs/eol-shared';
 import type { CdxBom, EolReport } from '@herodevs/eol-shared';
+import { trimCdxBom } from '@herodevs/eol-shared';
 import { Command, Flags } from '@oclif/core';
 import ora from 'ora';
 import { submitScan } from '../../api/nes.client.ts';

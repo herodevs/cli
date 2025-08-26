@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { type TestContext, describe, it, mock } from 'node:test';
+import { describe, it, mock, type TestContext } from 'node:test';
 
 // Node <22 may not support mock.module; skip tests if unavailable
 const hasMockModule = typeof (mock as unknown as { module?: unknown }).module === 'function';
