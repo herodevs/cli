@@ -1,7 +1,7 @@
-export const EOL_REPORT_URL = 'https://eol-report-card.apps.herodevs.com/reports';
-export const GRAPHQL_HOST = 'https://api.nes.herodevs.com';
+export const EOL_REPORT_URL = 'https://apps.herodevs.com/eol/reports';
+export const GRAPHQL_HOST = 'https://gateway.prod.apps.herodevs.io';
 export const GRAPHQL_PATH = '/graphql';
-export const ANALYTICS_URL = 'https://eol-api.herodevs.com/track';
+export const ANALYTICS_URL = 'https://apps.herodevs.com/api/eol/track';
 export const CONCURRENT_PAGE_REQUESTS = 3;
 export const PAGE_SIZE = 500;
 
@@ -22,7 +22,6 @@ export const config = {
   graphqlHost: process.env.GRAPHQL_HOST || GRAPHQL_HOST,
   graphqlPath: process.env.GRAPHQL_PATH || GRAPHQL_PATH,
   analyticsUrl: process.env.ANALYTICS_URL || ANALYTICS_URL,
-  showVulnCount: true,
   concurrentPageRequests,
   pageSize,
 };
