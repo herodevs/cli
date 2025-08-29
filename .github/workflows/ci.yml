@@ -77,12 +77,12 @@ jobs:
 
       # Dry run NPM publish
       - name: Dry run NPM publish
-        run: npm publish --tag 2.0.0-beta.5 --provenance --access public --dry-run
+        run: npm publish --tag beta --provenance --access public --dry-run
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
 
       # NPM Release
       - name: Create NPM release
-        run: npm publish --tag 2.0.0-beta.5 --provenance --access public
+        run: npm publish --tag beta --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
