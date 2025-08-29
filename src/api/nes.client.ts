@@ -12,7 +12,7 @@ import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
 
 export const createApollo = (uri: string) =>
   new ApolloClient({
-    cache: new InMemoryCache({ addTypename: false }),
+    cache: new InMemoryCache(),
     defaultOptions: {
       query: { fetchPolicy: 'no-cache' },
     },
