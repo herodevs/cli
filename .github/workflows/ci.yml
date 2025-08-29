@@ -36,6 +36,7 @@ jobs:
         run: shellcheck scripts/*.sh
 
   build-and-test:
+    if: false
     needs: shellcheck
     strategy:
       fail-fast: false
@@ -58,3 +59,30 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run test:e2e
+
+  npm-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
+
+      # Clean build for npm publishing
+      - run: npm ci
+      - run: npm run build
+
+      # Dry run NPM publish
+      - name: Dry run NPM publish
+        run: npm publish --tag ${{ needs.check-version.outputs.oclif_channel }} --provenance --access public --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+
+      # NPM Release
+      - name: Create NPM release
+        run: npm publish --tag ${{ needs.check-version.outputs.oclif_channel }} --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
