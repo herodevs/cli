@@ -3,7 +3,7 @@ import updateNotifier, { type UpdateInfo } from 'update-notifier';
 import pkg from '../../../package.json' with { type: 'json' };
 import { debugLogger } from '../../service/log.svc.ts';
 
-const updateNotifierHook: Hook.Init = async (options) => {
+const updateNotifierHook: Hook.Init = async () => {
   debugLogger('pkg.version', pkg.version);
 
   const distTag = getDistTag(pkg.version);

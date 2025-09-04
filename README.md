@@ -26,9 +26,16 @@ Use of this CLI is governed by the [HeroDevs End of Life Dataset Terms of Servic
 
 The CLI is designed to be non-invasive:
 
-* It does not install dependencies or modify package manager files (package-lock.json, yarn.lock, etc.)
+* It does **not** install dependencies or modify package manager files (package-lock.json, yarn.lock, etc.)
 * It analyzes the project in its current state
-* If you need dependencies installed for accurate scanning, please install them manually before running the scan
+
+## Installing Dependencies Before Use
+
+Some projects and ecosystems require projects to have dependencies installed already, to achieve an accurate scan result. It is **highly** recommended that you install all dependencies of your project to your working directory, before running a scan on your project, to ensure scan accuracy.
+
+### Java Users
+
+Maven and Gradle projects should run an install and build before scanning
 
 ## Usage
 <!-- usage -->
@@ -157,7 +164,7 @@ _See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4
 
 You can use `@herodevs/cli` in your CI/CD pipelines to automate EOL scanning.
 
-### Using the Docker Image (recommended)
+### Using the Docker Image (Recommended)
 
 We provide a Docker image that's pre-configured to run EOL scans. Based on [`cdxgen`](https://github.com/CycloneDX/cdxgen),
 it contains build tools for most project types and will provide best results when generating an SBOM. Use these templates to generate a report and save it to your CI job artifact for analysis and processing after your scan runs.
@@ -207,9 +214,9 @@ eol-scan:
       - herodevs.report.json
 ```
 
-### Using `npx`
+### Using `npx` in CI
 
-You can use `npx` to run the CLI just like you'd run it locally.
+You can use `npx` to run the CLI in your CI pipeline, just like you would run it locally.
 
 > [!NOTE]
 > The development environment is expected to be ready to run the app. For best results,

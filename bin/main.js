@@ -21,7 +21,7 @@ async function main(isProduction = false) {
       development: !isProduction,
       dir: new URL('./dev.js', import.meta.url),
     });
-  } catch (error) {
+  } catch {
     process.exit(1);
   }
 }
