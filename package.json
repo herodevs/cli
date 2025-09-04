@@ -87,9 +87,12 @@
       "@oclif/plugin-update"
     ],
     "hooks": {
-      "init": "./dist/hooks/npm-update-notifier.js",
-      "prerun": "./dist/hooks/prerun.js",
-      "finally": "./dist/hooks/finally.js"
+      "init": [
+        "./dist/hooks/init/00_npm-update-notifier.js",
+        "./dist/hooks/init/01_initialize_amplitude.js"
+      ],
+      "prerun": "./dist/hooks/prerun/prerun.js",
+      "finally": "./dist/hooks/finally/finally.js"
     },
     "topicSeparator": " ",
     "macos": {

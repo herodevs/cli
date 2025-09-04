@@ -1,7 +1,7 @@
 import type { Hook } from '@oclif/core';
 import updateNotifier, { type UpdateInfo } from 'update-notifier';
-import pkg from '../../package.json' with { type: 'json' };
-import { debugLogger } from '../service/log.svc.ts';
+import pkg from '../../../package.json' with { type: 'json' };
+import { debugLogger } from '../../service/log.svc.ts';
 
 const updateNotifierHook: Hook.Init = async (options) => {
   debugLogger('pkg.version', pkg.version);

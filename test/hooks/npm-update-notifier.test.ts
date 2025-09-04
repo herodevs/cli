@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { getDistTag, handleUpdate } from '../../src/hooks/npm-update-notifier.ts';
+import { getDistTag, handleUpdate } from '../../src/hooks/init/00_npm-update-notifier';
 
 describe('getDistTag', () => {
   it('should return beta for beta versions', () => {

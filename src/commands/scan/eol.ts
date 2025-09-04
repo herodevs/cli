@@ -52,6 +52,7 @@ export default class ScanEol extends Command {
       default: false,
       description: `Save the generated SBOM as ${filenamePrefix}.sbom.json in the scanned directory`,
     }),
+    version: Flags.version(),
   };
 
   public async run(): Promise<EolReport | undefined> {
