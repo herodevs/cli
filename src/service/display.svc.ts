@@ -76,8 +76,8 @@ export function formatScanResults(report: EolReport): string[] {
     ux.colorize('bold', `${report.components.length.toLocaleString()} total packages scanned`),
     getStatusRowText.EOL(`${EOL.toLocaleString().padEnd(5)} End-of-Life (EOL)`),
     getStatusRowText.EOL_UPCOMING(`${EOL_UPCOMING.toLocaleString().padEnd(5)} EOL Upcoming`),
-    getStatusRowText.OK(`${OK.toLocaleString().padEnd(5)} Not End-of-Life`),
-    getStatusRowText.UNKNOWN(`${UNKNOWN.toLocaleString().padEnd(5)} Unknown Status`),
+    getStatusRowText.OK(`${OK.toLocaleString().padEnd(5)} Not End-of-Life (EOL)`),
+    getStatusRowText.UNKNOWN(`${UNKNOWN.toLocaleString().padEnd(5)} Unknown EOL Status`),
     getStatusRowText.UNKNOWN(
       `${NES_AVAILABLE.toLocaleString().padEnd(5)} HeroDevs NES Remediation${NES_AVAILABLE !== 1 ? 's' : ''} Available`,
     ),

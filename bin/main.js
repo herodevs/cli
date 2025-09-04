@@ -1,5 +1,5 @@
-import { execute } from '@oclif/core';
 import { parseArgs } from 'node:util';
+import { execute } from '@oclif/core';
 
 async function main(isProduction = false) {
   const { positionals } = parseArgs({
@@ -21,7 +21,7 @@ async function main(isProduction = false) {
       development: !isProduction,
       dir: new URL('./dev.js', import.meta.url),
     });
-  } catch (_error) {
+  } catch {
     process.exit(1);
   }
 }
