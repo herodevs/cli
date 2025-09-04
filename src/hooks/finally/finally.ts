@@ -1,11 +1,11 @@
 import type { Hook } from '@oclif/core';
-import ora from 'ora';
-import { track } from '../service/analytics.svc.ts';
+import ora, { type Ora } from 'ora';
+import { track } from '../../service/analytics.svc.ts';
 
 const hook: Hook<'finally'> = async (opts) => {
-  const isHelpOrVersionCmd = opts.argv.includes('--help') || opts.argv.includes('--version') || opts.Command?.id === 'version'
-  
-  let spinner;
+  const isHelpOrVersionCmd = opts.argv.includes('--help') || opts.argv.includes('--version');
+
+  let spinner: Ora | undefined;
 
   if (!isHelpOrVersionCmd) {
     spinner = ora().start('Cleaning up');
@@ -20,7 +20,6 @@ const hook: Hook<'finally'> = async (opts) => {
     await event;
     spinner?.stop();
   }
-
 };
 
 export default hook;

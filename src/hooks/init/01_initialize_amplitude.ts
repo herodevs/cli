@@ -1,9 +1,8 @@
 import { parseArgs } from 'node:util';
 import type { Hook } from '@oclif/core';
-import debug from 'debug';
-import { initializeAnalytics, track } from '../service/analytics.svc.ts';
+import { initializeAnalytics, track } from '../../service/analytics.svc.ts';
 
-const hook: Hook<'prerun'> = async (opts) => {
+const hook: Hook.Init = async () => {
   const args = parseArgs({ allowPositionals: true, strict: false });
   initializeAnalytics();
   track('CLI Command Submitted', (context) => ({
@@ -14,11 +13,6 @@ const hook: Hook<'prerun'> = async (opts) => {
     cli_version: context.cli_version,
     started_at: context.started_at,
   }));
-
-  // If JSON flag is enabled, silence debug logging
-  if (opts.Command.prototype.jsonEnabled()) {
-    debug.disable();
-  }
 };
 
 export default hook;

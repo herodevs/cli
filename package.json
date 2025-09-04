@@ -45,7 +45,6 @@
     "@oclif/core": "^4.5.2",
     "@oclif/plugin-help": "^6.2.32",
     "@oclif/plugin-update": "^4.7.4",
-    "@oclif/plugin-version": "^2.2.32",
     "graphql": "^16.11.0",
     "node-machine-id": "^1.1.12",
     "ora": "^8.2.0",
@@ -85,13 +84,15 @@
     "plugins": [
       "@oclif/plugin-help",
       "@oclif/plugin-plugins",
-      "@oclif/plugin-update",
-      "@oclif/plugin-version"
+      "@oclif/plugin-update"
     ],
     "hooks": {
-      "init": "./dist/hooks/npm-update-notifier.js",
-      "prerun": "./dist/hooks/prerun.js",
-      "finally": "./dist/hooks/finally.js"
+      "init": [
+        "./dist/hooks/init/00_npm-update-notifier.js",
+        "./dist/hooks/init/01_initialize_amplitude.js"
+      ],
+      "prerun": "./dist/hooks/prerun/prerun.js",
+      "finally": "./dist/hooks/finally/finally.js"
     },
     "topicSeparator": " ",
     "macos": {
