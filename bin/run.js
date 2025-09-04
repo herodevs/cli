@@ -4,6 +4,6 @@ import main from './main.js';
 
 try {
   await main(true);
-} catch (error) {
+} catch (_error) {
   process.exit(1);
 }
