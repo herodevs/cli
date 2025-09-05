@@ -56,6 +56,7 @@ USAGE
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd update [CHANNEL]`](#hd-update-channel)
+  * Only applies to tarball installation. For NPM users, please update using `npm install`
 
 ## `hd help [COMMAND]`
 
@@ -124,6 +125,7 @@ _See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.
 ## `hd update [CHANNEL]`
 
 update the hd CLI
+**NOTE:** Only applies to binary installation method. NPM users should use `npm install` to update to the latest version.
 
 ```
 USAGE
