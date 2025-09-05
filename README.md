@@ -56,6 +56,7 @@ USAGE
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd update [CHANNEL]`](#hd-update-channel)
+  * Only applies to tarball installation. For NPM users, please update using `npm install`
 
 ## `hd help [COMMAND]`
 
@@ -83,13 +84,14 @@ Scan a given SBOM for EOL data
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [--saveSbom]
+  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [--saveSbom] [--version]
 
 FLAGS
   -d, --dir=<value>   [default: <current directory>] The directory to scan in order to create a cyclonedx SBOM
   -f, --file=<value>  The file path of an existing cyclonedx SBOM to scan for EOL
   -s, --save          Save the generated report as herodevs.report.json in the scanned directory
       --saveSbom      Save the generated SBOM as herodevs.sbom.json in the scanned directory
+      --version       Show CLI version.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -124,6 +126,7 @@ _See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.
 ## `hd update [CHANNEL]`
 
 update the hd CLI
+**NOTE:** Only applies to binary installation method. NPM users should use `npm install` to update to the latest version.
 
 ```
 USAGE

@@ -4,9 +4,16 @@
 
 ### Current Process (Branch-based Releases)
 
-The CLI uses a branch-based release process. To create a release:
+#### Updating the README
+
+If you have made changes to available oclif commands or flags, run `npm run readme` to have oclif auto generate the new documentation.
+Manual edits already made to auto generated README sections will be overwritten, so carefully review any changes 
+that oclif makes.
+
 
 #### Create a release branch
+
+The CLI uses a branch-based release process. To create a release:
 
 1. `git fetch origin main`
 2. `git switch main`
