@@ -10,13 +10,37 @@ The HeroDevs CLI
 * [@herodevs/cli](#herodevscli)
 <!-- tocstop -->
 
-## Installation Instructions
+### Prerequisites
 
-1. Install node v20 or higher: [Download Node](https://nodejs.org/en/download)
-1. Install the CLI using one of the following methods:
-   * Globally: Refer to the [Usage](#usage) instructions on installing the CLI globally
-   * npx: `npx @herodevs/cli@beta`
-1. Refer to the [Commands](#commands) section for a list of commands
+Install node v20 or higher: [Download Node](https://nodejs.org/en/download)
+
+### Installation methods
+
+#### Node Package Execute (NPX)
+
+With Node installed, you can run the CLI directly from the npm registry without installing it globally or locally on your system
+
+```sh
+npx @herodevs/cli@beta
+```
+
+#### Global NPM Installation
+
+```sh
+npm install -g @herodevs/cli@beta
+```
+
+#### Binary Installation
+
+HeroDevs CLI is available as a binary installation, without requiring `npm`. To do that, you may either download and run the script manually, or use the following cURL or Wget command:
+
+```sh
+curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.8/scripts/install.sh | bash
+```
+
+```sh
+wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.8/scripts/install.sh | bash
+```
 
 ## TERMS
 
@@ -56,7 +80,7 @@ USAGE
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd update [CHANNEL]`](#hd-update-channel)
-  * Only applies to tarball installation. For NPM users, please update using `npm install`
+* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ## `hd help [COMMAND]`
 
@@ -126,7 +150,7 @@ _See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.
 ## `hd update [CHANNEL]`
 
 update the hd CLI
-**NOTE:** Only applies to binary installation method. NPM users should use `npm install` to update to the latest version.
+**NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ```
 USAGE
