@@ -16,15 +16,15 @@ that oclif makes.
 The CLI uses a branch-based release process. To create a release:
 
 1. `git fetch origin main`
-2. `git switch main`
-3. `git pull origin main`
-4. `git switch -c release-{version}` (e.g., `release-1.2.3`)
-5. Manually bump version number in package.json
-6. `npm i` to update package-lock
-7. `npx oclif manifest && npm run readme` to update readme
-8. `git add . && git commit -m "chore: release {version}"` (e.g., `chore: release 1.2.3`)
-9. `git push -u origin release-{version}`
-10. Create PR into main
+1. `git switch main`
+1. `git pull origin main`
+1. `git switch -c release-{version}` (e.g., `release-1.2.3`)
+1. `npm version <newversion> --no-git-tag-version`
+   1. replace `<newversion>` with a valid npm version term, or a specific semver
+   1. For beta use, `npm version prerelease --no-git-tag-version`
+1. `git add . && git commit -m "chore: release {version}"` (e.g., `chore: release 1.2.3`)
+1. `git push -u origin release-{version}`
+1. Create PR into main
 
 #### Push a tag
 
