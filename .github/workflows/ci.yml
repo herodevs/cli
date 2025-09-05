@@ -6,11 +6,16 @@ on:
 jobs:
   npm-restore-latest:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
 
-      - name: 
+      - name: Restore latest tag
         run: npm dist-tag add @herodevs/cli@0.3.1 latest
         env:
           NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
