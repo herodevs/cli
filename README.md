@@ -84,13 +84,14 @@ Scan a given SBOM for EOL data
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [--saveSbom]
+  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [--saveSbom] [--version]
 
 FLAGS
   -d, --dir=<value>   [default: <current directory>] The directory to scan in order to create a cyclonedx SBOM
   -f, --file=<value>  The file path of an existing cyclonedx SBOM to scan for EOL
   -s, --save          Save the generated report as herodevs.report.json in the scanned directory
       --saveSbom      Save the generated SBOM as herodevs.sbom.json in the scanned directory
+      --version       Show CLI version.
 
 GLOBAL FLAGS
   --json  Format output as json.

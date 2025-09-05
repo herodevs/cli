@@ -30,7 +30,7 @@
     "test": "globstar -- node --import tsx --test --experimental-test-module-mocks \"test/**/*.test.ts\"",
     "test:e2e": "globstar -- node --import tsx --test \"e2e/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "version": "oclif manifest && npm run readme"
+    "version": "oclif manifest"
   },
   "keywords": [
     "herodevs",
