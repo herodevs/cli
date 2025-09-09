@@ -48,6 +48,7 @@ jobs:
     env:
       GRAPHQL_HOST: ${{ secrets.NEW_GRAPHQL_HOST }}
       EOL_REPORT_URL: ${{ secrets.EOL_REPORT_URL }}
+      TRACKING_OPT_OUT: true
     steps:
       - uses: actions/checkout@v5
       - name: "Use Node.js ${{matrix.node}}.x"
