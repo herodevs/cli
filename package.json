@@ -41,7 +41,7 @@
   "dependencies": {
     "@amplitude/analytics-node": "^1.5.5",
     "@apollo/client": "^3.13.8",
-    "@cyclonedx/cdxgen": "~11.4.4",
+    "@cyclonedx/cdxgen": "~11.7.0",
     "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.11",
     "@oclif/core": "^4.5.2",
     "@oclif/plugin-help": "^6.2.32",
