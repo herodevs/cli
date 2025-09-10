@@ -77,6 +77,16 @@ export default class ScanEol extends Command {
       }));
     }
 
+    if (flags.saveSbom && !flags.file) {
+      const sbomPath = this.saveSbom(flags.dir, sbom);
+      this.log(`SBOM saved to ${sbomPath}`);
+      track('CLI SBOM Output Saved', (context) => ({
+        command: context.command,
+        command_flags: context.command_flags,
+        sbom_output_path: sbomPath,
+      }));
+    }
+
     if (!sbom.components?.length) {
       track('CLI EOL Scan Ended, No Components Found', (context) => ({
         command: context.command,
@@ -113,16 +123,6 @@ export default class ScanEol extends Command {
         command: context.command,
         command_flags: context.command_flags,
         report_output_path: reportPath,
-      }));
-    }
-
-    if (flags.saveSbom && !flags.file) {
-      const sbomPath = this.saveSbom(flags.dir, sbom);
-      this.log(`SBOM saved to ${sbomPath}`);
-      track('CLI SBOM Output Saved', (context) => ({
-        command: context.command,
-        command_flags: context.command_flags,
-        sbom_output_path: sbomPath,
       }));
     }
 
