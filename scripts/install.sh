@@ -22,8 +22,8 @@ set -o pipefail # Catch errors in piped commands
 # - Error handling for failed operations
 #
 # Usage:
-#   Beta release:  curl -sSfL https://raw.githubusercontent.com/herodevs/cli/main/install.sh | bash
-#   Latest release: curl -sSfL https://raw.githubusercontent.com/herodevs/cli/main/install.sh | bash -s -- --latest
+#   Beta release:  curl -sSfL https://raw.githubusercontent.com/herodevs/cli/refs/heads/main/scripts/install.sh | bash
+#   Latest release: curl -sSfL https://raw.githubusercontent.com/herodevs/cli/refs/heads/main/scripts/install.sh | bash -s -- --latest
 #=============================================================================
 
 # Configuration
@@ -34,6 +34,8 @@ INSTALL_DIR="$HOME/.herodevs"
 BIN_DIR="$INSTALL_DIR/bin"
 GITHUB_API_URL="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases"
 TMP_DIR=""
+USE_BETA=true
+# LATEST_VERSION="v2.0.0-beta.8"
 DEBUG=${DEBUG:-}
 
 # Colors for output
@@ -80,7 +82,6 @@ error_exit() {
 }
 
 # Parse arguments
-USE_BETA=true
 while [ $# -gt 0 ]; do
   case $1 in
   -l | --latest)
@@ -157,8 +158,28 @@ get_version() {
 
 # Download and install
 install() {
-  local version_tag="$1"
-  log "INFO" "Downloading and installing tarball"
+  # Fetch releases from GitHub
+  releases=$(curl --silent --connect-timeout 10 --max-time 30 "$GITHUB_API_URL" 2>&1)
+  curl_exit=$?
+
+  if [ $curl_exit -ne 0 ]; then
+    error_exit "Failed to fetch releases from GitHub API: $releases"
+  fi
+
+  # Validate the response is not empty
+  if [ -z "$releases" ]; then
+    error_exit "Empty response from GitHub API. Please try again later."
+  fi
+
+  # Ensure the response contains release data
+  if ! echo "$releases" | grep -q '"tag_name"'; then
+    error_exit "Invalid response from GitHub API. Please try again later."
+  fi
+
+  # Determine VERSION_TAG
+  VERSION_TAG=$(get_version "$USE_BETA" "$releases" 3>&1 1>&2)
+
+  local version_tag="$VERSION_TAG"
   
   # Remove 'v' prefix if present
   local version
@@ -182,10 +203,38 @@ install() {
   
   log "INFO" "Detected system: $os-$arch"
 
-  local tarball_name="${REPO_NAME}-${version}-${os}-${arch}.tar.gz"
-  local download_url="https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/download/${version_tag}/${tarball_name}"
-  
+  # Construct OS-ARCH pattern
+  pattern="${os}-${arch}"
+
+  # Extract all browser_download_url values for the matching release
+  release_block=$(echo "$releases" | awk -v tag="\"$VERSION_TAG\"" '
+    BEGIN {found=0; block=""}
+    $0 ~ tag {found=1}
+    found {
+      block = block $0 "\n"
+      if ($0 ~ /^\s*\],?$/) { found=0; print block; exit }
+    }
+  ')
+
+  # Parse browser_download_url from release_block and check against pattern
+  download_url=""
+  while read -r url; do
+    if echo "$url" | grep -qi "$pattern"; then
+      download_url="$url"
+      break
+    fi
+  done < <(echo "$release_block" | grep '"browser_download_url":' | sed -E 's/.*"browser_download_url": "([^"]+)".*/\1/')
+
+  # Ensure we found a matching asset
+  if [ -z "$download_url" ]; then
+    error_exit "No release found system $pattern for release $VERSION_TAG"
+  fi
+
   log "DEBUG" "Download URL: $download_url"
+
+  log "INFO" "Downloading and installing tarball"
+
+  local tarball_name="${REPO_NAME}-${version}-${os}-${arch}.tar.gz"
 
   # Check for existing installation
   if [ -d "$INSTALL_DIR" ]; then
@@ -222,7 +271,7 @@ install() {
 
   # Create symlink in bin directory
   log "DEBUG" "Creating symlink from $INSTALL_DIR/$BIN_NAME to $BIN_DIR/$BIN_NAME"
-  ln -sf "$INSTALL_DIR/$BIN_NAME" "$BIN_DIR/$BIN_NAME"
+  ln -sf "$INSTALL_DIR/$BIN_NAME/bin/hd" "$BIN_DIR/$BIN_NAME"
 
   # Add to PATH if needed
   if ! echo "$PATH" | tr ':' '\n' | grep -q "^$BIN_DIR$"; then
@@ -243,12 +292,12 @@ install() {
       log "WARNING" "Please restart your terminal or run 'source $profile_file' to update your PATH"
     else
       log "WARNING" "Could not find shell profile. Please add $BIN_DIR to your PATH manually:"
-      emit "  export PATH=\"\$PATH:$BIN_DIR\""
+      emit "export PATH=\"$BIN_DIR:\$PATH:\""
     fi
   fi
 
   log "INFO" "Installation complete! You can now run: $BIN_NAME --help"
-  emit "The CLI will automatically check for updates from S3 when run."
+  emit "The CLI will automatically check for updates when run."
 }
 
 check_dependencies() {
@@ -261,38 +310,9 @@ check_dependencies() {
   fi
 }
 
-fetch_release_and_set_version() {
-  log "INFO" "Fetching releases from GitHub API"
-  log "DEBUG" "Attempting to fetch from: $GITHUB_API_URL"
-
-  local releases
-  local curl_exit
-  
-  releases=$(curl --silent --connect-timeout 10 --max-time 30 "$GITHUB_API_URL" 2>&1)
-  curl_exit=$?
-
-  if [ $curl_exit -ne 0 ]; then
-    error_exit "Failed to fetch releases from GitHub API: $releases"
-  fi
-
-  # Validate the response is not empty and contains release data
-  if [ -z "$releases" ]; then
-    error_exit "Empty response from GitHub API. Please try again later."
-  fi
-  
-  if ! echo "$releases" | grep -q '"releases"\|"tag_name"'; then
-    error_exit "Invalid response from GitHub API. Please try again later."
-  fi
-
-  # Store the output in a variable (coming from FD 3 via the emit in get_version)
-  VERSION_TAG=$(get_version "$USE_BETA" "$releases")
-}
-
 check_dependencies
 
-fetch_release_and_set_version
-
-install "$VERSION_TAG"
+install
 
 if [ -n "$DEBUG" ]; then
   emit -e "${PURPLE}"

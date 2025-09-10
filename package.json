@@ -26,11 +26,12 @@
     "prepare": "shx test -d dist || npm run build",
     "prepack": "oclif manifest",
     "pretest": "npm run lint && npm run typecheck",
-    "readme": "npm run ci:fix && npm run build && npm exec oclif readme",
+    "readme": "npm run ci:fix && npm run build && oclif readme",
     "test": "globstar -- node --import tsx --test --experimental-test-module-mocks \"test/**/*.test.ts\"",
     "test:e2e": "globstar -- node --import tsx --test \"e2e/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
-    "version": "oclif manifest"
+    "version": "oclif manifest",
+    "postversion": "node scripts/update-install-script-version.js && git add README.md"
   },
   "keywords": [
     "herodevs",
@@ -60,7 +61,7 @@
     "@types/sinon": "^17.0.4",
     "@types/update-notifier": "^6.0.8",
     "globstar": "^1.0.0",
-    "oclif": "^4.22.14",
+    "oclif": "^4.22.18",
     "shx": "^0.4.0",
     "sinon": "^21.0.0",
     "ts-node": "^10.9.2",
