@@ -12,7 +12,10 @@ The HeroDevs CLI
 
 ### Prerequisites
 
-Install node v20 or higher: [Download Node](https://nodejs.org/en/download)
+- Install node v20 or higher: [Download Node](https://nodejs.org/en/download)
+- The HeroDevs CLI expects that you have all required technology installed for the project that you are running the CLI against
+  - For example, if you are running the CLI against a Gradle project, the CLI expects you to have Java installed.
+
 
 ### Installation methods
 
@@ -80,7 +83,7 @@ USAGE
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd update [CHANNEL]`](#hd-update-channel)
-* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
+  * **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ## `hd help [COMMAND]`
 
@@ -150,7 +153,8 @@ _See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.
 ## `hd update [CHANNEL]`
 
 update the hd CLI
-**NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
+
+* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ```
 USAGE
