@@ -61,7 +61,7 @@
     "@types/sinon": "^17.0.4",
     "@types/update-notifier": "^6.0.8",
     "globstar": "^1.0.0",
-    "oclif": "^4.22.18",
+    "oclif": "^4.22.22",
     "shx": "^0.4.0",
     "sinon": "^21.0.0",
     "ts-node": "^10.9.2",
