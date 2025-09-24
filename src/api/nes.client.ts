@@ -8,8 +8,8 @@ import type {
 } from '@herodevs/eol-shared';
 import { config } from '../config/constants.ts';
 import { debugLogger } from '../service/log.svc.ts';
-import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
 import { stripTypename } from '../utils/strip-typename.ts';
+import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
 
 export const createApollo = (uri: string) =>
   new ApolloClient({

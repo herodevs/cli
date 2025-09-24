@@ -1,6 +1,6 @@
-import { stripTypename } from "../../src/utils/strip-typename";
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+import { stripTypename } from '../../src/utils/strip-typename';
 
 describe('stripTypename', () => {
   it('removes __typename from objects and nested structures', () => {
@@ -27,15 +27,9 @@ describe('stripTypename', () => {
       name: 'Test',
       nested: {
         value: 42,
-        array: [
-          { itemId: 'a' },
-          { itemId: 'b' },
-        ],
+        array: [{ itemId: 'a' }, { itemId: 'b' }],
       },
-      list: [
-        { listId: 'x' },
-        { listId: 'y' },
-      ],
+      list: [{ listId: 'x' }, { listId: 'y' }],
     };
 
     const output = stripTypename(input);
