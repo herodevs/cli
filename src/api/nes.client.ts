@@ -9,6 +9,7 @@ import type {
 import { config } from '../config/constants.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
+import { stripTypename } from '../utils/strip-typename.ts';
 
 export const createApollo = (uri: string) =>
   new ApolloClient({
@@ -70,7 +71,10 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
       throw new Error('Failed to fetch EOL report');
     }
 
-    return { ...reportMetadata, components };
+    return stripTypename({
+      ...reportMetadata,
+      components,
+    }) as EolReport;
   };
 };
 
