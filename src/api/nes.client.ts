@@ -8,6 +8,7 @@ import type {
 } from '@herodevs/eol-shared';
 import { config } from '../config/constants.ts';
 import { debugLogger } from '../service/log.svc.ts';
+import { stripTypename } from '../utils/strip-typename.ts';
 import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
 
 export const createApollo = (uri: string) =>
@@ -70,7 +71,10 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
       throw new Error('Failed to fetch EOL report');
     }
 
-    return { ...reportMetadata, components };
+    return stripTypename({
+      ...reportMetadata,
+      components,
+    }) as EolReport;
   };
 };
 
