@@ -38,11 +38,11 @@ npm install -g @herodevs/cli@beta
 HeroDevs CLI is available as a binary installation, without requiring `npm`. To do that, you may either download and run the script manually, or use the following cURL or Wget command:
 
 ```sh
-curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.9/scripts/install.sh | bash
+curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.10/scripts/install.sh | bash
 ```
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.9/scripts/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.10/scripts/install.sh | bash
 ```
 
 ## TERMS
@@ -71,7 +71,7 @@ $ npm install -g @herodevs/cli@beta
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.9 darwin-arm64 node-v22.18.0
+@herodevs/cli/2.0.0-beta.10 darwin-arm64 node-v22.18.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -148,7 +148,7 @@ EXAMPLES
     $ hd scan eol --json
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.9/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.10/src/commands/scan/eol.ts)_
 
 ## `hd update [CHANNEL]`
 
