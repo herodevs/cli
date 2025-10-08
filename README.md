@@ -215,19 +215,23 @@ on:
 jobs:
   scan:
     runs-on: ubuntu-latest
+    environment: demo
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - name: Run EOL Scan with Docker
-        uses: docker://ghcr.io/herodevs/eol-scan
-        with:
-          args: "-s"
-      
-      - name: Upload   artifact
+      - name: Run EOL Scan
+        run: |
+          docker run --rm \
+            -v $GITHUB_WORKSPACE:/app \
+            -w /app \
+            ghcr.io/herodevs/eol-scan --save
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: my-eol-report
-          path: herodevs.report.json
+          path: ./herodevs.report.json
 ```
 
 #### GitLab CI/CD
@@ -273,14 +277,14 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - run: echo # Prepare environment, install tooling, perform setup, etc.
 
       - name: Run EOL Scan
-        run: npx @herodevs/cli@beta
+        run: npx @herodevs/cli@beta scan eol
 
-      - name: Upload   artifact
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: my-eol-report
