@@ -1,0 +1,66 @@
+name: (DEMO) HeroDevs CLI Build and Scan Docker Image
+
+on:
+  workflow_dispatch: {}
+
+env:
+  TRACKING_OPT_OUT: 'true'
+  CDXGEN_DEBUG_MODE: 'debug' # recommended for more verbose output from cdxgen
+
+jobs:
+  build-and-sbom:
+    name: Build and Generate SBOM
+    environment: demo
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install cdxgen
+        run: npm install -g @cyclonedx/cdxgen
+
+      - name: Build Docker image
+        working-directory: ${{ github.workspace }}
+        run: docker build -f ./ci/demo.Dockerfile -t herodevs/demo-image:local .
+
+      - name: Generate SBOM for local Docker image
+        run: cdxgen -t docker -o sbom.json -r herodevs/demo-image:local
+
+      - name: Verify SBOM exists
+        run: ls -l sbom.json
+      
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cdxgen-sbom-json
+          path: sbom.json
+
+  scan-sbom:
+    name: Run HD Scan
+    runs-on: ubuntu-latest
+    needs: build-and-sbom
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Download SBOM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: cdxgen-sbom-json
+          path: .
+
+      - name: Run EOL scan
+        run: npx @herodevs/cli@beta scan eol --file=sbom.json --save
+
+      - name: Upload HD report
+        uses: actions/upload-artifact@v4
+        with:
+          name: herodevs-report
+          path: ./herodevs.report.json

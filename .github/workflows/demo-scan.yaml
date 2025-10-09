@@ -1,0 +1,28 @@
+name: (DEMO) HeroDevs EOL Scan NPX
+
+on:
+  workflow_dispatch: {}
+
+env:
+  TRACKING_OPT_OUT: 'true'
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    environment: demo
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Run EOL Scan
+        run: npx @herodevs/cli@beta scan eol --save
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: my-eol-report
+          path: ./herodevs.report.json
