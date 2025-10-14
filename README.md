@@ -10,6 +10,11 @@ The HeroDevs CLI
 * [@herodevs/cli](#herodevscli)
 <!-- tocstop -->
 
+### Terms and Data Security
+
+- [HeroDevs End of Life Dataset Terms of Service and Data Policy](https://docs.herodevs.com/legal/end-of-life-dataset-terms)
+- [HeroDevs End of Life Dataset Data Privacy and Security](https://docs.herodevs.com/eol-ds/data-privacy-and-security)
+
 ### Prerequisites
 
 - Install node v20 or higher: [Download Node](https://nodejs.org/en/download)
@@ -44,10 +49,6 @@ curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.10/scripts/i
 ```sh
 wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.10/scripts/install.sh | bash
 ```
-
-## TERMS
-
-Use of this CLI is governed by the [HeroDevs End of Life Dataset Terms of Service and Data Policy](https://docs.herodevs.com/legal/end-of-life-dataset-terms).
 
 ## Scanning Behavior
 

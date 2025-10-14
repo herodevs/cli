@@ -17,3 +17,5 @@ herodevs.report.json
 herodevs.sbom.json
 bom.json
 sbom.json
+cdx.json
+spdx.json
