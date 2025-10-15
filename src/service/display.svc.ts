@@ -95,3 +95,16 @@ export function formatWebReportUrl(id: string, reportCardUrl: string): string[] 
 
   return [ux.colorize('bold', '-'.repeat(40)), `🌐 View your full EOL report at: ${url}\n`];
 }
+
+/**
+ * Formats data privacy information link for console display
+ */
+export function formatDataPrivacyLink(): string[] {
+  const privacyUrl = 'https://docs.herodevs.com/eol-ds/data-privacy-and-security';
+  const link = ux.colorize(
+    'blue',
+    terminalLink('Learn more about data privacy', privacyUrl, { fallback: (text, url) => `${text}: ${url}` }),
+  );
+
+  return [`🔒 ${link}\n`];
+}

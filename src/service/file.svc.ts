@@ -62,6 +62,20 @@ export function saveSbomToFile(dir: string, sbom: CdxBom): string {
 }
 
 /**
+ * Saves a trimmed SBOM to a file in the specified directory
+ */
+export function saveTrimmedSbomToFile(dir: string, sbom: CdxBom): string {
+  const outputPath = join(dir, `${filenamePrefix}.sbom-trimmed.json`);
+
+  try {
+    fs.writeFileSync(outputPath, JSON.stringify(sbom, null, 2));
+    return outputPath;
+  } catch (error) {
+    throw new Error(`Failed to save trimmed SBOM: ${getErrorMessage(error)}`);
+  }
+}
+
+/**
  * Saves an EOL report to a file in the specified directory
  */
 export function saveReportToFile(dir: string, report: EolReport): string {

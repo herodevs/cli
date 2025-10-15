@@ -1,7 +1,12 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import type { EolReport } from '@herodevs/eol-shared';
-import { countComponentsByStatus, formatScanResults, formatWebReportUrl } from '../../src/service/display.svc.ts';
+import {
+  countComponentsByStatus,
+  formatDataPrivacyLink,
+  formatScanResults,
+  formatWebReportUrl,
+} from '../../src/service/display.svc.ts';
 
 describe('display.svc', () => {
   const mockReport: EolReport = {
@@ -146,6 +151,22 @@ describe('display.svc', () => {
 
       assert.ok(lines[1].includes('reports.herodevs.com'));
       assert.ok(lines[1].includes('another-id'));
+    });
+  });
+
+  describe('formatDataPrivacyLink', () => {
+    it('should return array with privacy link', () => {
+      const lines = formatDataPrivacyLink();
+
+      assert.strictEqual(lines.length, 1);
+      assert.ok(lines[0].includes('🔒'));
+      assert.ok(lines[0].includes('Learn more about data privacy'));
+    });
+
+    it('should include HeroDevs documentation URL', () => {
+      const lines = formatDataPrivacyLink();
+
+      assert.ok(lines[0].includes('docs.herodevs.com/eol-ds/data-privacy-and-security'));
     });
   });
 });
