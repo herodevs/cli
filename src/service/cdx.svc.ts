@@ -74,13 +74,13 @@ export const SBOM_DEFAULT__OPTIONS = {
 export async function createSbom(directory: string): Promise<CdxBom> {
   const sbom = await createBom(directory, SBOM_DEFAULT__OPTIONS);
 
-  if (!sbom)  {
+  if (!sbom) {
     throw new Error('SBOM not generated');
   }
-  
+
   const postProcessedSbom = postProcess(sbom, SBOM_DEFAULT__OPTIONS);
 
-  if (!postProcessedSbom)  {
+  if (!postProcessedSbom) {
     throw new Error('SBOM not generated');
   }
 
