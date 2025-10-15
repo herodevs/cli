@@ -61,7 +61,6 @@ export default class ScanEol extends Command {
     track('CLI EOL Scan Started', (context) => ({
       command: context.command,
       command_flags: context.command_flags,
-      scan_location: flags.dir,
     }));
 
     const sbomStartTime = performance.now();
@@ -72,7 +71,6 @@ export default class ScanEol extends Command {
       track('CLI SBOM Generated', (context) => ({
         command: context.command,
         command_flags: context.command_flags,
-        scan_location: flags.dir,
         sbom_generation_time: (sbomEndTime - sbomStartTime) / 1000,
       }));
     }
@@ -91,7 +89,6 @@ export default class ScanEol extends Command {
       track('CLI EOL Scan Ended, No Components Found', (context) => ({
         command: context.command,
         command_flags: context.command_flags,
-        scan_location: flags.dir,
       }));
       this.log('No components found in scan. Report not generated.');
       return;
@@ -110,7 +107,6 @@ export default class ScanEol extends Command {
       nes_available_count: componentCounts.NES_AVAILABLE,
       number_of_packages: componentCounts.TOTAL,
       sbom_created: !flags.file,
-      scan_location: flags.dir,
       scan_load_time: (scanEndTime - scanStartTime) / 1000,
       scanned_ecosystems: componentCounts.ECOSYSTEMS,
       web_report_link: scan.id ? `${config.eolReportUrl}/${scan.id}` : undefined,
@@ -162,7 +158,6 @@ export default class ScanEol extends Command {
       track('CLI EOL Scan Failed', (context) => ({
         command: context.command,
         command_flags: context.command_flags,
-        scan_location: context.scan_location,
         scan_failure_reason: errorMessage,
       }));
       this.error(`Failed to submit scan to NES. ${errorMessage}`);

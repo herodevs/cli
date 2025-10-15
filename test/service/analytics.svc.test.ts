@@ -116,7 +116,7 @@ describe('analytics.svc', () => {
 
     it('should call amplitude track with event name and properties when getProperties returns data', async (t) => {
       const mod = await setupModule(t);
-      const testProperties = { scan_location: '/test/path', eol_true_count: 5 };
+      const testProperties = { eol_true_count: 5 };
       const getProperties = sinon.stub().returns(testProperties);
 
       mod.track('test-event', getProperties);
@@ -131,13 +131,12 @@ describe('analytics.svc', () => {
 
     it('should merge properties into analyticsContext when getProperties returns data', async (t) => {
       const mod = await setupModule(t);
-      const firstProperties = { scan_location: '/test/path1', eol_true_count: 3 };
-      const secondProperties = { scan_location: '/test/path2', eol_unknown_count: 2 };
+      const firstProperties = { eol_true_count: 3 };
+      const secondProperties = { eol_unknown_count: 2 };
 
       mod.track('test-event-1', () => firstProperties);
 
       const getSecondProperties = sinon.stub().callsFake((context) => {
-        assert.strictEqual(context.scan_location, '/test/path1');
         assert.strictEqual(context.eol_true_count, 3);
         return secondProperties;
       });
@@ -150,12 +149,11 @@ describe('analytics.svc', () => {
 
     it('should preserve existing analyticsContext when getProperties returns undefined', async (t) => {
       const mod = await setupModule(t);
-      const initialProperties = { scan_location: '/test/path', eol_true_count: 5 };
+      const initialProperties = { eol_true_count: 5 };
 
       mod.track('test-event-1', () => initialProperties);
 
       const getUndefinedProperties = sinon.stub().callsFake((context) => {
-        assert.strictEqual(context.scan_location, '/test/path');
         assert.strictEqual(context.eol_true_count, 5);
         return undefined;
       });

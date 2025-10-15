@@ -24,7 +24,6 @@ interface AnalyticsContext {
   error?: string;
 
   // Scan Results
-  scan_location?: string;
   eol_true_count?: number;
   eol_unknown_count?: number;
   nes_available_count?: number;
