@@ -4,6 +4,7 @@ import type { EolReport } from '@herodevs/eol-shared';
 import {
   countComponentsByStatus,
   formatDataPrivacyLink,
+  formatReportSaveHint,
   formatScanResults,
   formatWebReportUrl,
 } from '../../src/service/display.svc.ts';
@@ -167,6 +168,16 @@ describe('display.svc', () => {
       const lines = formatDataPrivacyLink();
 
       assert.ok(lines[0].includes('docs.herodevs.com/eol-ds/data-privacy-and-security'));
+    });
+  });
+
+  describe('formatReportSaveHint', () => {
+    it('should provide a save hint message', () => {
+      const lines = formatReportSaveHint();
+
+      assert.strictEqual(lines.length, 2);
+      assert.ok(lines[0].includes('-'.repeat(40)));
+      assert.ok(lines[1].includes('--save'));
     });
   });
 });

@@ -10,6 +10,8 @@ const STATUS_COLORS: Record<ComponentStatus, string> = {
   EOL_UPCOMING: 'yellow',
 };
 
+const SEPARATOR_WIDTH = 40;
+
 /**
  * Formats status row text with appropriate color and icon
  */
@@ -72,7 +74,7 @@ export function formatScanResults(report: EolReport): string[] {
 
   return [
     ux.colorize('bold', 'Scan results:'),
-    ux.colorize('bold', '-'.repeat(40)),
+    ux.colorize('bold', '-'.repeat(SEPARATOR_WIDTH)),
     ux.colorize('bold', `${report.components.length.toLocaleString()} total packages scanned`),
     getStatusRowText.EOL(`${EOL.toLocaleString().padEnd(5)} End-of-Life (EOL)`),
     getStatusRowText.EOL_UPCOMING(`${EOL_UPCOMING.toLocaleString().padEnd(5)} EOL Upcoming`),
@@ -93,7 +95,7 @@ export function formatWebReportUrl(id: string, reportCardUrl: string): string[] 
     terminalLink(new URL(reportCardUrl).hostname, `${reportCardUrl}/${id}`, { fallback: (_, url) => url }),
   );
 
-  return [ux.colorize('bold', '-'.repeat(40)), `🌐 View your full EOL report at: ${url}\n`];
+  return [ux.colorize('bold', '-'.repeat(SEPARATOR_WIDTH)), `🌐 View your full EOL report at: ${url}\n`];
 }
 
 /**
@@ -107,4 +109,11 @@ export function formatDataPrivacyLink(): string[] {
   );
 
   return [`🔒 ${link}\n`];
+}
+
+/**
+ * Formats the report save hint for console display when the web report URL is hidden
+ */
+export function formatReportSaveHint(): string[] {
+  return [ux.colorize('bold', '-'.repeat(SEPARATOR_WIDTH)), 'To save your detailed JSON report, use the --save flag'];
 }
