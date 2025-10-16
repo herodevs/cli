@@ -67,7 +67,7 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
       const batchResponses = await Promise.all(batch);
 
       for (const response of batchResponses) {
-        if (response.errors && response.errors.length > 0) {
+        if (response.errors?.length > 0) {
           debugLogger('GraphQL errors in getReport query: %o', response.errors);
           throw new Error('Failed to fetch EOL report');
         }
