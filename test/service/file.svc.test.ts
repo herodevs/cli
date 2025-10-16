@@ -4,7 +4,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
-import type { CdxBom, EolReport } from '@herodevs/eol-shared';
+import type { CdxBom, EolReport, SPDX23 } from '@herodevs/eol-shared';
 import {
   readSbomFromFile,
   saveReportToFile,
@@ -23,6 +23,19 @@ describe('file.svc', () => {
     components: [],
   } as unknown as CdxBom;
 
+  const mockSpdxSbom: SPDX23 = {
+    spdxVersion: 'SPDX-2.3',
+    dataLicense: 'CC0-1.0',
+    SPDXID: 'SPDXRef-DOCUMENT',
+    name: 'test-sbom',
+    documentNamespace: 'https://example.com/test',
+    creationInfo: {
+      created: '2024-01-01T00:00:00Z',
+      creators: ['Tool: test'],
+    },
+    packages: [],
+  };
+
   const mockReport: EolReport = {
     id: 'test-id',
     createdOn: new Date().toISOString(),
@@ -40,13 +53,25 @@ describe('file.svc', () => {
   });
 
   describe('readSbomFromFile', () => {
-    it('should read and parse a valid SBOM file', async () => {
+    it('should read and parse a valid CycloneDX SBOM file', async () => {
       tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
       const filePath = join(tempDir, 'test.json');
       await writeFile(filePath, JSON.stringify(mockSbom));
 
       const result = readSbomFromFile(filePath);
       assert.deepStrictEqual(result, mockSbom);
+    });
+
+    it('should read and convert a valid SPDX SBOM file to CycloneDX', async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
+      const filePath = join(tempDir, 'spdx-test.json');
+      await writeFile(filePath, JSON.stringify(mockSpdxSbom));
+
+      const result = readSbomFromFile(filePath);
+
+      assert.strictEqual(result.bomFormat, 'CycloneDX');
+      assert.ok(result.specVersion);
+      assert.ok(Array.isArray(result.components));
     });
 
     it('should throw error for non-existent file', () => {
@@ -59,6 +84,17 @@ describe('file.svc', () => {
       await writeFile(filePath, 'invalid json');
 
       assert.throws(() => readSbomFromFile(filePath), /Failed to read SBOM file/);
+    });
+
+    it('should throw error for invalid SBOM format (neither SPDX nor CycloneDX)', async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
+      const filePath = join(tempDir, 'invalid-format.json');
+      await writeFile(filePath, JSON.stringify({ invalid: 'format' }));
+
+      assert.throws(
+        () => readSbomFromFile(filePath),
+        /Invalid SBOM file format\. Expected SPDX 2\.3 or CycloneDX format/,
+      );
     });
   });
 
