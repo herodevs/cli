@@ -250,6 +250,56 @@ describe('scan:eol e2e', () => {
     unlinkSync(sbomPath);
   });
 
+  it('saves trimmed SBOM when --saveTrimmedSbom flag is used (directory scan)', async () => {
+    const trimmedSbomPath = path.join(simpleDir, `${filenamePrefix}.sbom-trimmed.json`);
+    const cmd = `scan:eol --dir ${simpleDir} --saveTrimmedSbom`;
+    await run(cmd);
+
+    const trimmedSbomExists = existsSync(trimmedSbomPath);
+    strictEqual(trimmedSbomExists, true, 'Trimmed SBOM file should be created');
+
+    const trimmedSbomText = readFileSync(trimmedSbomPath, 'utf-8');
+    const trimmedSbomJson = JSON.parse(trimmedSbomText);
+    strictEqual(trimmedSbomJson.bomFormat, 'CycloneDX', 'Should be CycloneDX format');
+    strictEqual(Array.isArray(trimmedSbomJson.components), true, 'Should have components array');
+
+    unlinkSync(trimmedSbomPath);
+  });
+
+  it('saves all three files when --save, --saveSbom, and --saveTrimmedSbom flags are used', async () => {
+    const reportPath = path.join(simpleDir, `${filenamePrefix}.report.json`);
+    const sbomPath = path.join(simpleDir, `${filenamePrefix}.sbom.json`);
+    const trimmedSbomPath = path.join(simpleDir, `${filenamePrefix}.sbom-trimmed.json`);
+    const cmd = `scan:eol --dir ${simpleDir} --save --saveSbom --saveTrimmedSbom`;
+    await run(cmd);
+
+    const reportExists = existsSync(reportPath);
+    const sbomExists = existsSync(sbomPath);
+    const trimmedSbomExists = existsSync(trimmedSbomPath);
+    strictEqual(reportExists, true, 'Report file should be created');
+    strictEqual(sbomExists, true, 'SBOM file should be created');
+    strictEqual(trimmedSbomExists, true, 'Trimmed SBOM file should be created');
+
+    const reportText = readFileSync(reportPath, 'utf-8');
+    const sbomText = readFileSync(sbomPath, 'utf-8');
+    const trimmedSbomText = readFileSync(trimmedSbomPath, 'utf-8');
+    const reportJson = JSON.parse(reportText);
+    const sbomJson = JSON.parse(sbomText);
+    const trimmedSbomJson = JSON.parse(trimmedSbomText);
+
+    strictEqual(Array.isArray(reportJson.components), true, 'Report should have components array');
+    strictEqual(sbomJson.bomFormat, 'CycloneDX', 'SBOM should be CycloneDX format');
+    strictEqual(trimmedSbomJson.bomFormat, 'CycloneDX', 'Trimmed SBOM should be CycloneDX format');
+
+    // Verify that trimmed SBOM has valid structure
+    const trimmedKeys = Object.keys(trimmedSbomJson);
+    strictEqual(trimmedKeys.length > 0, true, 'Trimmed SBOM should have some properties');
+
+    unlinkSync(reportPath);
+    unlinkSync(sbomPath);
+    unlinkSync(trimmedSbomPath);
+  });
+
   it('scans up-to-date directory and shows modern packages', async () => {
     fetchMock.restore();
     const components = [
@@ -275,6 +325,35 @@ describe('scan:eol e2e', () => {
       const cmd = `scan:eol --file ${simpleSbom} --json`;
       const { stdout } = await run(cmd);
       doesNotMatch(stdout, /View your full EOL report/, 'Should not show web report text in JSON output');
+    });
+  });
+
+  describe('privacy and transparency', () => {
+    it('displays data privacy link in scan results', async () => {
+      const cmd = `scan:eol --file ${simpleSbom}`;
+      const { stdout } = await run(cmd);
+      match(stdout, /Learn more about data privacy/i, 'Should show data privacy link');
+      match(stdout, /docs\.herodevs\.com\/eol-ds\/data-privacy-and-security/i, 'Should include HeroDevs docs URL');
+    });
+
+    it('does not display privacy link when using --json flag', async () => {
+      const cmd = `scan:eol --file ${simpleSbom} --json`;
+      const { stdout } = await run(cmd);
+      doesNotMatch(stdout, /Learn more about data privacy/i, 'Should not show privacy link in JSON output');
+    });
+
+    it('confirms trimmed SBOM is saved before network request when --saveTrimmedSbom is used', async () => {
+      const trimmedSbomPath = path.join(simpleDir, `${filenamePrefix}.sbom-trimmed.json`);
+      const cmd = `scan:eol --dir ${simpleDir} --saveTrimmedSbom`;
+      const { stdout } = await run(cmd);
+
+      match(stdout, /Trimmed SBOM saved to/i, 'Should confirm trimmed SBOM was saved');
+      match(stdout, /herodevs\.sbom-trimmed\.json/i, 'Should show correct filename');
+
+      const trimmedSbomExists = existsSync(trimmedSbomPath);
+      strictEqual(trimmedSbomExists, true, 'Trimmed SBOM file should exist');
+
+      unlinkSync(trimmedSbomPath);
     });
   });
 

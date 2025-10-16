@@ -5,7 +5,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
 import type { CdxBom, EolReport } from '@herodevs/eol-shared';
-import { readSbomFromFile, saveReportToFile, saveSbomToFile, validateDirectory } from '../../src/service/file.svc.ts';
+import {
+  readSbomFromFile,
+  saveReportToFile,
+  saveSbomToFile,
+  saveTrimmedSbomToFile,
+  validateDirectory,
+} from '../../src/service/file.svc.ts';
 
 describe('file.svc', () => {
   let tempDir: string;
@@ -93,6 +99,28 @@ describe('file.svc', () => {
       const outputPath = saveSbomToFile(tempDir, mockSbom);
 
       assert.ok(outputPath.endsWith('herodevs.sbom.json'));
+      assert.ok(outputPath.includes(tempDir));
+    });
+  });
+
+  describe('saveTrimmedSbomToFile', () => {
+    it('should save trimmed SBOM to file successfully', async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
+
+      const outputPath = saveTrimmedSbomToFile(tempDir, mockSbom);
+
+      assert.ok(fs.existsSync(outputPath));
+      const content = fs.readFileSync(outputPath, 'utf8');
+      const parsed = JSON.parse(content);
+      assert.deepStrictEqual(parsed, mockSbom);
+    });
+
+    it('should return the correct output path', async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
+
+      const outputPath = saveTrimmedSbomToFile(tempDir, mockSbom);
+
+      assert.ok(outputPath.endsWith('herodevs.sbom-trimmed.json'));
       assert.ok(outputPath.includes(tempDir));
     });
   });

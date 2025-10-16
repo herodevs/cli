@@ -104,7 +104,7 @@ DESCRIPTION
   Display help for hd.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.32/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.33/src/commands/help.ts)_
 
 ## `hd scan eol`
 
@@ -112,14 +112,15 @@ Scan a given SBOM for EOL data
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [--saveSbom] [--version]
+  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [--saveSbom] [--saveTrimmedSbom] [--version]
 
 FLAGS
-  -d, --dir=<value>   [default: <current directory>] The directory to scan in order to create a cyclonedx SBOM
-  -f, --file=<value>  The file path of an existing cyclonedx SBOM to scan for EOL
-  -s, --save          Save the generated report as herodevs.report.json in the scanned directory
-      --saveSbom      Save the generated SBOM as herodevs.sbom.json in the scanned directory
-      --version       Show CLI version.
+  -d, --dir=<value>      [default: <current directory>] The directory to scan in order to create a cyclonedx SBOM
+  -f, --file=<value>     The file path of an existing cyclonedx SBOM to scan for EOL
+  -s, --save             Save the generated report as herodevs.report.json in the scanned directory
+      --saveSbom         Save the generated SBOM as herodevs.sbom.json in the scanned directory
+      --saveTrimmedSbom  Save the trimmed SBOM as herodevs.sbom-trimmed.json in the scanned directory
+      --version          Show CLI version.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -189,7 +190,7 @@ EXAMPLES
     $ hd update --available
 ```
 
-_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.7.4/src/commands/update.ts)_
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.7.8/src/commands/update.ts)_
 <!-- commandsstop -->
 
 ## CI/CD Usage

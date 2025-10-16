@@ -6,8 +6,19 @@ import { submitScan } from '../../api/nes.client.ts';
 import { config, filenamePrefix } from '../../config/constants.ts';
 import { track } from '../../service/analytics.svc.ts';
 import { createSbom } from '../../service/cdx.svc.ts';
-import { countComponentsByStatus, formatScanResults, formatWebReportUrl } from '../../service/display.svc.ts';
-import { readSbomFromFile, saveReportToFile, saveSbomToFile, validateDirectory } from '../../service/file.svc.ts';
+import {
+  countComponentsByStatus,
+  formatDataPrivacyLink,
+  formatScanResults,
+  formatWebReportUrl,
+} from '../../service/display.svc.ts';
+import {
+  readSbomFromFile,
+  saveReportToFile,
+  saveSbomToFile,
+  saveTrimmedSbomToFile,
+  validateDirectory,
+} from '../../service/file.svc.ts';
 import { getErrorMessage } from '../../service/log.svc.ts';
 
 export default class ScanEol extends Command {
@@ -51,6 +62,11 @@ export default class ScanEol extends Command {
       aliases: ['save-sbom'],
       default: false,
       description: `Save the generated SBOM as ${filenamePrefix}.sbom.json in the scanned directory`,
+    }),
+    saveTrimmedSbom: Flags.boolean({
+      aliases: ['save-trimmed-sbom'],
+      default: false,
+      description: `Save the trimmed SBOM as ${filenamePrefix}.sbom-trimmed.json in the scanned directory`,
     }),
     version: Flags.version(),
   };
@@ -147,9 +163,24 @@ export default class ScanEol extends Command {
   }
 
   private async scanSbom(sbom: CdxBom): Promise<EolReport> {
-    const spinner = ora().start('Scanning for EOL packages');
+    const { flags } = await this.parse(ScanEol);
+
+    const spinner = ora().start('Trimming SBOM');
+    const trimmedSbom = trimCdxBom(sbom);
+    spinner.succeed('SBOM trimmed');
+
+    if (flags.saveTrimmedSbom) {
+      const trimmedPath = this.saveTrimmedSbom(flags.dir, trimmedSbom);
+      this.log(`Trimmed SBOM saved to ${trimmedPath}`);
+      track('CLI Trimmed SBOM Output Saved', (context) => ({
+        command: context.command,
+        command_flags: context.command_flags,
+      }));
+    }
+
+    spinner.start('Scanning for EOL packages');
     try {
-      const scan = await submitScan({ sbom: trimCdxBom(sbom) });
+      const scan = await submitScan({ sbom: trimmedSbom });
       spinner.succeed('Scan completed');
       return scan;
     } catch (error) {
@@ -184,6 +215,16 @@ export default class ScanEol extends Command {
     }
   }
 
+  private saveTrimmedSbom(dir: string, sbom: CdxBom): string {
+    try {
+      return saveTrimmedSbomToFile(dir, sbom);
+    } catch (error) {
+      const errorMessage = getErrorMessage(error);
+      track('CLI Error Encountered', () => ({ error: errorMessage }));
+      this.error(errorMessage);
+    }
+  }
+
   private displayResults(report: EolReport): void {
     const lines = formatScanResults(report);
     for (const line of lines) {
@@ -195,6 +236,11 @@ export default class ScanEol extends Command {
       for (const line of lines) {
         this.log(line);
       }
+    }
+
+    const privacyLines = formatDataPrivacyLink();
+    for (const line of privacyLines) {
+      this.log(line);
     }
 
     this.log('* Use --json to output the report payload');
