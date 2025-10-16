@@ -9,6 +9,7 @@ import { createSbom } from '../../service/cdx.svc.ts';
 import {
   countComponentsByStatus,
   formatDataPrivacyLink,
+  formatReportSaveHint,
   formatScanResults,
   formatWebReportUrl,
 } from '../../service/display.svc.ts';
@@ -68,6 +69,11 @@ export default class ScanEol extends Command {
       default: false,
       description: `Save the trimmed SBOM as ${filenamePrefix}.sbom-trimmed.json in the scanned directory`,
     }),
+    hideReportUrl: Flags.boolean({
+      aliases: ['hide-report-url'],
+      default: false,
+      description: 'Hide the generated web report URL for this scan',
+    }),
     version: Flags.version(),
   };
 
@@ -125,7 +131,8 @@ export default class ScanEol extends Command {
       sbom_created: !flags.file,
       scan_load_time: (scanEndTime - scanStartTime) / 1000,
       scanned_ecosystems: componentCounts.ECOSYSTEMS,
-      web_report_link: scan.id ? `${config.eolReportUrl}/${scan.id}` : undefined,
+      web_report_link: !flags.hideReportUrl && scan.id ? `${config.eolReportUrl}/${scan.id}` : undefined,
+      web_report_hidden: flags.hideReportUrl,
     }));
 
     if (flags.save) {
@@ -139,7 +146,7 @@ export default class ScanEol extends Command {
     }
 
     if (!this.jsonEnabled()) {
-      this.displayResults(scan);
+      this.displayResults(scan, flags.hideReportUrl);
     }
 
     return scan;
@@ -225,14 +232,19 @@ export default class ScanEol extends Command {
     }
   }
 
-  private displayResults(report: EolReport): void {
+  private displayResults(report: EolReport, hideReportUrl: boolean): void {
     const lines = formatScanResults(report);
     for (const line of lines) {
       this.log(line);
     }
 
-    if (report.id) {
+    if (!hideReportUrl && report.id) {
       const lines = formatWebReportUrl(report.id, config.eolReportUrl);
+      for (const line of lines) {
+        this.log(line);
+      }
+    } else if (hideReportUrl) {
+      const lines = formatReportSaveHint();
       for (const line of lines) {
         this.log(line);
       }

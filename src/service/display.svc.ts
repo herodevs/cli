@@ -108,3 +108,10 @@ export function formatDataPrivacyLink(): string[] {
 
   return [`🔒 ${link}\n`];
 }
+
+/**
+ * Formats the report save hint for console display when the web report URL is hidden
+ */
+export function formatReportSaveHint(): string[] {
+  return [ux.colorize('bold', '-'.repeat(40)), 'To save your detailed JSON report, use the --save flag'];
+}

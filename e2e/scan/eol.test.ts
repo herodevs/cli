@@ -326,6 +326,13 @@ describe('scan:eol e2e', () => {
       const { stdout } = await run(cmd);
       doesNotMatch(stdout, /View your full EOL report/, 'Should not show web report text in JSON output');
     });
+
+    it('shows save hint when --hideReportUrl flag is used', async () => {
+      const cmd = `scan:eol --file ${simpleSbom} --hideReportUrl`;
+      const { stdout } = await run(cmd);
+      doesNotMatch(stdout, /View your full EOL report/, 'Should not show web report text when hidden');
+      match(stdout, /To save your detailed JSON report, use the --save flag/, 'Should show save hint message');
+    });
   });
 
   describe('privacy and transparency', () => {
