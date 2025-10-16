@@ -456,5 +456,14 @@ describe('scan:eol e2e', () => {
       const out = await runExpectFail(`scan:eol --file ${simpleSbom}`);
       expectAny(out, [/Failed to submit scan to NES/i, /Scanning failed/i], 'Should indicate NES submission failure');
     });
+
+    it('fails when NES returns GraphQL errors', async () => {
+      fetchMock.restore();
+      fetchMock = new FetchMock().addGraphQL({ eol: { createReport: null } }, [
+        { message: 'Internal server error', path: ['eol', 'createReport'] },
+      ]);
+      const out = await runExpectFail(`scan:eol --file ${simpleSbom}`);
+      expectAny(out, [/Failed to submit scan to NES/i, /Scanning failed/i], 'Should indicate GraphQL errors from NES');
+    });
   });
 });

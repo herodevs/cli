@@ -62,4 +62,51 @@ describe('nes.client', () => {
     };
     await assert.rejects(() => submitScan(input), /Failed to create EOL report/);
   });
+
+  it('throws when GraphQL errors are present in createReport mutation', async () => {
+    fetchMock.addGraphQL({ eol: { createReport: null } }, [
+      { message: 'Internal server error', path: ['eol', 'createReport'] },
+    ]);
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    await assert.rejects(() => submitScan(input), /Failed to create EOL report/);
+  });
+
+  it('throws when GraphQL errors are present in getReport query', async () => {
+    const components = [{ purl: 'pkg:npm/bootstrap@3.1.1', metadata: { isEol: true } }];
+
+    fetchMock
+      .addGraphQL({
+        eol: { createReport: { success: true, id: 'test-456', totalRecords: components.length } },
+      })
+      .addGraphQL({ eol: { report: null } }, [{ message: 'Database connection failed', path: ['eol', 'report'] }]);
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    await assert.rejects(() => submitScan(input), /Failed to fetch EOL report/);
+  });
+
+  it('throws when multiple GraphQL errors are present', async () => {
+    fetchMock.addGraphQL({ eol: { createReport: null } }, [
+      { message: 'Error 1: Authentication failed', path: ['eol', 'createReport'] },
+      { message: 'Error 2: Rate limit exceeded', path: ['eol', 'createReport'] },
+    ]);
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    await assert.rejects(() => submitScan(input), /Failed to create EOL report/);
+  });
+
+  it('throws with generic message when GraphQL errors have no message', async () => {
+    fetchMock.addGraphQL({ eol: { createReport: null } }, [{ message: '', path: ['eol', 'createReport'] }]);
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    await assert.rejects(() => submitScan(input), /Failed to create EOL report/);
+  });
 });

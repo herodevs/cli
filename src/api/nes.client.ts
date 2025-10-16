@@ -15,7 +15,8 @@ export const createApollo = (uri: string) =>
   new ApolloClient({
     cache: new InMemoryCache(),
     defaultOptions: {
-      query: { fetchPolicy: 'no-cache' },
+      query: { fetchPolicy: 'no-cache', errorPolicy: 'all' },
+      mutate: { errorPolicy: 'all' },
     },
     link: new HttpLink({
       uri,
@@ -31,6 +32,11 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
       mutation: createReportMutation,
       variables: { input },
     });
+
+    if (res?.errors?.length) {
+      debugLogger('GraphQL errors in createReport: %o', res.errors);
+      throw new Error('Failed to create EOL report');
+    }
 
     const result = res.data?.eol?.createReport;
     if (!result?.success || !result.id) {
@@ -61,6 +67,11 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
       const batchResponses = await Promise.all(batch);
 
       for (const response of batchResponses) {
+        if (response?.errors?.length) {
+          debugLogger('GraphQL errors in getReport query: %o', response.errors);
+          throw new Error('Failed to fetch EOL report');
+        }
+
         const report = response.data.eol.report;
         reportMetadata ??= report;
         components.push(...(report?.components ?? []));
