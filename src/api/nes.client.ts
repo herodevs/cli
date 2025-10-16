@@ -33,7 +33,7 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
       variables: { input },
     });
 
-    if (res.errors && res.errors.length > 0) {
+    if (res.errors?.length > 0) {
       debugLogger('GraphQL errors in createReport: %o', res.errors);
       throw new Error('Failed to create EOL report');
     }
