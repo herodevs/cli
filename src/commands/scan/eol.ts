@@ -44,7 +44,7 @@ export default class ScanEol extends Command {
   static override flags = {
     file: Flags.string({
       char: 'f',
-      description: 'The file path of an existing cyclonedx SBOM to scan for EOL',
+      description: 'The file path of an existing SBOM to scan for EOL (supports CycloneDX and SPDX 2.3 formats)',
       exclusive: ['dir'],
     }),
     dir: Flags.string({

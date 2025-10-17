@@ -115,8 +115,8 @@ USAGE
   $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [--saveSbom] [--saveTrimmedSbom] [--hideReportUrl] [--version]
 
 FLAGS
-  -d, --dir=<value>      [default: <current directory>] The directory to scan in order to create a cyclonedx SBOM
-  -f, --file=<value>     The file path of an existing cyclonedx SBOM to scan for EOL
+  -d, --dir=<value>      [default: <current directory>] The directory to scan in order to scan for EOL
+  -f, --file=<value>     The file path of an existing SBOM to scan for EOL (supports CycloneDX and SPDX 2.3 formats)
   -s, --save             Save the generated report as herodevs.report.json in the scanned directory
       --hideReportUrl    Hide the generated web report URL for this scan
       --saveSbom         Save the generated SBOM as herodevs.sbom.json in the scanned directory
