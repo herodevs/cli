@@ -1,5 +1,3 @@
-import assert from 'node:assert';
-import { describe, it } from 'node:test';
 import type { EolReport } from '@herodevs/eol-shared';
 import { countComponentsByStatus } from '../../../src/service/display.svc.ts';
 
@@ -22,7 +20,7 @@ describe('countComponentsByStatus', () => {
     const counts = countComponentsByStatus(report);
     const statusSum = counts.EOL + counts.EOL_UPCOMING + counts.OK + counts.UNKNOWN;
 
-    assert.strictEqual(statusSum, report.components.length);
-    assert.strictEqual(counts.NES_AVAILABLE, 1);
+    expect(statusSum).toBe(report.components.length);
+    expect(counts.NES_AVAILABLE).toBe(1);
   });
 });

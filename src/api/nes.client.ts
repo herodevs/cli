@@ -11,6 +11,19 @@ import { config } from '../config/constants.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { stripTypename } from '../utils/strip-typename.ts';
 import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
+import { requireAccessToken } from '../service/auth.svc.ts';
+
+const createAuthorizedFetch = (): typeof fetch => async (input, init) => {
+  const headers = new Headers(init?.headers);
+
+  if (config.enableAuth) {
+    // Temporary gate while legacy commands migrate to authenticated flow
+    const token = await requireAccessToken();
+    headers.set('Authorization', `Bearer ${token}`);
+  }
+
+  return fetch(input, { ...init, headers });
+};
 
 type GraphQLExecutionResult = {
   errors?: ReadonlyArray<GraphQLFormattedError>;
@@ -25,6 +38,7 @@ export const createApollo = (uri: string) =>
     },
     link: new HttpLink({
       uri,
+      fetch: createAuthorizedFetch(),
       headers: {
         'User-Agent': `hdcli/${process.env.npm_package_version ?? 'unknown'}`,
       },

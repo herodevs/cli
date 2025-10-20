@@ -1,7 +1,6 @@
-import assert from 'node:assert';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, it } from 'node:test';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import mock from 'mock-fs';
 import { TRACKER_DEFAULT_CONFIG, TRACKER_ROOT_FILE } from '../../src/config/tracker.config.ts';
 import { createTrackerConfig, getRootDir } from '../../src/service/tracker.svc.ts';
@@ -36,7 +35,7 @@ describe('tracker.svc', () => {
 
       const result = getRootDir(dirPath);
 
-      assert.strictEqual(result, join(process.cwd(), 'path/to/package'));
+      expect(result).toBe(join(process.cwd(), 'path/to/package'));
     });
 
     it(`should throw an error if ${TRACKER_ROOT_FILE} is not found`, () => {
@@ -46,7 +45,7 @@ describe('tracker.svc', () => {
         getRootDir(dirPath);
       } catch (err) {
         if (err instanceof Error) {
-          assert.strictEqual(err.message.includes(`Couldn't find root directory for the project`), true);
+          expect(err.message.includes(`Couldn't find root directory for the project`)).toBe(true);
         }
       }
     });
@@ -71,7 +70,7 @@ describe('tracker.svc', () => {
         const outputDir = 'path/to/tracker/new-folder';
         await createTrackerConfig(outputDir, TRACKER_DEFAULT_CONFIG);
 
-        assert.strictEqual(existsSync(outputDir), true);
+        expect(existsSync(outputDir)).toBe(true);
       } catch (_err) {}
     });
 
@@ -80,7 +79,7 @@ describe('tracker.svc', () => {
         const outputDir = 'path/to/tracker/new-folder';
         await createTrackerConfig(outputDir, TRACKER_DEFAULT_CONFIG);
 
-        assert.strictEqual(existsSync(`${outputDir}/${TRACKER_DEFAULT_CONFIG.configFile}`), true);
+        expect(existsSync(`${outputDir}/${TRACKER_DEFAULT_CONFIG.configFile}`)).toBe(true);
       } catch (_err) {}
     });
 
@@ -91,7 +90,7 @@ describe('tracker.svc', () => {
 
         const fileOutput = readFileSync(`${outputDir}/${TRACKER_DEFAULT_CONFIG.configFile}`).toString('utf-8');
 
-        assert.strictEqual(fileOutput, TRACKER_DEFAULT_CONFIG);
+        expect(fileOutput).toBe(TRACKER_DEFAULT_CONFIG);
       } catch (_err) {}
     });
 
@@ -101,12 +100,11 @@ describe('tracker.svc', () => {
         await createTrackerConfig(outputDir, TRACKER_DEFAULT_CONFIG);
       } catch (err) {
         if (err instanceof Error) {
-          assert.strictEqual(
+          expect(
             err.message.includes(
               `Configuration file already exists for this repo. If you want to overwrite it, run the command again with the --overwrite flag`,
             ),
-            true,
-          );
+          ).toBe(true);
         }
       }
     });
@@ -125,10 +123,12 @@ describe('tracker.svc', () => {
 
         const fileOutput = readFileSync(`${outputDir}/${TRACKER_DEFAULT_CONFIG.configFile}`).toString('utf-8');
 
-        assert.strictEqual(fileOutput, {
-          ...TRACKER_DEFAULT_CONFIG,
-          ignorePatterns: [],
-        });
+        expect(fileOutput).toBe(
+          JSON.stringify({
+            ...TRACKER_DEFAULT_CONFIG,
+            ignorePatterns: [],
+          }),
+        );
       } catch (_err) {}
     });
   });

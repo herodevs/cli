@@ -1,6 +1,4 @@
-import assert from 'node:assert';
-import { describe, it } from 'node:test';
-import type { EolReport } from '@herodevs/eol-shared';
+import type { EolReport, EolScanComponentMetadata } from '@herodevs/eol-shared';
 import {
   countComponentsByStatus,
   formatDataPrivacyLink,
@@ -19,8 +17,8 @@ describe('display.svc', () => {
           isEol: true,
           eolAt: '2023-01-01T00:00:00.000Z',
           eolReasons: ['End of life'],
-          cve: [],
-        },
+          cveStats: [],
+        } as unknown as EolScanComponentMetadata,
         nesRemediation: {
           remediations: [
             {
@@ -36,8 +34,8 @@ describe('display.svc', () => {
           isEol: false,
           eolAt: null,
           eolReasons: [],
-          cve: [],
-        },
+          cveStats: [],
+        } as unknown as EolScanComponentMetadata,
       },
       {
         purl: 'pkg:npm/test3@3.0.0',
@@ -49,8 +47,8 @@ describe('display.svc', () => {
           isEol: false,
           eolAt: null,
           eolReasons: [],
-          cve: [],
-        },
+          cveStats: [],
+        } as unknown as EolScanComponentMetadata,
       },
       {
         purl: 'pkg:maven/org.springframework/spring-core@5.3.21',
@@ -58,35 +56,38 @@ describe('display.svc', () => {
           isEol: true,
           eolAt: '2023-01-01T00:00:00.000Z',
           eolReasons: ['End of life'],
-          cve: [],
-        },
+          cveStats: [],
+        } as unknown as EolScanComponentMetadata,
       },
     ],
     createdOn: new Date().toISOString(),
     metadata: {
       totalComponentsCount: 5,
       unknownComponentsCount: 1,
+      totalUniqueComponentsCount: 5
     },
+    page: 1,
+    totalRecords: 5
   };
 
   describe('countComponentsByStatus', () => {
     it('should count components by status correctly', () => {
       const counts = countComponentsByStatus(mockReport);
 
-      assert.strictEqual(counts.EOL, 2);
-      assert.strictEqual(counts.OK, 2);
-      assert.strictEqual(counts.UNKNOWN, 1);
-      assert.strictEqual(counts.EOL_UPCOMING, 0);
-      assert.strictEqual(counts.NES_AVAILABLE, 1);
+      expect(counts.EOL).toBe(2);
+      expect(counts.OK).toBe(2);
+      expect(counts.UNKNOWN).toBe(1);
+      expect(counts.EOL_UPCOMING).toBe(0);
+      expect(counts.NES_AVAILABLE).toBe(1);
     });
 
     it('should extract ecosystems correctly from various PURL formats', () => {
       const counts = countComponentsByStatus(mockReport);
 
       // Should extract both npm and maven ecosystems
-      assert.ok(counts.ECOSYSTEMS.includes('npm'));
-      assert.ok(counts.ECOSYSTEMS.includes('maven'));
-      assert.strictEqual(counts.ECOSYSTEMS.length, 2);
+      expect(counts.ECOSYSTEMS).toContain('npm');
+      expect(counts.ECOSYSTEMS).toContain('maven');
+      expect(counts.ECOSYSTEMS).toHaveLength(2);
     });
 
     it('should handle empty report', () => {
@@ -97,16 +98,19 @@ describe('display.svc', () => {
         metadata: {
           totalComponentsCount: 0,
           unknownComponentsCount: 0,
+          totalUniqueComponentsCount: 0
         },
+        page: 1,
+        totalRecords: 0
       };
 
       const counts = countComponentsByStatus(emptyReport);
 
-      assert.strictEqual(counts.EOL, 0);
-      assert.strictEqual(counts.OK, 0);
-      assert.strictEqual(counts.UNKNOWN, 0);
-      assert.strictEqual(counts.EOL_UPCOMING, 0);
-      assert.strictEqual(counts.NES_AVAILABLE, 0);
+      expect(counts.EOL).toBe(0);
+      expect(counts.OK).toBe(0);
+      expect(counts.UNKNOWN).toBe(0);
+      expect(counts.EOL_UPCOMING).toBe(0);
+      expect(counts.NES_AVAILABLE).toBe(0);
     });
   });
 
@@ -114,9 +118,9 @@ describe('display.svc', () => {
     it('should format scan results with components', () => {
       const lines = formatScanResults(mockReport);
 
-      assert.ok(lines.length > 0);
-      assert.ok(lines.some((line) => line.includes('Scan results:')));
-      assert.ok(lines.some((line) => line.includes('5 total packages scanned')));
+      expect(lines.length).toBeGreaterThan(0);
+      expect(lines.some((line) => line.includes('Scan results:'))).toBe(true);
+      expect(lines.some((line) => line.includes('5 total packages scanned'))).toBe(true);
     });
 
     it('should handle empty scan results', () => {
@@ -127,13 +131,16 @@ describe('display.svc', () => {
         metadata: {
           totalComponentsCount: 0,
           unknownComponentsCount: 0,
+          totalUniqueComponentsCount: 0
         },
+        page: 1,
+        totalRecords: 0
       };
 
       const lines = formatScanResults(emptyReport);
 
-      assert.strictEqual(lines.length, 1);
-      assert.ok(lines[0].includes('No components found'));
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('No components found');
     });
   });
 
@@ -141,17 +148,17 @@ describe('display.svc', () => {
     it('should format web report URL correctly', () => {
       const lines = formatWebReportUrl('test-id', 'https://example.com');
 
-      assert.strictEqual(lines.length, 2);
-      assert.ok(lines[0].includes('-'.repeat(40)));
-      assert.ok(lines[1].includes('View your full EOL report'));
-      assert.ok(lines[1].includes('test-id'));
+      expect(lines).toHaveLength(2);
+      expect(lines[0]).toContain('-'.repeat(40));
+      expect(lines[1]).toContain('View your full EOL report');
+      expect(lines[1]).toContain('test-id');
     });
 
     it('should handle different URLs', () => {
       const lines = formatWebReportUrl('another-id', 'https://reports.herodevs.com');
 
-      assert.ok(lines[1].includes('reports.herodevs.com'));
-      assert.ok(lines[1].includes('another-id'));
+      expect(lines[1]).toContain('reports.herodevs.com');
+      expect(lines[1]).toContain('another-id');
     });
   });
 
@@ -159,15 +166,15 @@ describe('display.svc', () => {
     it('should return array with privacy link', () => {
       const lines = formatDataPrivacyLink();
 
-      assert.strictEqual(lines.length, 1);
-      assert.ok(lines[0].includes('🔒'));
-      assert.ok(lines[0].includes('Learn more about data privacy'));
+      expect(lines).toHaveLength(1);
+      expect(lines[0]).toContain('🔒');
+      expect(lines[0]).toContain('Learn more about data privacy');
     });
 
     it('should include HeroDevs documentation URL', () => {
       const lines = formatDataPrivacyLink();
 
-      assert.ok(lines[0].includes('docs.herodevs.com/eol-ds/data-privacy-and-security'));
+      expect(lines[0]).toContain('docs.herodevs.com/eol-ds/data-privacy-and-security');
     });
   });
 
@@ -175,9 +182,9 @@ describe('display.svc', () => {
     it('should provide a save hint message', () => {
       const lines = formatReportSaveHint();
 
-      assert.strictEqual(lines.length, 2);
-      assert.ok(lines[0].includes('-'.repeat(40)));
-      assert.ok(lines[1].includes('--save'));
+      expect(lines).toHaveLength(2);
+      expect(lines[0]).toContain('-'.repeat(40));
+      expect(lines[1]).toContain('--save');
     });
   });
 });
