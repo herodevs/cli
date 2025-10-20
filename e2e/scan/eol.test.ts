@@ -16,6 +16,7 @@ const execAsync = promisify(exec);
 const fixturesDir = path.resolve(import.meta.dirname, '../fixtures');
 const simpleDir = path.resolve(fixturesDir, 'npm/simple');
 const simpleSbom = path.join(simpleDir, 'sbom.json');
+const simpleSpdxSbom = path.join(fixturesDir, 'npm/simple-spdx.sbom.json');
 const upToDateDir = path.resolve(fixturesDir, 'npm/up-to-date');
 const upToDateSbom = path.join(fixturesDir, 'npm/up-to-date.sbom.json');
 const noComponentsSbom = path.join(fixturesDir, 'npm/no-components.sbom.json');
@@ -133,6 +134,14 @@ describe('scan:eol e2e', () => {
     match(stdout, /Scan results:/, 'Should show results header');
     match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
     match(stdout, /2 total packages scanned/, 'Should show total packages scanned');
+  });
+
+  it('scans existing SPDX SBOM file and converts to CycloneDX', async () => {
+    const cmd = `scan:eol --file ${simpleSpdxSbom}`;
+    const { stdout } = await run(cmd);
+    match(stdout, /Scan results:/, 'Should show results header');
+    match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
+    match(stdout, /2 total packages scanned/, 'Should show total packages scanned with SPDX input');
   });
 
   it('shows warning and does not generate report when no components are found in scan', async () => {
@@ -406,8 +415,8 @@ describe('scan:eol e2e', () => {
       return output;
     }
 
-    function expectAny(output: { stdout: string; stderr: string }, patterns: RegExp[], message: string) {
-      const text = `${output.stderr}\n${output.stdout}`;
+    function expectAny(output: { stdout: string; stderr: string; error?: Error }, patterns: RegExp[], message: string) {
+      const text = `${output.stderr}\n${output.stdout}\n${output.error?.message || ''}`;
       const matched = patterns.some((re) => re.test(text));
       strictEqual(matched, true, message);
     }
@@ -431,6 +440,21 @@ describe('scan:eol e2e', () => {
           out,
           [/Failed to read SBOM file/i, /Failed to load SBOM file/i, /Loading SBOM file/i],
           'Should indicate invalid SBOM',
+        );
+      } finally {
+        unlinkSync(badFile);
+      }
+    });
+
+    it('fails when SBOM file is neither SPDX nor CycloneDX format', async () => {
+      const badFile = path.join(fixturesDir, 'npm', 'invalid-format.json');
+      writeFileSync(badFile, JSON.stringify({ invalid: 'format', notSpdx: true, notCdx: true }));
+      try {
+        const out = await runExpectFail(`scan:eol --file ${badFile}`);
+        expectAny(
+          out,
+          [/Failed to read SBOM file/i, /Invalid SBOM file format/i, /Expected SPDX 2\.3 or CycloneDX format./i],
+          'Should indicate invalid SBOM format',
         );
       } finally {
         unlinkSync(badFile);

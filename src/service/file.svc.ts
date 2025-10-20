@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path, { join, resolve } from 'node:path';
-import type { CdxBom, EolReport } from '@herodevs/eol-shared';
-import { isCdxBom } from '@herodevs/eol-shared';
+import type { CdxBom, EolReport, SPDX23 } from '@herodevs/eol-shared';
+import { isCdxBom, isSpdxBom, spdxToCdxBom } from '@herodevs/eol-shared';
 import { filenamePrefix } from '../config/constants.ts';
 import { getErrorMessage } from './log.svc.ts';
 
@@ -10,7 +10,8 @@ export interface FileError extends Error {
 }
 
 /**
- * Reads an SBOM from a file path
+ * Reads an SBOM from a file path and converts it to CycloneDX format
+ * Supports both SPDX 2.3 and CycloneDX formats
  */
 export function readSbomFromFile(filePath: string): CdxBom {
   const file = resolve(filePath);
@@ -21,11 +22,17 @@ export function readSbomFromFile(filePath: string): CdxBom {
 
   try {
     const fileContent = fs.readFileSync(file, 'utf8');
-    const sbom = JSON.parse(fileContent) as CdxBom;
-    if (!isCdxBom(sbom)) {
-      throw new Error(`Invalid SBOM file: ${file}`);
+    const jsonContent = JSON.parse(fileContent);
+
+    if (isSpdxBom(jsonContent)) {
+      return spdxToCdxBom(jsonContent as SPDX23);
     }
-    return sbom;
+
+    if (isCdxBom(jsonContent)) {
+      return jsonContent as CdxBom;
+    }
+
+    throw new Error(`Invalid SBOM file format. Expected SPDX 2.3 or CycloneDX format.`);
   } catch (error) {
     throw new Error(`Failed to read SBOM file: ${getErrorMessage(error)}`);
   }
