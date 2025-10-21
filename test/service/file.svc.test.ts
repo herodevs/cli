@@ -1,6 +1,6 @@
 import assert from 'node:assert';
 import fs from 'node:fs';
-import { mkdtemp, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { after, describe, it } from 'node:test';
@@ -137,6 +137,25 @@ describe('file.svc', () => {
       assert.ok(outputPath.endsWith('herodevs.sbom.json'));
       assert.ok(outputPath.includes(tempDir));
     });
+
+    it('should save SBOM to a custom path', async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
+      const customDir = join(tempDir, 'nested');
+      await mkdir(customDir);
+
+      const customPath = join(customDir, 'custom-sbom.json');
+      const outputPath = saveSbomToFile(tempDir, mockSbom, customPath);
+
+      assert.strictEqual(outputPath, customPath);
+      assert.ok(fs.existsSync(customPath));
+    });
+
+    it('should throw a descriptive error when the custom directory is missing', async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
+      const missingPath = join(tempDir, 'missing', 'custom-sbom.json');
+
+      assert.throws(() => saveSbomToFile(tempDir, mockSbom, missingPath), /Unable to save custom-sbom\.json/);
+    });
   });
 
   describe('saveTrimmedSbomToFile', () => {
@@ -180,6 +199,25 @@ describe('file.svc', () => {
 
       assert.ok(outputPath.endsWith('herodevs.report.json'));
       assert.ok(outputPath.includes(tempDir));
+    });
+
+    it('should save report to a custom path', async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
+      const customDir = join(tempDir, 'nested');
+      await mkdir(customDir);
+
+      const customPath = join(customDir, 'my-report.json');
+      const outputPath = saveReportToFile(tempDir, mockReport, customPath);
+
+      assert.strictEqual(outputPath, customPath);
+      assert.ok(fs.existsSync(customPath));
+    });
+
+    it('should throw a descriptive error when the custom directory is missing', async () => {
+      tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
+      const missingPath = join(tempDir, 'missing', 'my-report.json');
+
+      assert.throws(() => saveReportToFile(tempDir, mockReport, missingPath), /Unable to save my-report\.json/);
     });
   });
 });

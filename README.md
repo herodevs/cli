@@ -112,14 +112,16 @@ Scan a given SBOM for EOL data
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [--saveSbom] [--saveTrimmedSbom] [--hideReportUrl] [--version]
+  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [-o <value>] [--saveSbom] [--sbomOutput <value>] [--saveTrimmedSbom] [--hideReportUrl] [--version]
 
 FLAGS
   -d, --dir=<value>      [default: <current directory>] The directory to scan in order to scan for EOL
   -f, --file=<value>     The file path of an existing SBOM to scan for EOL (supports CycloneDX and SPDX 2.3 formats)
   -s, --save             Save the generated report as herodevs.report.json in the scanned directory
+  -o, --output=<value>   Save the generated report to a custom path (requires --save, defaults to herodevs.report.json when not provided)
       --hideReportUrl    Hide the generated web report URL for this scan
       --saveSbom         Save the generated SBOM as herodevs.sbom.json in the scanned directory
+      --sbomOutput=<value>  Save the generated SBOM to a custom path (requires --saveSbom, defaults to herodevs.sbom.json when not provided)
       --saveTrimmedSbom  Save the trimmed SBOM as herodevs.sbom-trimmed.json in the scanned directory
       --version          Show CLI version.
 
@@ -145,6 +147,10 @@ EXAMPLES
   Save the report or SBOM to a file
 
     $ hd scan eol --save --saveSbom
+
+  Save the report and SBOM to custom paths
+
+    $ hd scan eol --dir . --save --saveSbom --output ./reports/my-report.json --sbomOutput ./reports/my-sbom.json
 
   Output the report in JSON format (for APIs, CI, etc.)
 
