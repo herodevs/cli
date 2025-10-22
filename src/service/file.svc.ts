@@ -17,12 +17,27 @@ function resolveOutputPath(
   defaultFilename: string,
   customPath?: string,
 ): { fileName: string; fullPath: string } {
-  const output = customPath ? resolve(customPath) : resolve(join(baseDir, defaultFilename));
-  return { fileName: path.basename(output), fullPath: output };
+  const defaultOutput = resolve(join(baseDir, defaultFilename));
+
+  if (!customPath) {
+    return { fileName: defaultFilename, fullPath: defaultOutput };
+  }
+
+  const resolvedCustomPath = resolve(customPath);
+  let targetPath = resolvedCustomPath;
+
+  const hasTrailingSeparator = /[\\/]$/.test(customPath);
+  const customIsDirectory = fs.existsSync(resolvedCustomPath) && fs.statSync(resolvedCustomPath).isDirectory();
+
+  if (hasTrailingSeparator || customIsDirectory) {
+    targetPath = join(resolvedCustomPath, defaultFilename);
+  }
+
+  return { fileName: path.basename(targetPath), fullPath: targetPath };
 }
 
 /**
- * Ensures the directory for a target file path exists and is a directory before writing.
+ * Ensures the output directory for a given path exists, is a directory, and is writable.
  */
 function ensureOutputDirectory(fullPath: string, fileName: string): void {
   const targetDir = path.dirname(fullPath);
@@ -33,6 +48,12 @@ function ensureOutputDirectory(fullPath: string, fileName: string): void {
 
   const stats = fs.statSync(targetDir);
   if (!stats.isDirectory()) {
+    throw new Error(`Unable to save ${fileName}`);
+  }
+
+  try {
+    fs.accessSync(targetDir, fs.constants.W_OK);
+  } catch {
     throw new Error(`Unable to save ${fileName}`);
   }
 }
@@ -49,16 +70,14 @@ function writeJsonFile(fullPath: string, fileName: string, payload: unknown, fai
   } catch (error) {
     const fileError = error as FileError;
 
-    if (fileError.code === 'EACCES') {
-      throw new Error(`Permission denied. Unable to save ${fileName}`);
-    }
-
-    if (fileError.code === 'ENOSPC') {
-      throw new Error(`No space left on device. Unable to save ${fileName}`);
-    }
-
-    if (fileError.code === 'ENOENT' || fileError.code === 'ENOTDIR') {
-      throw new Error(`Unable to save ${fileName}`);
+    switch (fileError.code) {
+      case 'EACCES':
+        throw new Error(`Permission denied. Unable to save ${fileName}`);
+      case 'ENOSPC':
+        throw new Error(`No space left on device. Unable to save ${fileName}`);
+      case 'ENOENT':
+      case 'ENOTDIR':
+        throw new Error(`Unable to save ${fileName}`);
     }
 
     throw new Error(`Failed to save ${failureLabel}: ${getErrorMessage(error)}`);
@@ -110,26 +129,26 @@ export function validateDirectory(dirPath: string): void {
   }
 }
 
-/**
- * Saves an SBOM to a file in the specified directory
- */
-export function saveSbomToFile(dir: string, sbom: CdxBom, outputPath?: string): string {
-  const { fileName, fullPath } = resolveOutputPath(dir, `${filenamePrefix}.sbom.json`, outputPath);
-  return writeJsonFile(fullPath, fileName, sbom, fileName);
-}
+type SaveArtifactKind = 'sbom' | 'sbomTrimmed' | 'report';
+
+type SaveArtifactRequest =
+  | { kind: 'sbom'; payload: CdxBom; outputPath?: string }
+  | { kind: 'sbomTrimmed'; payload: CdxBom }
+  | { kind: 'report'; payload: EolReport; outputPath?: string };
+
+const artifactFilenames: Record<SaveArtifactKind, string> = {
+  sbom: `${filenamePrefix}.sbom.json`,
+  sbomTrimmed: `${filenamePrefix}.sbom-trimmed.json`,
+  report: `${filenamePrefix}.report.json`,
+};
 
 /**
- * Saves a trimmed SBOM to a file in the specified directory
+ * Saves an SBOM, trimmed SBOM, or report to disk using the correct default filename.
  */
-export function saveTrimmedSbomToFile(dir: string, sbom: CdxBom): string {
-  const { fileName, fullPath } = resolveOutputPath(dir, `${filenamePrefix}.sbom-trimmed.json`);
-  return writeJsonFile(fullPath, fileName, sbom, fileName);
-}
+export function saveArtifactToFile(dir: string, request: SaveArtifactRequest): string {
+  const defaultFilename = artifactFilenames[request.kind];
+  const customOutputPath = 'outputPath' in request ? request.outputPath : undefined;
+  const { fileName, fullPath } = resolveOutputPath(dir, defaultFilename, customOutputPath);
 
-/**
- * Saves an EOL report to a file in the specified directory
- */
-export function saveReportToFile(dir: string, report: EolReport, outputPath?: string): string {
-  const { fileName, fullPath } = resolveOutputPath(dir, `${filenamePrefix}.report.json`, outputPath);
-  return writeJsonFile(fullPath, fileName, report, fileName);
+  return writeJsonFile(fullPath, fileName, request.payload, fileName);
 }

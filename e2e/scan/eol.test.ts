@@ -1,8 +1,10 @@
 import { doesNotThrow } from 'node:assert';
-import { doesNotMatch, match, notStrictEqual, strictEqual } from 'node:assert/strict';
+import { doesNotMatch, match, notStrictEqual, ok, strictEqual } from 'node:assert/strict';
 import { exec } from 'node:child_process';
+import { randomUUID } from 'node:crypto';
 import { existsSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import { promisify } from 'node:util';
@@ -20,14 +22,6 @@ const simpleSpdxSbom = path.join(fixturesDir, 'npm/simple-spdx.sbom.json');
 const upToDateDir = path.resolve(fixturesDir, 'npm/up-to-date');
 const upToDateSbom = path.join(fixturesDir, 'npm/up-to-date.sbom.json');
 const noComponentsSbom = path.join(fixturesDir, 'npm/no-components.sbom.json');
-
-function expectContains(text: string, expected: string, message: string) {
-  strictEqual(text.toLowerCase().includes(expected.toLowerCase()), true, message);
-}
-
-function expectNotContains(text: string, expected: string, message: string) {
-  strictEqual(text.toLowerCase().includes(expected.toLowerCase()), false, message);
-}
 
 function mockReport(components: DeepPartial<EolScanComponent>[] = []) {
   return {
@@ -190,9 +184,8 @@ describe('scan:eol e2e', () => {
   });
 
   it('warns and skips saving when --output is provided without --save', async () => {
-    const customDir = path.join(fixturesDir, 'outputs');
+    const customDir = path.join(tmpdir(), 'scan-eol-report-output', randomUUID());
     const customPath = path.join(customDir, 'custom-report.json');
-    await mkdir(customDir, { recursive: true });
 
     const cmd = `scan:eol --dir ${simpleDir} --output ${customPath}`;
     const { stderr } = await run(cmd);
@@ -200,9 +193,11 @@ describe('scan:eol e2e', () => {
     const reportExists = existsSync(customPath);
     strictEqual(reportExists, false, 'Custom report file should not be created without --save');
 
-    expectContains(stderr, '--output requires --save to write the report', 'Should warn that --output needs --save');
+    match(stderr, /--output requires --save to write the report/i, 'Should warn that --output needs --save');
 
-    rmSync(customDir, { recursive: true, force: true });
+    if (existsSync(customDir)) {
+      rmSync(customDir, { recursive: true, force: true });
+    }
   });
 
   it('saves report to a custom path when --save and --output are provided', async () => {
@@ -216,14 +211,10 @@ describe('scan:eol e2e', () => {
     const reportExists = existsSync(customPath);
     strictEqual(reportExists, true, 'Custom report file should be created when --save is provided');
 
-    expectNotContains(
-      stderr,
-      '--output requires --save to write the report',
-      'Should not warn when --save is provided',
-    );
+    doesNotMatch(stderr, /--output requires --save to write the report/i, 'Should not warn when --save is provided');
 
     const reportJson = JSON.parse(readFileSync(customPath, 'utf-8'));
-    strictEqual(Array.isArray(reportJson.components), true, 'Report should have components array');
+    ok(Array.isArray(reportJson.components), 'Report should have components array');
 
     unlinkSync(customPath);
     rmSync(customDir, { recursive: true, force: true });
@@ -295,9 +286,9 @@ describe('scan:eol e2e', () => {
     const sbomExists = existsSync(customPath);
     strictEqual(sbomExists, false, 'Custom SBOM file should not be created without --saveSbom');
 
-    expectContains(
+    match(
       stderr,
-      '--sbomOutput requires --saveSbom to write the SBOM',
+      /--sbomOutput requires --saveSbom to write the SBOM/i,
       'Should warn that --sbomOutput needs --saveSbom',
     );
 
@@ -315,9 +306,9 @@ describe('scan:eol e2e', () => {
     const sbomExists = existsSync(customPath);
     strictEqual(sbomExists, true, 'Custom SBOM file should be created');
 
-    expectNotContains(
+    doesNotMatch(
       stderr,
-      '--sbomOutput requires --saveSbom to write the SBOM',
+      /--sbomOutput requires --saveSbom to write the SBOM/i,
       'Should not warn when --saveSbom is provided',
     );
 
@@ -448,9 +439,9 @@ describe('scan:eol e2e', () => {
         'Should not show save hint when custom outputs are provided',
       );
 
-      expectNotContains(
+      doesNotMatch(
         stderr,
-        'Warning: --output requires --save to write the report',
+        /Warning: --output requires --save to write the report/i,
         'Should not warn when --save is provided',
       );
 
@@ -534,24 +525,17 @@ describe('scan:eol e2e', () => {
       return output;
     }
 
-    function expectAny(
-      output: { stdout: string; stderr: string; error?: { message?: unknown } },
-      patterns: RegExp[],
-      message: string,
-    ) {
-      const errorText =
-        'error' in output && output.error && typeof output.error.message === 'string' ? output.error.message : '';
-      const text = `${output.stderr}\n${output.stdout}\n${errorText}`;
-      const matched = patterns.some((re) => re.test(text));
-      strictEqual(matched, true, message);
+    function combinedOutputText(output: { stdout: string; stderr: string; error?: { message?: unknown } }) {
+      const errorText = typeof output?.error?.message === 'string' ? output.error.message : '';
+      return `${output.stderr}\n${output.stdout}\n${errorText}`;
     }
 
     it('fails when SBOM file does not exist', async () => {
       const missing = path.join(fixturesDir, 'npm', 'does-not-exist.json');
       const out = await runExpectFail(`scan:eol --file ${missing}`);
-      expectAny(
-        out,
-        [/SBOM file not found:/i, /Failed to read SBOM file/i, /Failed to load SBOM file/i, /Loading SBOM file/i],
+      match(
+        combinedOutputText(out),
+        /(SBOM file not found:|Failed to read SBOM file|Failed to load SBOM file|Loading SBOM file)/i,
         'Should indicate missing SBOM file',
       );
     });
@@ -561,9 +545,9 @@ describe('scan:eol e2e', () => {
       writeFileSync(badFile, '{not-json');
       try {
         const out = await runExpectFail(`scan:eol --file ${badFile}`);
-        expectAny(
-          out,
-          [/Failed to read SBOM file/i, /Failed to load SBOM file/i, /Loading SBOM file/i],
+        match(
+          combinedOutputText(out),
+          /(Failed to read SBOM file|Failed to load SBOM file|Loading SBOM file)/i,
           'Should indicate invalid SBOM',
         );
       } finally {
@@ -576,9 +560,9 @@ describe('scan:eol e2e', () => {
       writeFileSync(badFile, JSON.stringify({ invalid: 'format', notSpdx: true, notCdx: true }));
       try {
         const out = await runExpectFail(`scan:eol --file ${badFile}`);
-        expectAny(
-          out,
-          [/Failed to read SBOM file/i, /Invalid SBOM file format/i, /Expected SPDX 2\.3 or CycloneDX format./i],
+        match(
+          combinedOutputText(out),
+          /(Failed to read SBOM file|Invalid SBOM file format|Expected SPDX 2\.3 or CycloneDX format\.)/i,
           'Should indicate invalid SBOM format',
         );
       } finally {
@@ -589,18 +573,18 @@ describe('scan:eol e2e', () => {
     it('fails when directory does not exist', async () => {
       const missingDir = path.join(fixturesDir, 'npm', 'no-such-dir');
       const out = await runExpectFail(`scan:eol --dir ${missingDir}`);
-      expectAny(
-        out,
-        [/Directory not found:/i, /Failed to scan directory/i, /Generating SBOM/i],
+      match(
+        combinedOutputText(out),
+        /(Directory not found:|Failed to scan directory|Generating SBOM)/i,
         'Should indicate missing directory',
       );
     });
 
     it('fails when provided path is not a directory', async () => {
       const out = await runExpectFail(`scan:eol --dir ${simpleSbom}`);
-      expectAny(
-        out,
-        [/Path is not a directory:/i, /Failed to scan directory/i, /Generating SBOM/i],
+      match(
+        combinedOutputText(out),
+        /(Path is not a directory:|Failed to scan directory|Generating SBOM)/i,
         'Should indicate non-directory path',
       );
     });
@@ -610,7 +594,11 @@ describe('scan:eol e2e', () => {
       fetchMock.restore();
       fetchMock = new FetchMock().addGraphQL({ eol: { createReport: { success: false, id: null, totalRecords: 0 } } });
       const out = await runExpectFail(`scan:eol --file ${simpleSbom}`);
-      expectAny(out, [/Failed to submit scan to NES/i, /Scanning failed/i], 'Should indicate NES submission failure');
+      match(
+        combinedOutputText(out),
+        /(Failed to submit scan to NES|Scanning failed)/i,
+        'Should indicate NES submission failure',
+      );
     });
 
     it('fails when NES returns GraphQL errors', async () => {
@@ -619,19 +607,27 @@ describe('scan:eol e2e', () => {
         { message: 'Internal server error', path: ['eol', 'createReport'] },
       ]);
       const out = await runExpectFail(`scan:eol --file ${simpleSbom}`);
-      expectAny(out, [/Failed to submit scan to NES/i, /Scanning failed/i], 'Should indicate GraphQL errors from NES');
+      match(
+        combinedOutputText(out),
+        /(Failed to submit scan to NES|Scanning failed)/i,
+        'Should indicate GraphQL errors from NES',
+      );
     });
 
     it('shows a helpful error when report output directory is invalid', async () => {
       const invalidPath = path.join(fixturesDir, 'missing-dir', 'custom-report.json');
       const out = await runExpectFail(`scan:eol --dir ${simpleDir} --save --output ${invalidPath}`);
-      expectAny(out, [/Unable to save custom-report\.json/i], 'Should indicate report could not be saved');
+      match(
+        combinedOutputText(out),
+        /Unable to save custom-report\.json/i,
+        'Should indicate report could not be saved',
+      );
     });
 
     it('shows a helpful error when SBOM output directory is invalid', async () => {
       const invalidPath = path.join(fixturesDir, 'missing-dir', 'custom-sbom.json');
       const out = await runExpectFail(`scan:eol --dir ${simpleDir} --saveSbom --sbomOutput ${invalidPath}`);
-      expectAny(out, [/Unable to save custom-sbom\.json/i], 'Should indicate SBOM could not be saved');
+      match(combinedOutputText(out), /Unable to save custom-sbom\.json/i, 'Should indicate SBOM could not be saved');
     });
   });
 });

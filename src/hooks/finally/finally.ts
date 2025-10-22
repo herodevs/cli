@@ -12,12 +12,10 @@ const hook: Hook<'finally'> = async (opts) => {
     spinner = ora().start('Cleaning up');
   }
 
-  const event = track('CLI Session Ended', (context) => ({
+  await track('CLI Session Ended', (context) => ({
     cli_version: context.cli_version,
     ended_at: new Date(),
   })).promise;
-
-  await event;
 
   if (!isHelpOrVersionCmd && !hasError) {
     spinner?.stop();
