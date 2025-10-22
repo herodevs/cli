@@ -2,7 +2,6 @@ import { Command } from '@oclif/core'
 import http from 'http'
 import crypto from 'crypto'
 import open from 'open'
-import axios from 'axios'
 import { URL } from 'url'
 import JWT from 'jsonwebtoken'
 
@@ -13,7 +12,7 @@ export default class AuthLogin extends Command {
   private readonly port = parseInt(process.env.OAUTH_CALLBACK_PORT || '4000')
   private readonly redirectUri = process.env.OAUTH_CALLBACK_REDIRECT || `http://localhost:${this.port}/oauth2/callback`
   private readonly realmUrl = process.env.OAUTH_CONNECT_URL || 'http://localhost:6040/realms/herodevs_local/protocol/openid-connect'
-  private readonly clientId = process.env.OAUTH_CONNECT_URL || 'default-public'
+  private readonly clientId = process.env.OAUTH_CLIENT_ID || 'default-public'
 
   async run() {
     const codeVerifier = crypto.randomBytes(32).toString('base64url')
@@ -22,14 +21,13 @@ export default class AuthLogin extends Command {
     const authUrl = `${this.realmUrl}/auth?` +
       `client_id=${this.clientId}` +
       `&response_type=code` +
-      // `&scope=openid%20profile%20email%20nes-claims` +
       `&redirect_uri=${encodeURIComponent(this.redirectUri)}` +
       `&code_challenge=${codeChallenge}` +
       `&code_challenge_method=S256`
 
     const code = await this.startServerAndAwaitCode(authUrl)
-
     const token = await this.exchangeCodeForToken(code, codeVerifier)
+
     this.log('Access Token:')
     this.log(token.access_token)
 
@@ -37,9 +35,6 @@ export default class AuthLogin extends Command {
     this.log(decoded as string)
   }
 
-  /**
-   * Starts a minimal HTTP server and waits for the OAuth redirect.
-   */
   private startServerAndAwaitCode(authUrl: string): Promise<string> {
     return new Promise((resolve, reject) => {
       this.server = http.createServer((req, res) => {
@@ -77,9 +72,6 @@ export default class AuthLogin extends Command {
     })
   }
 
-  /**
-   * Cleanly stops the HTTP server.
-   */
   private stopServer() {
     if (this.server) {
       this.server.close(() => this.log('Callback server stopped.'))
@@ -87,9 +79,6 @@ export default class AuthLogin extends Command {
     }
   }
 
-  /**
-   * Exchanges the authorization code for an access token.
-   */
   private async exchangeCodeForToken(code: string, codeVerifier: string): Promise<any> {
     const tokenUrl = `${this.realmUrl}/token`
 
@@ -101,10 +90,17 @@ export default class AuthLogin extends Command {
       code,
     })
 
-    const response = await axios.post(tokenUrl, params.toString(), {
+    const response = await fetch(tokenUrl, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
     })
 
-    return response.data
+    if (!response.ok) {
+      const text = await response.text()
+      throw new Error(`Token exchange failed: ${response.status} ${response.statusText}\n${text}`)
+    }
+
+    return await response.json()
   }
 }
