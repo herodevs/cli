@@ -13,13 +13,7 @@ import {
   formatScanResults,
   formatWebReportUrl,
 } from '../../service/display.svc.ts';
-import {
-  readSbomFromFile,
-  saveReportToFile,
-  saveSbomToFile,
-  saveTrimmedSbomToFile,
-  validateDirectory,
-} from '../../service/file.svc.ts';
+import { readSbomFromFile, saveArtifactToFile, validateDirectory } from '../../service/file.svc.ts';
 import { getErrorMessage } from '../../service/log.svc.ts';
 
 export default class ScanEol extends Command {
@@ -59,10 +53,18 @@ export default class ScanEol extends Command {
       default: false,
       description: `Save the generated report as ${filenamePrefix}.report.json in the scanned directory`,
     }),
+    output: Flags.string({
+      char: 'o',
+      description: `Save the generated report to a custom path (defaults to ${filenamePrefix}.report.json when not provided)`,
+    }),
     saveSbom: Flags.boolean({
       aliases: ['save-sbom'],
       default: false,
       description: `Save the generated SBOM as ${filenamePrefix}.sbom.json in the scanned directory`,
+    }),
+    sbomOutput: Flags.string({
+      aliases: ['sbom-output'],
+      description: `Save the generated SBOM to a custom path (defaults to ${filenamePrefix}.sbom.json when not provided)`,
     }),
     saveTrimmedSbom: Flags.boolean({
       aliases: ['save-trimmed-sbom'],
@@ -97,8 +99,22 @@ export default class ScanEol extends Command {
       }));
     }
 
-    if (flags.saveSbom && !flags.file) {
-      const sbomPath = this.saveSbom(flags.dir, sbom);
+    let reportOutputPath = flags.output;
+    let sbomOutputPath = flags.sbomOutput;
+
+    if (flags.output && !flags.save) {
+      this.warn('--output requires --save to write the report. Run again with --save to create the file.');
+      reportOutputPath = undefined;
+    }
+
+    if (flags.sbomOutput && !flags.saveSbom) {
+      this.warn('--sbomOutput requires --saveSbom to write the SBOM. Run again with --saveSbom to create the file.');
+      sbomOutputPath = undefined;
+    }
+
+    const shouldSaveSbom = !flags.file && flags.saveSbom;
+    if (shouldSaveSbom) {
+      const sbomPath = this.saveSbom(flags.dir, sbom, sbomOutputPath);
       this.log(`SBOM saved to ${sbomPath}`);
       track('CLI SBOM Output Saved', (context) => ({
         command: context.command,
@@ -135,8 +151,9 @@ export default class ScanEol extends Command {
       web_report_hidden: flags.hideReportUrl,
     }));
 
-    if (flags.save) {
-      const reportPath = this.saveReport(scan, flags.dir);
+    const shouldSaveReport = flags.save;
+    if (shouldSaveReport) {
+      const reportPath = this.saveReport(scan, flags.dir, reportOutputPath);
       this.log(`Report saved to ${reportPath}`);
       track('CLI JSON Scan Output Saved', (context) => ({
         command: context.command,
@@ -146,7 +163,7 @@ export default class ScanEol extends Command {
     }
 
     if (!this.jsonEnabled()) {
-      this.displayResults(scan, flags.hideReportUrl);
+      this.displayResults(scan, flags.hideReportUrl, Boolean(reportOutputPath || sbomOutputPath));
     }
 
     return scan;
@@ -202,9 +219,9 @@ export default class ScanEol extends Command {
     }
   }
 
-  private saveReport(report: EolReport, dir: string): string {
+  private saveReport(report: EolReport, dir: string, outputPath?: string): string {
     try {
-      return saveReportToFile(dir, report);
+      return saveArtifactToFile(dir, { kind: 'report', payload: report, outputPath });
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       track('CLI Error Encountered', () => ({ error: errorMessage }));
@@ -212,9 +229,9 @@ export default class ScanEol extends Command {
     }
   }
 
-  private saveSbom(dir: string, sbom: CdxBom): string {
+  private saveSbom(dir: string, sbom: CdxBom, outputPath?: string): string {
     try {
-      return saveSbomToFile(dir, sbom);
+      return saveArtifactToFile(dir, { kind: 'sbom', payload: sbom, outputPath });
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       track('CLI Error Encountered', () => ({ error: errorMessage }));
@@ -224,7 +241,7 @@ export default class ScanEol extends Command {
 
   private saveTrimmedSbom(dir: string, sbom: CdxBom): string {
     try {
-      return saveTrimmedSbomToFile(dir, sbom);
+      return saveArtifactToFile(dir, { kind: 'sbomTrimmed', payload: sbom });
     } catch (error) {
       const errorMessage = getErrorMessage(error);
       track('CLI Error Encountered', () => ({ error: errorMessage }));
@@ -232,7 +249,7 @@ export default class ScanEol extends Command {
     }
   }
 
-  private displayResults(report: EolReport, hideReportUrl: boolean): void {
+  private displayResults(report: EolReport, hideReportUrl: boolean, hasCustomOutput: boolean): void {
     const lines = formatScanResults(report);
     for (const line of lines) {
       this.log(line);
@@ -243,7 +260,7 @@ export default class ScanEol extends Command {
       for (const line of lines) {
         this.log(line);
       }
-    } else if (hideReportUrl) {
+    } else if (hideReportUrl && !hasCustomOutput) {
       const lines = formatReportSaveHint();
       for (const line of lines) {
         this.log(line);
