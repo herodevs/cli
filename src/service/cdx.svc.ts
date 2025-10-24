@@ -71,20 +71,32 @@ export const SBOM_DEFAULT__OPTIONS = {
  * Lazy loads cdxgen (for ESM purposes), scans
  * `directory`, and returns the `bomJson` property.
  */
-export async function createSbom(directory: string): Promise<CdxBom> {
-  const sbom = await createBom(directory, SBOM_DEFAULT__OPTIONS);
+type CreateSbomDependencies = {
+  createBom: typeof createBom;
+  postProcess: typeof postProcess;
+};
 
-  if (!sbom) {
-    throw new Error('SBOM not generated');
-  }
+export function createSbomFactory({
+  createBom: createBomDependency = createBom,
+  postProcess: postProcessDependency = postProcess,
+}: Partial<CreateSbomDependencies> = {}) {
+  return async function createSbom(directory: string): Promise<CdxBom> {
+    const sbom = await createBomDependency(directory, SBOM_DEFAULT__OPTIONS);
 
-  const postProcessedSbom = postProcess(sbom, SBOM_DEFAULT__OPTIONS);
+    if (!sbom) {
+      throw new Error('SBOM not generated');
+    }
 
-  if (!postProcessedSbom) {
-    throw new Error('SBOM not generated');
-  }
+    const postProcessedSbom = postProcessDependency(sbom, SBOM_DEFAULT__OPTIONS);
 
-  debugLogger('Successfully generated SBOM');
+    if (!postProcessedSbom) {
+      throw new Error('SBOM not generated');
+    }
 
-  return postProcessedSbom.bomJson;
+    debugLogger('Successfully generated SBOM');
+
+    return postProcessedSbom.bomJson;
+  };
 }
+
+export const createSbom = createSbomFactory();
