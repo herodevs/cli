@@ -40,7 +40,7 @@
   ],
   "dependencies": {
     "@amplitude/analytics-node": "^1.5.20",
-    "@apollo/client": "^3.13.8",
+    "@apollo/client": "^4.0.8",
     "@cyclonedx/cdxgen": "^11.10.0",
     "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.11",
     "@oclif/core": "^4.5.3",
