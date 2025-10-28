@@ -227,7 +227,7 @@ jobs:
     environment: demo
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Run EOL Scan
         run: |
@@ -237,7 +237,7 @@ jobs:
             ghcr.io/herodevs/eol-scan --save
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: my-eol-report
           path: ./herodevs.report.json
@@ -283,8 +283,8 @@ jobs:
   scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v6
         with:
           node-version: '22'
 
@@ -294,7 +294,7 @@ jobs:
         run: npx @herodevs/cli@beta scan eol
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: my-eol-report
           path: herodevs.report.json
