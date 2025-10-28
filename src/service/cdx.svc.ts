@@ -1,4 +1,5 @@
 import { createBom } from '@cyclonedx/cdxgen';
+import { postProcess } from '@cyclonedx/cdxgen/stages/postgen/postgen';
 import type { CdxBom } from '@herodevs/eol-shared';
 import { debugLogger } from './log.svc.ts';
 
@@ -70,9 +71,32 @@ export const SBOM_DEFAULT__OPTIONS = {
  * Lazy loads cdxgen (for ESM purposes), scans
  * `directory`, and returns the `bomJson` property.
  */
-export async function createSbom(directory: string): Promise<CdxBom> {
-  const sbom = await createBom(directory, SBOM_DEFAULT__OPTIONS);
-  if (!sbom) throw new Error('SBOM not generated');
-  debugLogger('Successfully generated SBOM');
-  return sbom.bomJson;
+type CreateSbomDependencies = {
+  createBom: typeof createBom;
+  postProcess: typeof postProcess;
+};
+
+export function createSbomFactory({
+  createBom: createBomDependency = createBom,
+  postProcess: postProcessDependency = postProcess,
+}: Partial<CreateSbomDependencies> = {}) {
+  return async function createSbom(directory: string): Promise<CdxBom> {
+    const sbom = await createBomDependency(directory, SBOM_DEFAULT__OPTIONS);
+
+    if (!sbom) {
+      throw new Error('SBOM not generated');
+    }
+
+    const postProcessedSbom = postProcessDependency(sbom, SBOM_DEFAULT__OPTIONS);
+
+    if (!postProcessedSbom) {
+      throw new Error('SBOM not generated');
+    }
+
+    debugLogger('Successfully generated SBOM');
+
+    return postProcessedSbom.bomJson;
+  };
 }
+
+export const createSbom = createSbomFactory();

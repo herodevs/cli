@@ -41,14 +41,13 @@
   "dependencies": {
     "@amplitude/analytics-node": "^1.5.14",
     "@apollo/client": "^3.13.8",
-    "@cyclonedx/cdxgen": "~11.4.4",
+    "@cyclonedx/cdxgen": "^11.10.0",
     "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.11",
     "@oclif/core": "^4.5.3",
     "@oclif/plugin-help": "^6.2.32",
     "@oclif/plugin-update": "^4.7.8",
-    "graphql": "^16.11.0",
     "node-machine-id": "^1.1.12",
-    "ora": "^8.2.0",
+    "ora": "^9.0.0",
     "packageurl-js": "^2.0.1",
     "terminal-link": "^5.0.0",
     "update-notifier": "^7.3.1"
