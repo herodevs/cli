@@ -51,7 +51,7 @@ jobs:
           node-version: '22'
 
       - name: Download SBOM artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: cdxgen-sbom-json
           path: .
