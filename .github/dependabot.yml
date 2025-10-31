@@ -9,5 +9,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    exclude-paths:
-      - "e2e/fixtures/**"
+    ignore:
+      - dependency-name: "*"
+        paths:
+          - "e2e/fixtures/**"
