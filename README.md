@@ -209,6 +209,8 @@ You can use `@herodevs/cli` in your CI/CD pipelines to automate EOL scanning.
 We provide a Docker image that's pre-configured to run EOL scans. Based on [`cdxgen`](https://github.com/CycloneDX/cdxgen),
 it contains build tools for most project types and will provide best results when generating an SBOM. Use these templates to generate a report and save it to your CI job artifact for analysis and processing after your scan runs.
 
+**Note:** There is a potential to run into permission issues writing out the report to your CI runner. Please ensure that your CI runner is setup to have proper read/write permissions for wherever your output files are being written to.
+
 #### GitHub Actions
 
 ```yaml
@@ -231,16 +233,18 @@ jobs:
 
       - name: Run EOL Scan
         run: |
-          docker run --rm \
+          docker run --name eol-scanner \
             -v $GITHUB_WORKSPACE:/app \
             -w /app \
-            ghcr.io/herodevs/eol-scan --save
+            ghcr.io/herodevs/eol-scan --save --output /tmp/herodevs.report.json
+          docker cp eol-scanner:/tmp/herodevs.report.json ${{ runner.temp }}/herodevs.report.json
+          docker rm eol-scanner
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
         with:
           name: my-eol-report
-          path: ./herodevs.report.json
+          path: ${{ runner.temp }}/herodevs.report.json
 ```
 
 #### GitLab CI/CD
@@ -284,9 +288,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
       - uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '24'
 
       - run: echo # Prepare environment, install tooling, perform setup, etc.
 
