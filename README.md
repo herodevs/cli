@@ -72,7 +72,7 @@ $ npm install -g @herodevs/cli@beta
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.10 darwin-arm64 node-v22.18.0
+@herodevs/cli/2.0.0-beta.12 darwin-arm64 node-v24.10.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -82,6 +82,7 @@ USAGE
 ## Commands
 <!-- commands -->
 * [`hd help [COMMAND]`](#hd-help-command)
+* [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd update [CHANNEL]`](#hd-update-channel)
   * **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
@@ -95,7 +96,7 @@ USAGE
   $ hd help [COMMAND...] [-n]
 
 ARGUMENTS
-  COMMAND...  Command to show help for.
+  [COMMAND...]  Command to show help for.
 
 FLAGS
   -n, --nested-commands  Include all nested commands in the output.
@@ -104,7 +105,38 @@ DESCRIPTION
   Display help for hd.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.33/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.34/src/commands/help.ts)_
+
+## `hd report committers`
+
+Generate report of committers to a git repository
+
+```
+USAGE
+  $ hd report committers [--json] [-m <value>] [-c] [-s]
+
+FLAGS
+  -c, --csv             Output in CSV format
+  -m, --months=<value>  [default: 12] The number of months of git history to review
+  -s, --save            Save the committers report as herodevs.committers.<output>
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Generate report of committers to a git repository
+
+EXAMPLES
+  $ hd report committers
+
+  $ hd report committers --csv -s
+
+  $ hd report committers --json
+
+  $ hd report committers --csv
+```
+
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.12/src/commands/report/committers.ts)_
 
 ## `hd scan eol`
 
@@ -112,18 +144,20 @@ Scan a given SBOM for EOL data
 
 ```
 USAGE
-  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [-o <value>] [--saveSbom] [--sbomOutput <value>] [--saveTrimmedSbom] [--hideReportUrl] [--version]
+  $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [-o <value>] [--saveSbom] [--sbomOutput <value>]
+    [--saveTrimmedSbom] [--hideReportUrl] [--version]
 
 FLAGS
-  -d, --dir=<value>      [default: <current directory>] The directory to scan in order to scan for EOL
-  -f, --file=<value>     The file path of an existing SBOM to scan for EOL (supports CycloneDX and SPDX 2.3 formats)
-  -s, --save             Save the generated report as herodevs.report.json in the scanned directory
-  -o, --output=<value>   Save the generated report to a custom path (requires --save, defaults to herodevs.report.json when not provided)
-      --hideReportUrl    Hide the generated web report URL for this scan
-      --saveSbom         Save the generated SBOM as herodevs.sbom.json in the scanned directory
-      --sbomOutput=<value>  Save the generated SBOM to a custom path (requires --saveSbom, defaults to herodevs.sbom.json when not provided)
-      --saveTrimmedSbom  Save the trimmed SBOM as herodevs.sbom-trimmed.json in the scanned directory
-      --version          Show CLI version.
+  -d, --dir=<value>         [default: <current directory>] The directory to scan in order to create a cyclonedx SBOM
+  -f, --file=<value>        The file path of an existing SBOM to scan for EOL (supports CycloneDX and SPDX 2.3 formats)
+  -o, --output=<value>      Save the generated report to a custom path (defaults to herodevs.report.json when not
+                            provided)
+  -s, --save                Save the generated report as herodevs.report.json in the scanned directory
+      --hideReportUrl       Hide the generated web report URL for this scan
+      --saveSbom            Save the generated SBOM as herodevs.sbom.json in the scanned directory
+      --saveTrimmedSbom     Save the trimmed SBOM as herodevs.sbom-trimmed.json in the scanned directory
+      --sbomOutput=<value>  Save the generated SBOM to a custom path (defaults to herodevs.sbom.json when not provided)
+      --version             Show CLI version.
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -157,7 +191,7 @@ EXAMPLES
     $ hd scan eol --json
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.10/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.12/src/commands/scan/eol.ts)_
 
 ## `hd update [CHANNEL]`
 
@@ -197,7 +231,7 @@ EXAMPLES
     $ hd update --available
 ```
 
-_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.7.8/src/commands/update.ts)_
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.7.13/src/commands/update.ts)_
 <!-- commandsstop -->
 
 ## CI/CD Usage
