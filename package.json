@@ -39,7 +39,7 @@
     "herodevs cli"
   ],
   "dependencies": {
-    "@amplitude/analytics-node": "^1.5.20",
+    "@amplitude/analytics-node": "^1.5.21",
     "@apollo/client": "^3.13.8",
     "@cyclonedx/cdxgen": "^11.11.0",
     "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.11",
