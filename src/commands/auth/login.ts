@@ -4,14 +4,15 @@ import crypto from 'crypto'
 import open from 'open'
 import { URL } from 'url'
 import JWT from 'jsonwebtoken'
-
+import inquirer from 'inquirer'
+import clipboard from 'clipboardy'
 export default class AuthLogin extends Command {
   static description = 'OAuth CLI login'
 
   private server?: http.Server
   private readonly port = parseInt(process.env.OAUTH_CALLBACK_PORT || '4000')
   private readonly redirectUri = process.env.OAUTH_CALLBACK_REDIRECT || `http://localhost:${this.port}/oauth2/callback`
-  private readonly realmUrl = process.env.OAUTH_CONNECT_URL || 'http://localhost:6040/realms/herodevs_local/protocol/openid-connect'
+  private readonly realmUrl = process.env.OAUTH_CONNECT_URL || 'https://idp.stage.apps.herodevs.io/realms/universe/protocol/openid-connect'
   private readonly clientId = process.env.OAUTH_CLIENT_ID || 'default-public'
 
   async run() {
@@ -28,11 +29,13 @@ export default class AuthLogin extends Command {
     const code = await this.startServerAndAwaitCode(authUrl)
     const token = await this.exchangeCodeForToken(code, codeVerifier)
 
-    this.log('Access Token:')
+    this.log('\n\nAccess Token:\n')
     this.log(token.access_token)
+    await clipboard.write(token.access_token);
+    this.log('\n\nThe access token has been copied to your clipboard.')
 
     const decoded = JWT.decode(token.access_token)
-    this.log(decoded as string)
+    this.log(`\n\n`, decoded)
   }
 
   private startServerAndAwaitCode(authUrl: string): Promise<string> {
@@ -59,9 +62,14 @@ export default class AuthLogin extends Command {
         }
       })
 
-      this.server.listen(this.port, () => {
-        this.log(`Listening for callback on http://localhost:${this.port}`)
-        console.log('Please navigate to', authUrl)
+      this.server.listen(this.port, async () => {
+        // this.log(`Listening for callback on http://localhost:${this.port}`)
+        await inquirer.prompt({
+          name: 'Press Enter to navigate to: ' + authUrl,
+          type: 'confirm',
+        })
+
+        
         open(authUrl)
       })
 
@@ -74,7 +82,7 @@ export default class AuthLogin extends Command {
 
   private stopServer() {
     if (this.server) {
-      this.server.close(() => this.log('Callback server stopped.'))
+      // this.server.close(() => this.log('Callback server stopped.'))
       this.server = undefined
     }
   }
