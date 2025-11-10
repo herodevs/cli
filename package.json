@@ -45,7 +45,7 @@
     "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.12",
     "@oclif/core": "^4.8.0",
     "@oclif/plugin-help": "^6.2.32",
-    "@oclif/plugin-update": "^4.7.13",
+    "@oclif/plugin-update": "^4.7.14",
     "node-machine-id": "^1.1.12",
     "ora": "^9.0.0",
     "packageurl-js": "^2.0.1",
