@@ -12,7 +12,7 @@ export default class AuthLogin extends Command {
   private server?: http.Server
   private readonly port = parseInt(process.env.OAUTH_CALLBACK_PORT || '4000')
   private readonly redirectUri = process.env.OAUTH_CALLBACK_REDIRECT || `http://localhost:${this.port}/oauth2/callback`
-  private readonly realmUrl = process.env.OAUTH_CONNECT_URL || 'https://idp.stage.apps.herodevs.io/realms/universe/protocol/openid-connect'
+  private readonly realmUrl = process.env.OAUTH_CONNECT_URL || 'https://idp.apps.herodevs.com/realms/universe/protocol/openid-connect'
   private readonly clientId = process.env.OAUTH_CLIENT_ID || 'default-public'
 
   async run() {
@@ -65,7 +65,8 @@ export default class AuthLogin extends Command {
       this.server.listen(this.port, async () => {
         // this.log(`Listening for callback on http://localhost:${this.port}`)
         await inquirer.prompt({
-          name: 'Press Enter to navigate to: ' + authUrl,
+          name: 'confirm',
+          message: 'Press Enter to navigate to: ' + authUrl,
           type: 'confirm',
         })
 
@@ -80,9 +81,9 @@ export default class AuthLogin extends Command {
     })
   }
 
-  private stopServer() {
+  private async stopServer() {
     if (this.server) {
-      // this.server.close(() => this.log('Callback server stopped.'))
+      await new Promise<void>((resolve, reject) => this.server!.close(err => err ? reject(err) : resolve()))
       this.server = undefined
     }
   }
