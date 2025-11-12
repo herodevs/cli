@@ -93,14 +93,14 @@ describe('scan:eol e2e', () => {
 
   describe('default arguments', () => {
     it('runs scan:eol with file flag and shows results', async () => {
-      const { stdout } = await execAsync(`node bin/run.js scan:eol --file ${simpleSbom}`);
+      const { stdout } = await run(`scan:eol --file ${simpleSbom}`);
       match(stdout, /Scan results:/, 'Should show results header');
       match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count of 1');
       match(stdout, /total packages scanned/i, 'Should show total packages scanned');
     });
 
     it('runs scan:eol with --json and produces valid JSON', async () => {
-      const { stdout } = await execAsync(`node bin/run.js scan:eol --file ${simpleSbom} --json`);
+      const { stdout } = await run(`scan:eol --file ${simpleSbom} --json`);
       doesNotMatch(stdout, /Scan results:/, 'Should not show results header');
       doesNotThrow(() => JSON.parse(stdout), 'Output should be valid JSON');
     });

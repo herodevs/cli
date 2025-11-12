@@ -1,4 +1,4 @@
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core/index.js';
+import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import type {
   CreateEolReportInput,
   EolReport,
@@ -6,10 +6,15 @@ import type {
   EolReportQueryResponse,
   GetEolReportInput,
 } from '@herodevs/eol-shared';
+import type { GraphQLFormattedError } from 'graphql';
 import { config } from '../config/constants.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { stripTypename } from '../utils/strip-typename.ts';
 import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
+
+type GraphQLExecutionResult = {
+  errors?: ReadonlyArray<GraphQLFormattedError>;
+};
 
 export const createApollo = (uri: string) =>
   new ApolloClient({
@@ -28,13 +33,17 @@ export const createApollo = (uri: string) =>
 
 export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
   return async (input: CreateEolReportInput): Promise<EolReport> => {
-    const res = await client.mutate<EolReportMutationResponse, { input: CreateEolReportInput }>({
+    let res: Awaited<ReturnType<typeof client.mutate<EolReportMutationResponse, { input: CreateEolReportInput }>>>;
+    res = await client.mutate<EolReportMutationResponse, { input: CreateEolReportInput }>({
       mutation: createReportMutation,
       variables: { input },
     });
 
-    if (res?.errors?.length) {
-      debugLogger('GraphQL errors in createReport: %o', res.errors);
+    if (res?.error || (res as GraphQLExecutionResult)?.errors) {
+      debugLogger(
+        'Error returned from createReport mutation: %o',
+        res.error || (res as GraphQLExecutionResult | undefined)?.errors,
+      );
       throw new Error('Failed to create EOL report');
     }
 
@@ -64,11 +73,16 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
 
     for (let i = 0; i < pages.length; i += config.concurrentPageRequests) {
       const batch = pages.slice(i, i + config.concurrentPageRequests);
-      const batchResponses = await Promise.all(batch);
+      let batchResponses: Awaited<
+        ReturnType<typeof client.query<EolReportQueryResponse, { input: GetEolReportInput }>>
+      >[];
+
+      batchResponses = await Promise.all(batch);
 
       for (const response of batchResponses) {
-        if (response?.errors?.length) {
-          debugLogger('GraphQL errors in getReport query: %o', response.errors);
+        const queryErrors = (response as GraphQLExecutionResult | undefined)?.errors;
+        if (response?.error || queryErrors?.length || !response.data?.eol) {
+          debugLogger('Error in getReport query response: %o', response?.error ?? queryErrors ?? response);
           throw new Error('Failed to fetch EOL report');
         }
 
