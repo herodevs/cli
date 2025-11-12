@@ -12,7 +12,7 @@ export default class AuthLogin extends Command {
   private server?: http.Server
   private readonly port = parseInt(process.env.OAUTH_CALLBACK_PORT || '4000')
   private readonly redirectUri = process.env.OAUTH_CALLBACK_REDIRECT || `http://localhost:${this.port}/oauth2/callback`
-  private readonly realmUrl = process.env.OAUTH_CONNECT_URL || 'https://idp.apps.herodevs.com/realms/universe/protocol/openid-connect'
+  private readonly realmUrl = process.env.OAUTH_CONNECT_URL || 'https://idp.prod.apps.herodevs.io/realms/universe/protocol/openid-connect'
   private readonly clientId = process.env.OAUTH_CLIENT_ID || 'default-public'
 
   async run() {
