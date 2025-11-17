@@ -21,9 +21,7 @@ set -o pipefail # Catch errors in piped commands
 # - Proper cleanup of temporary files
 # - Error handling for failed operations
 #
-# Usage:
-#   Beta release:  curl -sSfL https://raw.githubusercontent.com/herodevs/cli/refs/heads/main/scripts/install.sh | bash
-#   Latest release: curl -sSfL https://raw.githubusercontent.com/herodevs/cli/refs/heads/main/scripts/install.sh | bash -s -- --latest
+# Usage: curl -sSfL https://raw.githubusercontent.com/herodevs/cli/refs/heads/main/scripts/install.sh | bash
 #=============================================================================
 
 # Configuration
@@ -34,8 +32,7 @@ INSTALL_DIR="$HOME/.herodevs"
 BIN_DIR="$INSTALL_DIR/bin"
 GITHUB_API_URL="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases"
 TMP_DIR=""
-USE_BETA=true
-# LATEST_VERSION="v2.0.0-beta.13"
+LATEST_VERSION="v2.0.0-beta.13"
 DEBUG=${DEBUG:-}
 
 # Colors for output
@@ -81,26 +78,6 @@ error_exit() {
   exit 1
 }
 
-# Parse arguments
-while [ $# -gt 0 ]; do
-  case $1 in
-  -l | --latest)
-    USE_BETA=false
-    shift
-    ;;
-  -h | --help)
-    # Help text goes to the original stdout
-    emit "Usage: $0 [-l|--latest]"
-    emit "  -l, --latest    Install latest release (default: install beta)"
-    emit "  -h, --help      Show this help message"
-    exit 0
-    ;;
-  *)
-    error_exit "Unknown option: $1"
-    ;;
-  esac
-done
-
 # Cleanup on exit/interrupt
 cleanup() {
   if [ -n "$TMP_DIR" ] && [ -d "$TMP_DIR" ]; then
@@ -112,49 +89,6 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 log "INFO" "Installing HeroDevs CLI"
-
-# Get release version (beta or latest)
-get_version() {
-  local use_beta="$1"
-  local releases_data="$2"
-
-  log "INFO" "Extracting release version"
-  local all_tags
-  local latest_release
-  local beta_release
-  local version_tag
-  
-  # Split complex command chains for Bash 3 compatibility
-  all_tags=$(echo "$releases_data" | grep -o '"tag_name": "[^"]*"')
-  all_tags=$(echo "$all_tags" | cut -d'"' -f4)
-  
-  # Get latest non-beta release
-  latest_release=$(echo "$all_tags" | grep -v "beta" | head -n 1)
-  
-  # Get latest beta release
-  beta_release=$(echo "$all_tags" | grep "beta" | head -n 1)
-
-  log "DEBUG" "All tags: $all_tags"
-  log "DEBUG" "Latest release: $latest_release"
-  log "DEBUG" "Beta release: $beta_release"
-
-  if [ "$use_beta" = "true" ]; then
-    version_tag="$beta_release"
-    if [ -z "$version_tag" ]; then
-      log "ERROR" "No beta release found. Please try again later or use --latest to install the latest stable release."
-      exit 1
-    fi
-  else
-    version_tag="$latest_release"
-    if [ -z "$version_tag" ]; then
-      error_exit "No latest release found. Please try again later."
-    fi
-  fi
-
-  log "INFO" "Using version: $version_tag"
-  # Output actual return value to the original stdout (FD 3)
-  emit "$version_tag"
-}
 
 # Download and install
 install() {
@@ -171,21 +105,13 @@ install() {
     error_exit "Empty response from GitHub API. Please try again later."
   fi
 
-  # Ensure the response contains release data
-  if ! echo "$releases" | grep -q '"tag_name"'; then
-    error_exit "Invalid response from GitHub API. Please try again later."
-  fi
-
-  # Determine VERSION_TAG
-  VERSION_TAG=$(get_version "$USE_BETA" "$releases" 3>&1 1>&2)
-
-  local version_tag="$VERSION_TAG"
+  local version_tag="$LATEST_VERSION"
   
   # Remove 'v' prefix if present
   local version
   version=${version_tag#v}
   
-  log "DEBUG" "Version string: $version"
+  log "INFO" "Installing version: $version"
 
   # Detect system
   local os
@@ -207,7 +133,7 @@ install() {
   pattern="${os}-${arch}"
 
   # Extract all browser_download_url values for the matching release
-  release_block=$(echo "$releases" | awk -v tag="\"$VERSION_TAG\"" '
+  release_block=$(echo "$releases" | awk -v tag="\"$LATEST_VERSION\"" '
     BEGIN {found=0; block=""}
     $0 ~ tag {found=1}
     found {
@@ -227,7 +153,7 @@ install() {
 
   # Ensure we found a matching asset
   if [ -z "$download_url" ]; then
-    error_exit "No release found system $pattern for release $VERSION_TAG"
+    error_exit "No release found system $pattern for release $LATEST_VERSION"
   fi
 
   log "DEBUG" "Download URL: $download_url"
