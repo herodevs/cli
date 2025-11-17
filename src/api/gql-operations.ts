@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client/core/core.cjs';
+import { gql } from '@apollo/client/core';
 
 export const createReportMutation = gql`
 mutation createReport($input: CreateEolReportInput) {
