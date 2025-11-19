@@ -1,25 +1,18 @@
-import { Command, Flags } from "@oclif/core";
-import { makeTable } from "@oclif/table";
-import { spawnSync } from "node:child_process";
-import fs from "node:fs";
-import { filenamePrefix, GIT_OUTPUT_FORMAT } from "../../config/constants.ts";
+import { Command, Flags } from '@oclif/core';
+import { makeTable } from '@oclif/table';
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import { filenamePrefix, GIT_OUTPUT_FORMAT } from '../../config/constants.ts';
 import {
-  ASCI_COLOR_CODES_REGEX,
-  filenamePrefix,
-  GIT_OUTPUT_FORMAT,
-} from "../../config/constants.ts";
-import {
-  type AuthorReportRow,
   type AuthorReportTableRow,
   type CommitEntry,
   type CommittersReport,
   generateCommittersReport,
   generateMonthlyReport,
   type MonthlyReportRow,
-  type MonthlyReportTableRow,
   parseGitLogOutput,
-} from "../../service/committers.svc.ts";
-import { getErrorMessage, isErrnoException } from "../../service/error.svc.ts";
+} from '../../service/committers.svc.ts';
+import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
 import {
   DEFAULT_DATE_FORMAT,
   formatCommitDate,
@@ -28,63 +21,61 @@ import {
   getEndOfDay,
   parseDate,
   subtractMonths,
-} from "../../utils/date-parsers.ts";
+} from '../../utils/date-parsers.ts';
 
 export default class Committers extends Command {
-  static override description =
-    "Generate report of committers to a git repository";
+  static override description = 'Generate report of committers to a git repository';
   static enableJsonFlag = true;
   static override examples = [
-    "<%= config.bin %> <%= command.id %>",
-    "<%= config.bin %> <%= command.id %> --csv -s",
-    "<%= config.bin %> <%= command.id %> --json",
-    "<%= config.bin %> <%= command.id %> --csv",
+    '<%= config.bin %> <%= command.id %>',
+    '<%= config.bin %> <%= command.id %> --csv -s',
+    '<%= config.bin %> <%= command.id %> --json',
+    '<%= config.bin %> <%= command.id %> --csv',
   ];
 
   static override flags = {
     beforeDate: Flags.string({
-      char: "s",
+      char: 's',
       default: formatDate(new Date()),
       description: `End date (format: ${DEFAULT_DATE_FORMAT})`,
     }),
     afterDate: Flags.string({
-      char: "e",
+      char: 'e',
       default: formatDate(subtractMonths(new Date(), 12)),
       description: `Start date (format: ${DEFAULT_DATE_FORMAT})`,
     }),
     exclude: Flags.string({
-      char: "x",
+      char: 'x',
       description: 'Path Exclusions (eg -x="./src/bin" -x="./dist")',
       multiple: true,
       multipleNonGreedy: true,
     }),
     json: Flags.boolean({
-      description: "Output to JSON format",
+      description: 'Output to JSON format',
       default: false,
     }),
     directory: Flags.string({
-      char: "d",
-      description: "Directory to search",
+      char: 'd',
+      description: 'Directory to search',
     }),
     monthly: Flags.boolean({
-      char: "m",
-      description: "Break down by calendar month.",
+      char: 'm',
+      description: 'Break down by calendar month.',
       default: false,
     }),
     months: Flags.integer({
-      char: "n",
-      description:
-        "The number of months of git history to review. Cannot be used along beforeDate and afterDate",
+      char: 'n',
+      description: 'The number of months of git history to review. Cannot be used along beforeDate and afterDate',
       default: 12,
-      exclusive: ["beforeDate", "afterDate", "s", "e"],
+      exclusive: ['beforeDate', 'afterDate', 's', 'e'],
     }),
     csv: Flags.boolean({
-      char: "c",
-      description: "Output in CSV format",
+      char: 'c',
+      description: 'Output in CSV format',
       default: false,
     }),
     save: Flags.boolean({
-      char: "s",
+      char: 's',
       description: `Save the committers report as ${filenamePrefix}.committers.<output>`,
       default: false,
     }),
@@ -92,56 +83,33 @@ export default class Committers extends Command {
 
   public async run(): Promise<CommittersReport | string> {
     const { flags } = await this.parse(Committers);
-    const {
-      afterDate,
-      beforeDate,
-      exclude,
-      directory: cwd,
-      monthly,
-      months,
-      csv,
-      save,
-    } = flags;
+    const { afterDate, beforeDate, exclude, directory: cwd, monthly, months, csv, save } = flags;
     const isJson = this.jsonEnabled();
 
-    const reportFormat = isJson ? "json" : csv ? "csv" : "txt";
+    const reportFormat = isJson ? 'json' : csv ? 'csv' : 'txt';
 
-    const afterDateStartOfDay = months
-      ? `${subtractMonths(new Date(), months)}`
-      : `${parseDate(afterDate)}`;
-    const beforeDateEndOfDay = formatISODate(
-      getEndOfDay(parseDate(beforeDate)),
-    );
+    const afterDateStartOfDay = months ? `${subtractMonths(new Date(), months)}` : `${parseDate(afterDate)}`;
+    const beforeDateEndOfDay = formatISODate(getEndOfDay(parseDate(beforeDate)));
 
-    const ignores =
-      exclude && exclude.length > 0
-        ? `. "\!(${exclude.join("|")})"`
-        : undefined;
+    const ignores = exclude && exclude.length > 0 ? `. "!(${exclude.join('|')})"` : undefined;
 
     try {
-      const entries = this.fetchGitCommitData(
-        afterDateStartOfDay,
-        beforeDateEndOfDay,
-        ignores,
-        cwd,
-      );
+      const entries = this.fetchGitCommitData(afterDateStartOfDay, beforeDateEndOfDay, ignores, cwd);
 
       if (entries.length === 0) {
         return `No commits found between ${afterDate} and ${beforeDate}`;
       }
 
-      this.log("\nFetched %d commit entries\n", entries.length);
+      this.log('\nFetched %d commit entries\n', entries.length);
 
-      const reportData = monthly
-        ? generateMonthlyReport(entries)
-        : generateCommittersReport(entries);
+      const reportData = monthly ? generateMonthlyReport(entries) : generateCommittersReport(entries);
 
-      let finalReport = "";
+      let finalReport = '';
       switch (reportFormat) {
-        case "json":
+        case 'json':
           finalReport = JSON.stringify(
-            reportData.map((row, index) =>
-              "month" in row
+            reportData.map((row) =>
+              'month' in row
                 ? {
                     month: row.month,
                     start: row.start,
@@ -158,28 +126,25 @@ export default class Committers extends Command {
             2,
           );
           break;
-        case "csv":
+        case 'csv':
           finalReport = reportData
             .map((row, index) =>
-              "month" in row
+              'month' in row
                 ? `${index},${row.month},${row.start},${row.end},${row.totalCommits}`
-                : `${index},${row.author},${row.commits.length},${formatCommitDate(row.lastCommitOn).replace(",", "")}`,
+                : `${index},${row.author},${row.commits.length},${formatCommitDate(row.lastCommitOn).replace(',', '')}`,
             )
-            .join("\n")
+            .join('\n')
             .replace(
               /^/,
-              monthly
-                ? `(index),month,start,end,totalCommits\n`
-                : `(index),Committer,Commits,Last Commit Date\n`,
+              monthly ? `(index),month,start,end,totalCommits\n` : `(index),Committer,Commits,Last Commit Date\n`,
             );
           break;
-        case "txt":
         default:
           if (monthly) {
             finalReport = makeTable({
-              title: "Monthly Report",
+              title: 'Monthly Report',
               data: reportData
-                .filter((row) => "month" in row)
+                .filter((row) => 'month' in row)
                 .map((row: MonthlyReportRow, index) => ({
                   index,
                   month: row.month,
@@ -194,9 +159,9 @@ export default class Committers extends Command {
             });
           } else {
             finalReport = makeTable({
-              title: "Committers Report",
+              title: 'Committers Report',
               data: reportData
-                .filter((row) => "author" in row)
+                .filter((row) => 'author' in row)
                 .map(
                   (row, index): AuthorReportTableRow => ({
                     index,
@@ -207,20 +172,20 @@ export default class Committers extends Command {
                 ),
               columns: [
                 {
-                  key: "index",
-                  name: "(index)",
+                  key: 'index',
+                  name: '(index)',
                 },
                 {
-                  key: "author",
-                  name: "Committer",
+                  key: 'author',
+                  name: 'Committer',
                 },
                 {
-                  key: "commits",
-                  name: "Commits",
+                  key: 'commits',
+                  name: 'Commits',
                 },
                 {
-                  key: "lastCommitOn",
-                  name: "Last Commit Date",
+                  key: 'lastCommitOn',
+                  name: 'Last Commit Date',
                 },
               ],
               headerOptions: {
@@ -234,18 +199,12 @@ export default class Committers extends Command {
 
       if (save) {
         try {
-          fs.writeFileSync(
-            `${filenamePrefix}.${monthly ? "monthly" : "committers"}.${reportFormat}`,
-            finalReport,
-            {
-              encoding: "utf-8",
-            },
-          );
+          fs.writeFileSync(`${filenamePrefix}.${monthly ? 'monthly' : 'committers'}.${reportFormat}`, finalReport, {
+            encoding: 'utf-8',
+          });
           this.log(`Report written to ${reportFormat.toUpperCase()}`);
         } catch (err) {
-          this.error(
-            `Failed to save ${reportFormat.toUpperCase()} report: ${getErrorMessage(err)}`,
-          );
+          this.error(`Failed to save ${reportFormat.toUpperCase()} report: ${getErrorMessage(err)}`);
         }
       }
 
@@ -270,26 +229,24 @@ export default class Committers extends Command {
     cwd?: string,
   ): CommitEntry[] {
     const logParameters = [
-      "log",
+      'log',
       // "--all", // Include committers on all branches in the repo
       // "--date=format:%Y-%m", // Format date as YYYY-MM
       `--since="${sinceDate}"`,
       `--until="${beforeDateEndOfDay}"`,
       `--format=${GIT_OUTPUT_FORMAT}`,
-      ...(cwd ? ["--", cwd] : []),
-      ...(ignores ? ["--", ignores] : []),
+      ...(cwd ? ['--', cwd] : []),
+      ...(ignores ? ['--', ignores] : []),
     ];
 
-    const logProcess = spawnSync("git", logParameters, {
-      encoding: "utf-8",
+    const logProcess = spawnSync('git', logParameters, {
+      encoding: 'utf-8',
     });
 
     if (logProcess.error) {
       if (isErrnoException(logProcess.error)) {
-        if (logProcess.error.code === "ENOENT") {
-          this.error(
-            "Git command not found. Please ensure git is installed and available in your PATH.",
-          );
+        if (logProcess.error.code === 'ENOENT') {
+          this.error('Git command not found. Please ensure git is installed and available in your PATH.');
         }
         this.error(`Git command failed: ${getErrorMessage(logProcess.error)}`);
       }
@@ -297,9 +254,7 @@ export default class Committers extends Command {
     }
 
     if (logProcess.status !== 0) {
-      this.error(
-        `Git command failed with status ${logProcess.status}: ${logProcess.stderr}`,
-      );
+      this.error(`Git command failed with status ${logProcess.status}: ${logProcess.stderr}`);
     }
 
     if (!logProcess.stdout) {
