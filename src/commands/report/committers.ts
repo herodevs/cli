@@ -1,7 +1,7 @@
-import { Command, Flags } from '@oclif/core';
-import { makeTable } from '@oclif/table';
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
+import { Command, Flags } from '@oclif/core';
+import { makeTable } from '@oclif/table';
 import { filenamePrefix, GIT_OUTPUT_FORMAT } from '../../config/constants.ts';
 import {
   type AuthorReportTableRow,
