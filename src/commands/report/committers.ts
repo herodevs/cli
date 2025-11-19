@@ -230,8 +230,6 @@ export default class Committers extends Command {
   ): CommitEntry[] {
     const logParameters = [
       'log',
-      // "--all", // Include committers on all branches in the repo
-      // "--date=format:%Y-%m", // Format date as YYYY-MM
       `--since="${sinceDate}"`,
       `--until="${beforeDateEndOfDay}"`,
       `--format=${GIT_OUTPUT_FORMAT}`,
