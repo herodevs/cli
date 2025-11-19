@@ -1,6 +1,6 @@
-import { formatDate } from 'date-fns';
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+import { formatDate } from 'date-fns';
 import {
   type AuthorReportRow,
   generateCommittersReport,

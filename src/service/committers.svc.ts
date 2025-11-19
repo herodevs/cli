@@ -1,12 +1,4 @@
-import { formatISO } from 'date-fns';
-import {
-  formatCommitDateMonth,
-  formatDate,
-  formatISODate,
-  getEndOfMonth,
-  getStartOfDay,
-  parseDate,
-} from '../utils/date-parsers.js';
+import { formatCommitDateMonth, formatDate, getEndOfMonth, parseDate } from '../utils/date-parsers.js';
 
 export type ReportFormat = 'txt' | 'csv' | 'json';
 
