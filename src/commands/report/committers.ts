@@ -2,6 +2,7 @@ import { Command, Flags } from "@oclif/core";
 import { makeTable } from "@oclif/table";
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import { filenamePrefix, GIT_OUTPUT_FORMAT } from "../../config/constants.ts";
 import {
   ASCI_COLOR_CODES_REGEX,
   filenamePrefix,
@@ -186,6 +187,10 @@ export default class Committers extends Command {
                   end: row.end,
                   totalCommits: row.totalCommits,
                 })),
+              headerOptions: {
+                color: undefined,
+                bold: false,
+              },
             });
           } else {
             finalReport = makeTable({
@@ -218,6 +223,10 @@ export default class Committers extends Command {
                   name: "Last Commit Date",
                 },
               ],
+              headerOptions: {
+                color: undefined,
+                bold: false,
+              },
             });
           }
           break;
@@ -227,7 +236,7 @@ export default class Committers extends Command {
         try {
           fs.writeFileSync(
             `${filenamePrefix}.${monthly ? "monthly" : "committers"}.${reportFormat}`,
-            finalReport.replace(ASCI_COLOR_CODES_REGEX, ""),
+            finalReport,
             {
               encoding: "utf-8",
             },
