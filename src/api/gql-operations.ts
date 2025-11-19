@@ -22,6 +22,7 @@ query GetEolReport($input: GetEolReportInput) {
       components {
         purl
         metadata
+        dependencySummary
         nesRemediation {
           remediations {
             urls {
