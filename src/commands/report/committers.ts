@@ -2,7 +2,13 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import { Command, Flags } from '@oclif/core';
 import { makeTable } from '@oclif/table';
-import { filenamePrefix, GIT_OUTPUT_FORMAT } from '../../config/constants.ts';
+import { endOfDay, formatDate, formatISO, parse, subMonths } from 'date-fns';
+import {
+  DEFAULT_DATE_COMMIT_FORMAT,
+  DEFAULT_DATE_FORMAT,
+  filenamePrefix,
+  GIT_OUTPUT_FORMAT,
+} from '../../config/constants.ts';
 import {
   type AuthorReportTableRow,
   type CommitEntry,
@@ -11,17 +17,9 @@ import {
   generateMonthlyReport,
   type MonthlyReportRow,
   parseGitLogOutput,
+  type ReportFormat,
 } from '../../service/committers.svc.ts';
 import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
-import {
-  DEFAULT_DATE_FORMAT,
-  formatCommitDate,
-  formatDate,
-  formatISODate,
-  getEndOfDay,
-  parseDate,
-  subtractMonths,
-} from '../../utils/date-parsers.ts';
 
 export default class Committers extends Command {
   static override description = 'Generate report of committers to a git repository';
@@ -36,12 +34,12 @@ export default class Committers extends Command {
   static override flags = {
     beforeDate: Flags.string({
       char: 's',
-      default: formatDate(new Date()),
+      default: formatDate(new Date(), DEFAULT_DATE_FORMAT),
       description: `End date (format: ${DEFAULT_DATE_FORMAT})`,
     }),
     afterDate: Flags.string({
       char: 'e',
-      default: formatDate(subtractMonths(new Date(), 12)),
+      default: formatDate(subMonths(new Date(), 12), DEFAULT_DATE_FORMAT),
       description: `Start date (format: ${DEFAULT_DATE_FORMAT})`,
     }),
     exclude: Flags.string({
@@ -86,10 +84,12 @@ export default class Committers extends Command {
     const { afterDate, beforeDate, exclude, directory: cwd, monthly, months, csv, save } = flags;
     const isJson = this.jsonEnabled();
 
-    const reportFormat = isJson ? 'json' : csv ? 'csv' : 'txt';
+    const reportFormat: ReportFormat = isJson ? 'json' : csv ? 'csv' : 'txt';
 
-    const afterDateStartOfDay = months ? `${subtractMonths(new Date(), months)}` : `${parseDate(afterDate)}`;
-    const beforeDateEndOfDay = formatISODate(getEndOfDay(parseDate(beforeDate)));
+    const afterDateStartOfDay = months
+      ? `${subMonths(new Date(), months)}`
+      : `${parse(afterDate, DEFAULT_DATE_FORMAT, new Date())}`;
+    const beforeDateEndOfDay = formatISO(endOfDay(parse(beforeDate, DEFAULT_DATE_FORMAT, new Date())));
 
     const ignores = exclude && exclude.length > 0 ? `. "!(${exclude.join('|')})"` : undefined;
 
@@ -104,7 +104,7 @@ export default class Committers extends Command {
 
       const reportData = monthly ? generateMonthlyReport(entries) : generateCommittersReport(entries);
 
-      let finalReport = '';
+      let finalReport: string;
       switch (reportFormat) {
         case 'json':
           finalReport = JSON.stringify(
@@ -119,7 +119,7 @@ export default class Committers extends Command {
                 : {
                     name: row.author,
                     count: row.commits.length,
-                    lastCommitDate: formatCommitDate(row.lastCommitOn),
+                    lastCommitDate: formatDate(row.lastCommitOn, DEFAULT_DATE_COMMIT_FORMAT),
                   },
             ),
             null,
@@ -131,7 +131,7 @@ export default class Committers extends Command {
             .map((row, index) =>
               'month' in row
                 ? `${index},${row.month},${row.start},${row.end},${row.totalCommits}`
-                : `${index},${row.author},${row.commits.length},${formatCommitDate(row.lastCommitOn).replace(',', '')}`,
+                : `${index},${row.author},${row.commits.length},${formatDate(row.lastCommitOn, DEFAULT_DATE_COMMIT_FORMAT).replace(',', '')}`,
             )
             .join('\n')
             .replace(
@@ -167,7 +167,7 @@ export default class Committers extends Command {
                     index,
                     author: row.author,
                     commits: row.commits.length,
-                    lastCommitOn: formatCommitDate(row.lastCommitOn),
+                    lastCommitOn: formatDate(row.lastCommitOn, DEFAULT_DATE_COMMIT_FORMAT),
                   }),
                 ),
               columns: [

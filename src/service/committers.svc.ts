@@ -1,4 +1,5 @@
-import { formatCommitDateMonth, formatDate, getEndOfMonth, parseDate } from '../utils/date-parsers.js';
+import { endOfMonth, formatDate, parse } from 'date-fns';
+import { DEFAULT_DATE_COMMIT_MONTH_FORMAT, DEFAULT_DATE_FORMAT } from '../config/constants.js';
 
 export type ReportFormat = 'txt' | 'csv' | 'json';
 
@@ -65,8 +66,8 @@ export function parseGitLogOutput(output: string): CommitEntry[] {
       return {
         commitHash,
         author,
-        date: parseDate(formatDate(new Date(date))),
-        monthGroup: formatCommitDateMonth(parseDate(formatDate(new Date(date)))),
+        date: parse(formatDate(new Date(date), DEFAULT_DATE_FORMAT), DEFAULT_DATE_FORMAT, new Date()),
+        monthGroup: formatDate(new Date(date), DEFAULT_DATE_COMMIT_MONTH_FORMAT),
       };
     });
 }
@@ -114,8 +115,8 @@ export function generateMonthlyReport(entries: CommitEntry[]) {
         if (!acc.has(curr.monthGroup)) {
           const monthlyCommits = array.filter((e) => e.monthGroup === curr.monthGroup);
           acc.set(curr.monthGroup, {
-            start: formatDate(monthlyCommits[0].date),
-            end: formatDate(getEndOfMonth(monthlyCommits[0].date)),
+            start: formatDate(monthlyCommits[0].date, DEFAULT_DATE_FORMAT),
+            end: formatDate(endOfMonth(monthlyCommits[0].date), DEFAULT_DATE_FORMAT),
             totalCommits: monthlyCommits.length,
             committers: monthlyCommits.reduce((acc: AuthorCommitCount, curr) => {
               if (!acc[curr.author]) {

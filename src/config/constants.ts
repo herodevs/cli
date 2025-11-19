@@ -6,6 +6,11 @@ export const CONCURRENT_PAGE_REQUESTS = 3;
 export const PAGE_SIZE = 500;
 export const GIT_OUTPUT_FORMAT = `"${['%h', '%an', '%ad'].join('|')}"`;
 
+// Committers Report - Date Constants
+export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
+export const DEFAULT_DATE_COMMIT_FORMAT = 'MM/dd/yyyy, h:mm:ss a';
+export const DEFAULT_DATE_COMMIT_MONTH_FORMAT = 'MMMM yyyy';
+
 let concurrentPageRequests = CONCURRENT_PAGE_REQUESTS;
 const parsed = Number.parseInt(process.env.CONCURRENT_PAGE_REQUESTS ?? '0', 10);
 if (parsed > 0) {

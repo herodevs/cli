@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
-import { formatDate } from 'date-fns';
+import { formatDate, parse } from 'date-fns';
+import { DEFAULT_DATE_FORMAT } from '../../src/config/constants.ts';
 import {
   type AuthorReportRow,
   generateCommittersReport,
@@ -8,7 +9,6 @@ import {
   type MonthlyReportRow,
   parseGitLogOutput,
 } from '../../src/service/committers.svc.ts';
-import { parseDate } from '../../src/utils/date-parsers.ts';
 
 describe('committers', () => {
   // Sample test data to be reused across tests
@@ -19,7 +19,7 @@ describe('committers', () => {
 9382084093|Jane Smith|2025-08-19
 9382084093|Alice Brown|2025-08-19`;
 
-  const sampleDate = parseDate(formatDate(new Date('2025-08-19'), 'yyyy-MM-dd'));
+  const sampleDate = parse(formatDate(new Date('2025-08-19'), 'yyyy-MM-dd'), DEFAULT_DATE_FORMAT, new Date());
   const initialDate = formatDate(new Date('2025-08-19'), 'yyyy-MM-dd');
 
   const sampleEntries = [
