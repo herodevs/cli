@@ -57,12 +57,11 @@ export default class Committers extends Command {
       description: 'Directory to search',
     }),
     monthly: Flags.boolean({
-      char: 'm',
       description: 'Break down by calendar month.',
       default: false,
     }),
     months: Flags.integer({
-      char: 'n',
+      char: 'm',
       description: 'The number of months of git history to review. Cannot be used along beforeDate and afterDate',
       default: 12,
       exclusive: ['beforeDate', 'afterDate', 's', 'e'],
