@@ -1,158 +1,286 @@
-import { spawnSync } from 'node:child_process';
-import fs from 'node:fs';
-import path from 'node:path';
-import { Command, Flags } from '@oclif/core';
-import { filenamePrefix } from '../../config/constants.ts';
+import { Command, Flags } from "@oclif/core";
+import { makeTable } from "@oclif/table";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import {
+  ASCI_COLOR_CODES_REGEX,
+  filenamePrefix,
+  GIT_OUTPUT_FORMAT,
+} from "../../config/constants.ts";
+import {
+  type AuthorReportRow,
+  type AuthorReportTableRow,
   type CommitEntry,
-  calculateOverallStats,
-  formatAsCsv,
-  formatAsText,
-  groupCommitsByMonth,
+  type CommittersReport,
+  generateCommittersReport,
+  generateMonthlyReport,
+  type MonthlyReportRow,
+  type MonthlyReportTableRow,
   parseGitLogOutput,
-  type ReportData,
-} from '../../service/committers.svc.ts';
-import { getErrorMessage, isErrnoException } from '../../service/error.svc.ts';
+} from "../../service/committers.svc.ts";
+import { getErrorMessage, isErrnoException } from "../../service/error.svc.ts";
+import {
+  DEFAULT_DATE_FORMAT,
+  formatCommitDate,
+  formatDate,
+  formatISODate,
+  getEndOfDay,
+  parseDate,
+  subtractMonths,
+} from "../../utils/date-parsers.ts";
 
 export default class Committers extends Command {
-  static override description = 'Generate report of committers to a git repository';
+  static override description =
+    "Generate report of committers to a git repository";
   static enableJsonFlag = true;
   static override examples = [
-    '<%= config.bin %> <%= command.id %>',
-    '<%= config.bin %> <%= command.id %> --csv -s',
-    '<%= config.bin %> <%= command.id %> --json',
-    '<%= config.bin %> <%= command.id %> --csv',
+    "<%= config.bin %> <%= command.id %>",
+    "<%= config.bin %> <%= command.id %> --csv -s",
+    "<%= config.bin %> <%= command.id %> --json",
+    "<%= config.bin %> <%= command.id %> --csv",
   ];
 
   static override flags = {
+    beforeDate: Flags.string({
+      char: "s",
+      default: formatDate(new Date()),
+      description: `End date (format: ${DEFAULT_DATE_FORMAT})`,
+    }),
+    afterDate: Flags.string({
+      char: "e",
+      default: formatDate(subtractMonths(new Date(), 12)),
+      description: `Start date (format: ${DEFAULT_DATE_FORMAT})`,
+    }),
+    exclude: Flags.string({
+      char: "x",
+      description: 'Path Exclusions (eg -x="./src/bin" -x="./dist")',
+      multiple: true,
+      multipleNonGreedy: true,
+    }),
+    json: Flags.boolean({
+      description: "Output to JSON format",
+      default: false,
+    }),
+    directory: Flags.string({
+      char: "d",
+      description: "Directory to search",
+    }),
+    monthly: Flags.boolean({
+      char: "m",
+      description: "Break down by calendar month.",
+      default: false,
+    }),
     months: Flags.integer({
-      char: 'm',
-      description: 'The number of months of git history to review',
+      char: "n",
+      description:
+        "The number of months of git history to review. Cannot be used along beforeDate and afterDate",
       default: 12,
+      exclusive: ["beforeDate", "afterDate", "s", "e"],
     }),
     csv: Flags.boolean({
-      char: 'c',
-      description: 'Output in CSV format',
+      char: "c",
+      description: "Output in CSV format",
       default: false,
     }),
     save: Flags.boolean({
-      char: 's',
+      char: "s",
       description: `Save the committers report as ${filenamePrefix}.committers.<output>`,
       default: false,
     }),
   };
 
-  public async run(): Promise<ReportData | string> {
+  public async run(): Promise<CommittersReport | string> {
     const { flags } = await this.parse(Committers);
-    const { months, csv, save } = flags;
+    const {
+      afterDate,
+      beforeDate,
+      exclude,
+      directory: cwd,
+      monthly,
+      months,
+      csv,
+      save,
+    } = flags;
     const isJson = this.jsonEnabled();
 
-    const sinceDate = `${months} months ago`;
-    this.log('Starting committers report with flags: %O', flags);
+    const reportFormat = isJson ? "json" : csv ? "csv" : "txt";
+
+    const afterDateStartOfDay = months
+      ? `${subtractMonths(new Date(), months)}`
+      : `${parseDate(afterDate)}`;
+    const beforeDateEndOfDay = formatISODate(
+      getEndOfDay(parseDate(beforeDate)),
+    );
+
+    const ignores =
+      exclude && exclude.length > 0
+        ? `. "\!(${exclude.join("|")})"`
+        : undefined;
 
     try {
-      // Generate structured report data
-      const entries = this.fetchGitCommitData(sinceDate);
-      this.log('Fetched %d commit entries', entries.length);
-      const reportData = this.generateReportData(entries);
+      const entries = this.fetchGitCommitData(
+        afterDateStartOfDay,
+        beforeDateEndOfDay,
+        ignores,
+        cwd,
+      );
 
-      // Handle different output scenarios
-      if (isJson) {
-        // JSON mode
-        if (save) {
-          try {
-            fs.writeFileSync(path.resolve(`${filenamePrefix}.committers.json`), JSON.stringify(reportData, null, 2));
-            this.log('Report written to json');
-          } catch (error) {
-            this.error(`Failed to save JSON report: ${getErrorMessage(error)}`);
-          }
-        }
-        return reportData;
+      if (entries.length === 0) {
+        return `No commits found between ${afterDate} and ${beforeDate}`;
       }
 
-      const textOutput = formatAsText(reportData);
+      this.log("\nFetched %d commit entries\n", entries.length);
 
-      if (csv) {
-        // CSV mode
-        const csvOutput = formatAsCsv(reportData);
-        if (save) {
-          try {
-            fs.writeFileSync(path.resolve(`${filenamePrefix}.committers.csv`), csvOutput);
-            this.log('Report written to csv');
-          } catch (error) {
-            this.error(`Failed to save CSV report: ${getErrorMessage(error)}`);
+      const reportData = monthly
+        ? generateMonthlyReport(entries)
+        : generateCommittersReport(entries);
+
+      let finalReport = "";
+      switch (reportFormat) {
+        case "json":
+          finalReport = JSON.stringify(
+            reportData.map((row, index) =>
+              "month" in row
+                ? {
+                    month: row.month,
+                    start: row.start,
+                    end: row.end,
+                    committers: row.committers,
+                  }
+                : {
+                    name: row.author,
+                    count: row.commits.length,
+                    lastCommitDate: formatCommitDate(row.lastCommitOn),
+                  },
+            ),
+            null,
+            2,
+          );
+          break;
+        case "csv":
+          finalReport = reportData
+            .map((row, index) =>
+              "month" in row
+                ? `${index},${row.month},${row.start},${row.end},${row.totalCommits}`
+                : `${index},${row.author},${row.commits.length},${formatCommitDate(row.lastCommitOn).replace(",", "")}`,
+            )
+            .join("\n")
+            .replace(
+              /^/,
+              monthly
+                ? `(index),month,start,end,totalCommits\n`
+                : `(index),Committer,Commits,Last Commit Date\n`,
+            );
+          break;
+        case "txt":
+        default:
+          if (monthly) {
+            finalReport = makeTable({
+              title: "Monthly Report",
+              data: reportData
+                .filter((row) => "month" in row)
+                .map((row: MonthlyReportRow, index) => ({
+                  index,
+                  month: row.month,
+                  start: row.start,
+                  end: row.end,
+                  totalCommits: row.totalCommits,
+                })),
+            });
+          } else {
+            finalReport = makeTable({
+              title: "Committers Report",
+              data: reportData
+                .filter((row) => "author" in row)
+                .map(
+                  (row, index): AuthorReportTableRow => ({
+                    index,
+                    author: row.author,
+                    commits: row.commits.length,
+                    lastCommitOn: formatCommitDate(row.lastCommitOn),
+                  }),
+                ),
+              columns: [
+                {
+                  key: "index",
+                  name: "(index)",
+                },
+                {
+                  key: "author",
+                  name: "Committer",
+                },
+                {
+                  key: "commits",
+                  name: "Commits",
+                },
+                {
+                  key: "lastCommitOn",
+                  name: "Last Commit Date",
+                },
+              ],
+            });
           }
-        } else {
-          this.log(textOutput);
-        }
-        return csvOutput;
+          break;
       }
 
       if (save) {
         try {
-          fs.writeFileSync(path.resolve(`${filenamePrefix}.committers.txt`), textOutput);
-          this.log('Report written to txt');
-        } catch (error) {
-          this.error(`Failed to save txt report: ${getErrorMessage(error)}`);
+          fs.writeFileSync(
+            `${filenamePrefix}.${monthly ? "monthly" : "committers"}.${reportFormat}`,
+            finalReport.replace(ASCI_COLOR_CODES_REGEX, ""),
+            {
+              encoding: "utf-8",
+            },
+          );
+          this.log(`Report written to ${reportFormat.toUpperCase()}`);
+        } catch (err) {
+          this.error(
+            `Failed to save ${reportFormat.toUpperCase()} report: ${getErrorMessage(err)}`,
+          );
         }
-      } else {
-        this.log(textOutput);
       }
-      return textOutput;
+
+      this.log(finalReport);
+      return finalReport;
     } catch (error) {
       this.error(`Failed to generate report: ${getErrorMessage(error)}`);
     }
   }
 
   /**
-   * Generates structured report data
-   * @param entries - parsed git log output for commits
-   */
-  private generateReportData(entries: CommitEntry[]): ReportData {
-    if (entries.length === 0) {
-      return { monthly: {}, overall: { total: 0 } };
-    }
-
-    const monthlyData = groupCommitsByMonth(entries);
-    const overallStats = calculateOverallStats(entries);
-    const grandTotal = entries.length;
-
-    // Format into a structured report data object
-    const report: ReportData = {
-      monthly: {},
-      overall: { ...overallStats, total: grandTotal },
-    };
-
-    // Add monthly totals
-    for (const [month, authors] of Object.entries(monthlyData)) {
-      const monthTotal = Object.values(authors).reduce((sum, count) => sum + count, 0);
-      report.monthly[month] = { ...authors, total: monthTotal };
-    }
-
-    return report;
-  }
-
-  /**
    * Fetches git commit data with month and author information
    * @param sinceDate - Date range for git log
+   * @param beforeDateEndOfDay - End date for git log
+   * @param ignores - indicate elements to exclude for git log
+   * @param cwd - directory to use for git log
    */
-  private fetchGitCommitData(sinceDate: string): CommitEntry[] {
-    const logProcess = spawnSync(
-      'git',
-      [
-        'log',
-        '--all', // Include committers on all branches in the repo
-        '--format="%ad|%an"', // Format: date|author
-        '--date=format:%Y-%m', // Format date as YYYY-MM
-        `--since="${sinceDate}"`,
-      ],
-      { encoding: 'utf-8' },
-    );
+  private fetchGitCommitData(
+    sinceDate: string,
+    beforeDateEndOfDay: string,
+    ignores?: string,
+    cwd?: string,
+  ): CommitEntry[] {
+    const logParameters = [
+      "log",
+      // "--all", // Include committers on all branches in the repo
+      // "--date=format:%Y-%m", // Format date as YYYY-MM
+      `--since="${sinceDate}"`,
+      `--until="${beforeDateEndOfDay}"`,
+      `--format=${GIT_OUTPUT_FORMAT}`,
+      ...(cwd ? ["--", cwd] : []),
+      ...(ignores ? ["--", ignores] : []),
+    ];
+
+    const logProcess = spawnSync("git", logParameters, {
+      encoding: "utf-8",
+    });
 
     if (logProcess.error) {
       if (isErrnoException(logProcess.error)) {
-        if (logProcess.error.code === 'ENOENT') {
-          this.error('Git command not found. Please ensure git is installed and available in your PATH.');
+        if (logProcess.error.code === "ENOENT") {
+          this.error(
+            "Git command not found. Please ensure git is installed and available in your PATH.",
+          );
         }
         this.error(`Git command failed: ${getErrorMessage(logProcess.error)}`);
       }
@@ -160,7 +288,9 @@ export default class Committers extends Command {
     }
 
     if (logProcess.status !== 0) {
-      this.error(`Git command failed with status ${logProcess.status}: ${logProcess.stderr}`);
+      this.error(
+        `Git command failed with status ${logProcess.status}: ${logProcess.stderr}`,
+      );
     }
 
     if (!logProcess.stdout) {

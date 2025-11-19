@@ -1,28 +1,59 @@
-export interface CommitEntry {
-  month: string;
+import {
+  formatCommitDate,
+  formatCommitDateMonth,
+  formatDate,
+  getEndOfMonth,
+} from "../utils/date-parsers.js";
+
+export type ReportFormat = "txt" | "csv" | "json";
+
+export type CommitEntry = {
+  commitHash: string;
   author: string;
-}
+  date: Date;
+  monthGroup: string;
+};
 
-export interface AuthorCommitCounts {
+export type CommitAuthorData = {
+  commits: CommitEntry[];
+  lastCommitOn: Date;
+};
+
+export type CommitMonthData = {
+  start: Date | string;
+  end: Date | string;
+  totalCommits: number;
+  committers: AuthorCommitCount;
+};
+
+export type AuthorCommitCount = {
   [author: string]: number;
-}
+};
 
-export interface MonthlyData {
-  [month: string]: AuthorCommitCounts;
-}
+export type AuthorReportTableRow = {
+  index: number;
+  author: string;
+  commits: number;
+  lastCommitOn: string;
+};
 
-export interface ReportData {
-  monthly: {
-    [month: string]: {
-      [author: string]: number;
-      total: number;
-    };
-  };
-  overall: {
-    [author: string]: number;
-    total: number;
-  };
-}
+export type MonthlyReportTableRow = {
+  index: number;
+  month: number;
+  start: string;
+  end: string;
+  totalCommits: number;
+};
+
+export type MonthlyReportRow = {
+  month: string;
+} & CommitMonthData;
+
+export type AuthorReportRow = {
+  author: string;
+} & CommitAuthorData;
+
+export type CommittersReport = AuthorReportRow[] | MonthlyReportRow[];
 
 /**
  * Parses git log output into structured data
@@ -31,242 +62,91 @@ export interface ReportData {
  */
 export function parseGitLogOutput(output: string): CommitEntry[] {
   return output
-    .split('\n')
+    .split("\n")
     .filter(Boolean)
     .map((line) => {
       // Remove surrounding double quotes if present (e.g. "March|John Doe" → March|John Doe)
-      const [month, author] = line.replace(/^"(.*)"$/, '$1').split('|');
-      return { month, author };
+      const [commitHash, author, date] = line
+        .replace(/^"(.*)"$/, "$1")
+        .split("|");
+      return {
+        commitHash,
+        author,
+        date: new Date(date),
+        monthGroup: formatCommitDateMonth(new Date(date)),
+      };
     });
 }
 
 /**
- * Groups commit data by month
- * @param entries - Commit entries
- * @returns Object with months as keys and author commit counts as values
+ * Generates commits author report
+ * @param entries - commit entries from git log
+ * @returns Commits Author Report
  */
-export function groupCommitsByMonth(entries: CommitEntry[]): MonthlyData {
-  const result: MonthlyData = {};
-
-  // Group commits by month
-  const commitsByMonth = entries.reduce<Record<string, CommitEntry[]>>((acc, entry) => {
-    const monthKey = entry.month;
-
-    if (!acc[monthKey]) {
-      acc[monthKey] = [];
-    }
-
-    acc[monthKey].push(entry);
-
-    return acc;
-  }, {});
-
-  // Process each month
-  for (const [month, commits] of Object.entries(commitsByMonth)) {
-    if (!commits) {
-      result[month] = {};
-      continue;
-    }
-
-    // Count commits per author for this month
-    const commitsByAuthor = commits.reduce<Record<string, CommitEntry[]>>((acc, entry) => {
-      const authorKey = entry.author;
-
-      if (!acc[authorKey]) {
-        acc[authorKey] = [];
-      }
-
-      acc[authorKey].push(entry);
-
-      return acc;
-    }, {});
-
-    const authorCounts: AuthorCommitCounts = {};
-
-    for (const [author, authorCommits] of Object.entries(commitsByAuthor)) {
-      authorCounts[author] = authorCommits?.length ?? 0;
-    }
-
-    result[month] = authorCounts;
-  }
-
-  return result;
+export function generateCommittersReport(entries: CommitEntry[]) {
+  return Array.from(
+    entries
+      .sort((a, b) => b.date.valueOf() - a.date.valueOf())
+      .reduce((acc, curr, index, array) => {
+        if (!acc.has(curr.author)) {
+          const byAuthor = array.filter((c) => c.author === curr.author);
+          acc.set(curr.author, {
+            commits: byAuthor,
+            lastCommitOn: byAuthor[0].date,
+          });
+        }
+        return acc;
+      }, new Map<string, CommitAuthorData>()),
+  )
+    .map(
+      ([key, value]): AuthorReportRow => ({
+        author: key,
+        commits: value.commits,
+        lastCommitOn: value.lastCommitOn,
+      }),
+    )
+    .sort((a, b) => b.commits.length - a.commits.length);
 }
 
 /**
- * Calculates overall commit statistics by author
- * @param entries - Commit entries
- * @returns Object with authors as keys and total commit counts as values
+ * Generates commits monthly report
+ * @param entries - commit entries from git log
+ * @returns Monthly Report
  */
-export function calculateOverallStats(entries: CommitEntry[]): AuthorCommitCounts {
-  const commitsByAuthor = entries.reduce<Record<string, CommitEntry[]>>((acc, entry) => {
-    const authorKey = entry.author;
-
-    if (!acc[authorKey]) {
-      acc[authorKey] = [];
-    }
-
-    acc[authorKey].push(entry);
-
-    return acc;
-  }, {});
-  const result: AuthorCommitCounts = {};
-
-  // Count commits for each author
-  for (const author in commitsByAuthor) {
-    result[author] = commitsByAuthor[author]?.length ?? 0;
-  }
-
-  return result;
-}
-
-/**
- * Formats monthly report sections
- * @param monthlyData - Grouped commit data by month
- * @returns Formatted monthly report sections
- */
-export function formatMonthlyReport(monthlyData: MonthlyData): string {
-  const sortedMonths = Object.keys(monthlyData).sort();
-  let report = '';
-
-  for (const month of sortedMonths) {
-    report += `\n## ${month}\n`;
-
-    const authors = Object.entries(monthlyData[month]).sort((a, b) => b[1] - a[1]);
-
-    for (const [author, count] of authors) {
-      report += `${count.toString().padStart(6)}  ${author}\n`;
-    }
-
-    const monthTotal = authors.reduce((sum, [_, count]) => sum + count, 0);
-    report += `${monthTotal.toString().padStart(6)}  TOTAL\n`;
-  }
-
-  return report;
-}
-
-/**
- * Formats overall statistics section
- * @param overallStats - Overall commit counts by author
- * @param grandTotal - Total number of commits
- * @returns Formatted overall statistics section
- */
-export function formatOverallStats(overallStats: AuthorCommitCounts, grandTotal: number): string {
-  let report = '\n## Overall Statistics\n';
-
-  const sortedStats = Object.entries(overallStats).sort((a, b) => b[1] - a[1]);
-
-  for (const [author, count] of sortedStats) {
-    report += `${count.toString().padStart(6)}  ${author}\n`;
-  }
-
-  report += `${grandTotal.toString().padStart(6)}  GRAND TOTAL\n`;
-
-  return report;
-}
-
-/**
- * Formats the report data as CSV
- * @param data - The structured report data
- */
-export function formatAsCsv(data: ReportData): string {
-  // First prepare all author names (for columns)
-  const allAuthors = new Set<string>();
-
-  // Collect all unique author names
-  for (const monthData of Object.values(data.monthly)) {
-    for (const author of Object.keys(monthData)) {
-      if (author !== 'total') allAuthors.add(author);
-    }
-  }
-
-  const authors = Array.from(allAuthors).sort();
-
-  // Create CSV header
-  let csv = `Month,${authors.join(',')},Total\n`;
-
-  // Add monthly data rows
-  const sortedMonths = Object.keys(data.monthly).sort();
-  for (const month of sortedMonths) {
-    csv += month;
-
-    // Add data for each author
-    for (const author of authors) {
-      const count = data.monthly[month][author] || 0;
-      csv += `,${count}`;
-    }
-
-    // Add monthly total
-    csv += `,${`${data.monthly[month].total}\n`}`;
-  }
-
-  // Add overall totals row
-  csv += 'Overall';
-  for (const author of authors) {
-    const count = data.overall[author] || 0;
-    csv += `,${count}`;
-  }
-
-  csv += `,${data.overall.total}\n`;
-
-  return csv;
-}
-
-/**
- * Formats the report data as text
- * @param data - The structured report data
- */
-export function formatAsText(data: ReportData): string {
-  let report = 'Monthly Commit Report\n';
-
-  // Monthly sections
-  const sortedMonths = Object.keys(data.monthly).sort();
-  for (const month of sortedMonths) {
-    report += `\n## ${month}\n`;
-
-    const authors = Object.entries(data.monthly[month])
-      .filter(([author]) => author !== 'total')
-      .sort((a, b) => b[1] - a[1]);
-
-    for (const [author, count] of authors) {
-      report += `${count.toString().padStart(6)}  ${author}\n`;
-    }
-
-    report += `${data.monthly[month].total.toString().padStart(6)}  TOTAL\n`;
-  }
-
-  // Overall statistics
-  report += '\n## Overall Statistics\n';
-  const sortedEntries = Object.entries(data.overall)
-    .filter(([author]) => author !== 'total')
-    .sort((a, b) => b[1] - a[1]);
-
-  for (const [author, count] of sortedEntries) {
-    report += `${count.toString().padStart(6)}  ${author}\n`;
-  }
-
-  report += `${data.overall.total.toString().padStart(6)}  GRAND TOTAL\n`;
-
-  return report;
-}
-
-/**
- * Format output based on user preference
- * @param output
- * @param reportData
- * @returns
- */
-export function formatOutputBasedOnFlag(output: string, reportData: ReportData) {
-  let formattedOutput: string;
-  switch (output) {
-    case 'json':
-      formattedOutput = JSON.stringify(reportData, null, 2);
-      break;
-    case 'csv':
-      formattedOutput = formatAsCsv(reportData);
-      break;
-    default:
-      formattedOutput = formatAsText(reportData);
-  }
-  return formattedOutput;
+export function generateMonthlyReport(entries: CommitEntry[]) {
+  return Array.from(
+    entries
+      .sort((a, b) => b.date.valueOf() - a.date.valueOf())
+      .reduce((acc, curr, index, array) => {
+        if (!acc.has(curr.monthGroup)) {
+          const monthlyCommits = array.filter(
+            (e) => e.monthGroup === curr.monthGroup,
+          );
+          acc.set(curr.monthGroup, {
+            start: formatDate(monthlyCommits[0].date),
+            end: formatDate(getEndOfMonth(monthlyCommits[0].date)),
+            totalCommits: monthlyCommits.length,
+            committers: monthlyCommits.reduce(
+              (acc: AuthorCommitCount, curr) => {
+                if (!acc[curr.author]) {
+                  acc[curr.author] = monthlyCommits.filter(
+                    (c) => c.author === curr.author,
+                  ).length;
+                }
+                return acc;
+              },
+              {},
+            ),
+          });
+        }
+        return acc;
+      }, new Map<string, CommitMonthData>()),
+  )
+    .map(
+      ([key, value], index): MonthlyReportRow => ({
+        month: key,
+        ...value,
+      }),
+    )
+    .sort((a, b) => new Date(a.end).valueOf() - new Date(b.end).valueOf());
 }

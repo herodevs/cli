@@ -4,6 +4,9 @@ export const GRAPHQL_PATH = '/graphql';
 export const ANALYTICS_URL = 'https://apps.herodevs.com/api/eol/track';
 export const CONCURRENT_PAGE_REQUESTS = 3;
 export const PAGE_SIZE = 500;
+export const GIT_OUTPUT_FORMAT = `"${["%h", "%an", "%ad"].join("|")}"`;
+export const ASCI_COLOR_CODES_REGEX =
+  /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g;
 
 let concurrentPageRequests = CONCURRENT_PAGE_REQUESTS;
 const parsed = Number.parseInt(process.env.CONCURRENT_PAGE_REQUESTS ?? '0', 10);
