@@ -1,3 +1,4 @@
+import { formatDate } from 'date-fns';
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
 import {
@@ -7,6 +8,7 @@ import {
   type MonthlyReportRow,
   parseGitLogOutput,
 } from '../../src/service/committers.svc.ts';
+import { parseDate } from '../../src/utils/date-parsers.ts';
 
 describe('committers', () => {
   // Sample test data to be reused across tests
@@ -17,42 +19,45 @@ describe('committers', () => {
 9382084093|Jane Smith|2025-08-19
 9382084093|Alice Brown|2025-08-19`;
 
+  const sampleDate = parseDate(formatDate(new Date('2025-08-19'), 'yyyy-MM-dd'));
+  const initialDate = formatDate(new Date('2025-08-19'), 'yyyy-MM-dd');
+
   const sampleEntries = [
     {
       author: 'John Doe',
       commitHash: '9382084093',
       monthGroup: 'August 2025',
-      date: new Date('2025-08-19T00:00:00.000Z'),
+      date: sampleDate,
     },
     {
       author: 'Jane Smith',
       commitHash: '9382084093',
       monthGroup: 'August 2025',
-      date: new Date('2025-08-19T00:00:00.000Z'),
+      date: sampleDate,
     },
     {
       author: 'John Doe',
       commitHash: '9382084093',
       monthGroup: 'August 2025',
-      date: new Date('2025-08-19T00:00:00.000Z'),
+      date: sampleDate,
     },
     {
       author: 'Bob Johnson',
       commitHash: '9382084093',
       monthGroup: 'August 2025',
-      date: new Date('2025-08-19T00:00:00.000Z'),
+      date: sampleDate,
     },
     {
       author: 'Jane Smith',
       commitHash: '9382084093',
       monthGroup: 'August 2025',
-      date: new Date('2025-08-19T00:00:00.000Z'),
+      date: sampleDate,
     },
     {
       author: 'Alice Brown',
       commitHash: '9382084093',
       monthGroup: 'August 2025',
-      date: new Date('2025-08-19T00:00:00.000Z'),
+      date: sampleDate,
     },
   ];
 
@@ -63,17 +68,17 @@ describe('committers', () => {
         {
           author: 'John Doe',
           commitHash: '9382084093',
-          date: new Date('2025-08-19T00:00:00.000Z'),
+          date: sampleDate,
           monthGroup: 'August 2025',
         },
         {
           author: 'John Doe',
           commitHash: '9382084093',
-          date: new Date('2025-08-19T00:00:00.000Z'),
+          date: sampleDate,
           monthGroup: 'August 2025',
         },
       ],
-      lastCommitOn: new Date('2025-08-19T00:00:00.000Z'),
+      lastCommitOn: sampleDate,
     },
     {
       author: 'Jane Smith',
@@ -81,17 +86,17 @@ describe('committers', () => {
         {
           author: 'Jane Smith',
           commitHash: '9382084093',
-          date: new Date('2025-08-19T00:00:00.000Z'),
+          date: sampleDate,
           monthGroup: 'August 2025',
         },
         {
           author: 'Jane Smith',
           commitHash: '9382084093',
-          date: new Date('2025-08-19T00:00:00.000Z'),
+          date: sampleDate,
           monthGroup: 'August 2025',
         },
       ],
-      lastCommitOn: new Date('2025-08-19T00:00:00.000Z'),
+      lastCommitOn: sampleDate,
     },
     {
       author: 'Bob Johnson',
@@ -99,11 +104,11 @@ describe('committers', () => {
         {
           author: 'Bob Johnson',
           commitHash: '9382084093',
-          date: new Date('2025-08-19T00:00:00.000Z'),
+          date: sampleDate,
           monthGroup: 'August 2025',
         },
       ],
-      lastCommitOn: new Date('2025-08-19T00:00:00.000Z'),
+      lastCommitOn: sampleDate,
     },
     {
       author: 'Alice Brown',
@@ -111,17 +116,17 @@ describe('committers', () => {
         {
           author: 'Alice Brown',
           commitHash: '9382084093',
-          date: new Date('2025-08-19T00:00:00.000Z'),
+          date: sampleDate,
           monthGroup: 'August 2025',
         },
       ],
-      lastCommitOn: new Date('2025-08-19T00:00:00.000Z'),
+      lastCommitOn: sampleDate,
     },
   ];
   const sampleMonthlyReport: MonthlyReportRow[] = [
     {
       month: 'August 2025',
-      start: '2025-08-18',
+      start: initialDate,
       end: '2025-08-31',
       totalCommits: 6,
       committers: {
@@ -155,13 +160,13 @@ describe('committers', () => {
           author: 'John Doe',
           commitHash: '9382084093',
           monthGroup: 'August 2025',
-          date: new Date('2025-08-19T00:00:00.000Z'),
+          date: sampleDate,
         },
         {
           author: 'Jane Smith',
           commitHash: '9382084093',
           monthGroup: 'August 2025',
-          date: new Date('2025-08-19T00:00:00.000Z'),
+          date: sampleDate,
         },
       ];
 

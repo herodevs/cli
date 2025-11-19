@@ -1,4 +1,4 @@
-import { endOfDay, endOfMonth, format, formatISO, parse, subMonths } from 'date-fns';
+import { endOfDay, endOfMonth, format, formatISO, parse, startOfDay, subMonths } from 'date-fns';
 
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const DEFAULT_DATE_COMMIT_FORMAT = 'MM/dd/yyyy, h:mm:ss a';
@@ -15,6 +15,8 @@ export const formatCommitDate = (input: Date) => format(input, DEFAULT_DATE_COMM
 export const formatCommitDateMonth = (input: Date) => format(input, DEFAULT_DATE_COMMIT_MONTH_FORMAT);
 
 export const subtractMonths = (input: Date, months: number) => subMonths(input, months);
+
+export const getStartOfDay = (input: Date) => startOfDay(input);
 
 export const getEndOfDay = (input: Date) => endOfDay(input);
 

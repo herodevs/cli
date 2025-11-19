@@ -1,4 +1,12 @@
-import { formatCommitDateMonth, formatDate, getEndOfMonth } from '../utils/date-parsers.js';
+import { formatISO } from 'date-fns';
+import {
+  formatCommitDateMonth,
+  formatDate,
+  formatISODate,
+  getEndOfMonth,
+  getStartOfDay,
+  parseDate,
+} from '../utils/date-parsers.js';
 
 export type ReportFormat = 'txt' | 'csv' | 'json';
 
@@ -65,8 +73,8 @@ export function parseGitLogOutput(output: string): CommitEntry[] {
       return {
         commitHash,
         author,
-        date: new Date(date),
-        monthGroup: formatCommitDateMonth(new Date(date)),
+        date: parseDate(formatDate(new Date(date))),
+        monthGroup: formatCommitDateMonth(parseDate(formatDate(new Date(date)))),
       };
     });
 }
