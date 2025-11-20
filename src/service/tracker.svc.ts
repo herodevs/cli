@@ -1,6 +1,6 @@
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
-import { join, resolve } from 'path';
+import { join, resolve } from 'node:path';
 import { TRACKER_ROOT_FILE, type TrackerConfig } from '../config/tracker.config.js';
 
 export const getRootDir = (path: string): string => {
