@@ -1,5 +1,6 @@
 import assert from 'node:assert';
 import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import mock from 'mock-fs';
 import { TRACKER_DEFAULT_CONFIG, TRACKER_ROOT_FILE } from '../../src/config/tracker.config.ts';
@@ -9,7 +10,7 @@ describe('tracker.svc', () => {
   describe('getRootDir', () => {
     beforeEach(() => {
       mock({
-        '/path/to': {
+        'path/to': {
           with: {
             package: {
               [TRACKER_ROOT_FILE]: '',
@@ -31,15 +32,15 @@ describe('tracker.svc', () => {
     });
 
     it(`should return a path when ${TRACKER_ROOT_FILE} is found`, () => {
-      const dirPath = '/path/to/package/folder';
+      const dirPath = 'path/to/package/folder';
 
       const result = getRootDir(dirPath);
 
-      assert.strictEqual(result, '/path/to/package');
+      assert.strictEqual(result, join(process.cwd(), 'path/to/package'));
     });
 
-    it(`should throw an error if no ${TRACKER_ROOT_FILE} is found`, () => {
-      const dirPath = '/path/to/fake/dir';
+    it(`should throw an error if ${TRACKER_ROOT_FILE} is not found`, () => {
+      const dirPath = 'path/to/fake/dir';
 
       try {
         getRootDir(dirPath);
@@ -54,8 +55,8 @@ describe('tracker.svc', () => {
   describe('createTrackerConfig', () => {
     beforeEach(() => {
       mock({
-        '/path/to/tracker/folder': {},
-        '/path/to/already/exists': {
+        'path/to/tracker/folder': {},
+        'path/to/already/exists': {
           'config.json': JSON.stringify(TRACKER_DEFAULT_CONFIG),
         },
       });
@@ -67,7 +68,7 @@ describe('tracker.svc', () => {
 
     it(`should create folder if it doesn't exists`, async () => {
       try {
-        const outputDir = '/path/to/tracker/new-folder';
+        const outputDir = 'path/to/tracker/new-folder';
         await createTrackerConfig(outputDir, TRACKER_DEFAULT_CONFIG);
 
         assert.strictEqual(existsSync(outputDir), true);
@@ -76,7 +77,7 @@ describe('tracker.svc', () => {
 
     it(`should create configuration file if it doesn't exist`, async () => {
       try {
-        const outputDir = '/path/to/tracker/new-folder';
+        const outputDir = 'path/to/tracker/new-folder';
         await createTrackerConfig(outputDir, TRACKER_DEFAULT_CONFIG);
 
         assert.strictEqual(existsSync(`${outputDir}/${TRACKER_DEFAULT_CONFIG.configFile}`), true);
@@ -85,7 +86,7 @@ describe('tracker.svc', () => {
 
     it(`should create configuration file with the default contents`, async () => {
       try {
-        const outputDir = '/path/to/tracker/new-folder';
+        const outputDir = 'path/to/tracker/new-folder';
         await createTrackerConfig(outputDir, TRACKER_DEFAULT_CONFIG);
 
         const fileOutput = readFileSync(`${outputDir}/${TRACKER_DEFAULT_CONFIG.configFile}`).toString('utf-8');
@@ -96,7 +97,7 @@ describe('tracker.svc', () => {
 
     it(`should throw an error if file exists and overwrite flag is false`, async () => {
       try {
-        const outputDir = '/path/to/already/exists';
+        const outputDir = 'path/to/already/exists';
         await createTrackerConfig(outputDir, TRACKER_DEFAULT_CONFIG);
       } catch (err) {
         if (err instanceof Error) {
@@ -112,7 +113,7 @@ describe('tracker.svc', () => {
 
     it(`should replace the file if it exists and overwrite flag is true`, async () => {
       try {
-        const outputDir = '/path/to/already/exists';
+        const outputDir = 'path/to/already/exists';
         await createTrackerConfig(
           outputDir,
           {

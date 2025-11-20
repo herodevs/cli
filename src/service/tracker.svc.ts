@@ -6,7 +6,7 @@ import { TRACKER_ROOT_FILE, type TrackerConfig } from '../config/tracker.config.
 export const getRootDir = (path: string): string => {
   if (existsSync(join(path, TRACKER_ROOT_FILE))) {
     return path;
-  } else if (path === '/') {
+  } else if (path === join(path, '..')) {
     throw new Error(`Couldn't find root directory for the project`);
   }
   return getRootDir(resolve(join(path, '..')));
