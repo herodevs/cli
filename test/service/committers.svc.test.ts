@@ -1,80 +1,142 @@
 import assert from 'node:assert';
 import { describe, it } from 'node:test';
+import { formatDate, parse } from 'date-fns';
+import { DEFAULT_DATE_FORMAT } from '../../src/config/constants.ts';
 import {
-  calculateOverallStats,
-  formatAsCsv,
-  formatAsText,
-  formatMonthlyReport,
-  formatOutputBasedOnFlag,
-  formatOverallStats,
-  groupCommitsByMonth,
+  type AuthorReportRow,
+  generateCommittersReport,
+  generateMonthlyReport,
+  type MonthlyReportRow,
   parseGitLogOutput,
 } from '../../src/service/committers.svc.ts';
 
 describe('committers', () => {
   // Sample test data to be reused across tests
-  const sampleGitLog = `January|John Doe
-February|Jane Smith
-January|John Doe
-February|Bob Johnson
-March|Jane Smith
-January|Alice Brown`;
+  const sampleGitLog = `9382084093|John Doe|2025-08-19
+9382084093|Jane Smith|2025-08-19
+9382084093|John Doe|2025-08-19
+9382084093|Bob Johnson|2025-08-19
+9382084093|Jane Smith|2025-08-19
+9382084093|Alice Brown|2025-08-19`;
+
+  const sampleDate = parse(formatDate(new Date('2025-08-19'), 'yyyy-MM-dd'), DEFAULT_DATE_FORMAT, new Date());
+  const initialDate = formatDate(new Date('2025-08-19'), 'yyyy-MM-dd');
 
   const sampleEntries = [
-    { month: 'January', author: 'John Doe' },
-    { month: 'February', author: 'Jane Smith' },
-    { month: 'January', author: 'John Doe' },
-    { month: 'February', author: 'Bob Johnson' },
-    { month: 'March', author: 'Jane Smith' },
-    { month: 'January', author: 'Alice Brown' },
+    {
+      author: 'John Doe',
+      commitHash: '9382084093',
+      monthGroup: 'August 2025',
+      date: sampleDate,
+    },
+    {
+      author: 'Jane Smith',
+      commitHash: '9382084093',
+      monthGroup: 'August 2025',
+      date: sampleDate,
+    },
+    {
+      author: 'John Doe',
+      commitHash: '9382084093',
+      monthGroup: 'August 2025',
+      date: sampleDate,
+    },
+    {
+      author: 'Bob Johnson',
+      commitHash: '9382084093',
+      monthGroup: 'August 2025',
+      date: sampleDate,
+    },
+    {
+      author: 'Jane Smith',
+      commitHash: '9382084093',
+      monthGroup: 'August 2025',
+      date: sampleDate,
+    },
+    {
+      author: 'Alice Brown',
+      commitHash: '9382084093',
+      monthGroup: 'August 2025',
+      date: sampleDate,
+    },
   ];
 
-  const sampleMonthlyData = {
-    January: {
-      'John Doe': 2,
-      'Alice Brown': 1,
+  const sampleAuthorReport: AuthorReportRow[] = [
+    {
+      author: 'John Doe',
+      commits: [
+        {
+          author: 'John Doe',
+          commitHash: '9382084093',
+          date: sampleDate,
+          monthGroup: 'August 2025',
+        },
+        {
+          author: 'John Doe',
+          commitHash: '9382084093',
+          date: sampleDate,
+          monthGroup: 'August 2025',
+        },
+      ],
+      lastCommitOn: sampleDate,
     },
-    February: {
-      'Jane Smith': 1,
-      'Bob Johnson': 1,
+    {
+      author: 'Jane Smith',
+      commits: [
+        {
+          author: 'Jane Smith',
+          commitHash: '9382084093',
+          date: sampleDate,
+          monthGroup: 'August 2025',
+        },
+        {
+          author: 'Jane Smith',
+          commitHash: '9382084093',
+          date: sampleDate,
+          monthGroup: 'August 2025',
+        },
+      ],
+      lastCommitOn: sampleDate,
     },
-    March: {
-      'Jane Smith': 1,
+    {
+      author: 'Bob Johnson',
+      commits: [
+        {
+          author: 'Bob Johnson',
+          commitHash: '9382084093',
+          date: sampleDate,
+          monthGroup: 'August 2025',
+        },
+      ],
+      lastCommitOn: sampleDate,
     },
-  };
-
-  const sampleOverallStats = {
-    'John Doe': 2,
-    'Jane Smith': 2,
-    'Bob Johnson': 1,
-    'Alice Brown': 1,
-  };
-
-  const sampleReportData = {
-    monthly: {
-      January: {
+    {
+      author: 'Alice Brown',
+      commits: [
+        {
+          author: 'Alice Brown',
+          commitHash: '9382084093',
+          date: sampleDate,
+          monthGroup: 'August 2025',
+        },
+      ],
+      lastCommitOn: sampleDate,
+    },
+  ];
+  const sampleMonthlyReport: MonthlyReportRow[] = [
+    {
+      month: 'August 2025',
+      start: initialDate,
+      end: '2025-08-31',
+      totalCommits: 6,
+      committers: {
         'John Doe': 2,
-        'Alice Brown': 1,
-        total: 3,
-      },
-      February: {
-        'Jane Smith': 1,
+        'Jane Smith': 2,
         'Bob Johnson': 1,
-        total: 2,
-      },
-      March: {
-        'Jane Smith': 1,
-        total: 1,
+        'Alice Brown': 1,
       },
     },
-    overall: {
-      'John Doe': 2,
-      'Jane Smith': 2,
-      'Bob Johnson': 1,
-      'Alice Brown': 1,
-      total: 6,
-    },
-  };
+  ];
 
   describe('parseGitLogOutput', () => {
     it('should parse git log output into commit entries', () => {
@@ -90,12 +152,22 @@ January|Alice Brown`;
     });
 
     it('should handle quoted input', () => {
-      const quotedLog = `"January|John Doe"
-"February|Jane Smith"`;
+      const quotedLog = `"9382084093|John Doe|2025-08-19"
+"9382084093|Jane Smith|2025-08-19"`;
 
       const expected = [
-        { month: 'January', author: 'John Doe' },
-        { month: 'February', author: 'Jane Smith' },
+        {
+          author: 'John Doe',
+          commitHash: '9382084093',
+          monthGroup: 'August 2025',
+          date: sampleDate,
+        },
+        {
+          author: 'Jane Smith',
+          commitHash: '9382084093',
+          monthGroup: 'August 2025',
+          date: sampleDate,
+        },
       ];
 
       const result = parseGitLogOutput(quotedLog);
@@ -104,249 +176,31 @@ January|Alice Brown`;
     });
   });
 
-  describe('groupCommitsByMonth', () => {
-    it('should group commit entries by month', () => {
-      const result = groupCommitsByMonth(sampleEntries);
+  describe('generateCommittersReport', () => {
+    it('should generate the committers report from a git log input', () => {
+      const result = generateCommittersReport(sampleEntries);
 
-      assert.deepStrictEqual(result, sampleMonthlyData);
+      assert.deepStrictEqual(result, sampleAuthorReport);
     });
 
-    it('should handle empty array', () => {
-      const result = groupCommitsByMonth([]);
+    it('should not fail if the git log input is empty', () => {
+      const result = generateCommittersReport([]);
 
-      assert.deepStrictEqual(result, {});
-    });
-  });
-
-  describe('calculateOverallStats', () => {
-    it('should calculate overall commit statistics by author', () => {
-      const result = calculateOverallStats(sampleEntries);
-
-      assert.deepStrictEqual(result, sampleOverallStats);
-    });
-
-    it('should handle empty array', () => {
-      const result = calculateOverallStats([]);
-
-      assert.deepStrictEqual(result, {});
+      assert.deepStrictEqual(result, []);
     });
   });
 
-  describe('formatMonthlyReport', () => {
-    it('should format monthly report sections correctly', () => {
-      const result = formatMonthlyReport(sampleMonthlyData);
+  describe('generateMonthlyReport', () => {
+    it('should generate the monthly report from a git log input', () => {
+      const result = generateMonthlyReport(sampleEntries);
 
-      // Check for expected sections and content patterns
-      assert.ok(result.includes('## January'));
-      assert.ok(result.includes('## February'));
-      assert.ok(result.includes('## March'));
-      assert.ok(result.includes('     2  John Doe'));
-      assert.ok(result.includes('     1  Alice Brown'));
-      assert.ok(result.includes('     3  TOTAL'));
+      assert.deepStrictEqual(result, sampleMonthlyReport);
     });
 
-    it('should sort months alphabetically', () => {
-      // Create sample with unordered months
-      const unorderedMonths = {
-        March: { 'Jane Smith': 1 },
-        January: { 'John Doe': 2 },
-        February: { 'Bob Johnson': 1 },
-      };
+    it('should not fail if the git log input is empty', () => {
+      const result = generateMonthlyReport([]);
 
-      const result = formatMonthlyReport(unorderedMonths);
-      const lines = result.split('\n');
-
-      // Find the actual order of month headings in the output
-      const monthLines = lines.filter((line) => line.startsWith('## '));
-      const months = monthLines.map((line) => line.substring(3).trim());
-
-      // Check correct order
-      assert.strictEqual(months[0], 'February');
-      assert.strictEqual(months[1], 'January');
-      assert.strictEqual(months[2], 'March');
-    });
-
-    it('should sort authors by commit count', () => {
-      const result = formatMonthlyReport({
-        January: {
-          'John Doe': 2,
-          'Alice Brown': 1,
-        },
-      });
-
-      const lines = result.split('\n');
-
-      // Find the lines containing the authors within the January section
-      const johnDoeLine = lines.find((line) => line.includes('John Doe'));
-      const aliceBrownLine = lines.find((line) => line.includes('Alice Brown'));
-
-      if (!johnDoeLine) {
-        assert.fail('Could not find expected lines in output: John Doe missing');
-      } else if (!aliceBrownLine) {
-        assert.fail('Could not find expected lines in output:Alice Brown missing');
-      } else {
-        // Find their positions in the array
-        const johnDoeIndex = lines.indexOf(johnDoeLine);
-        const aliceBrownIndex = lines.indexOf(aliceBrownLine);
-
-        // John Doe should come before Alice Brown due to higher commit count
-        assert.ok(johnDoeIndex >= 0, 'John Doe line not found');
-        assert.ok(aliceBrownIndex >= 0, 'Alice Brown line not found');
-        assert.ok(johnDoeIndex < aliceBrownIndex, 'John Doe line should appear before Alice Brown line');
-      }
-    });
-  });
-
-  describe('formatOverallStats', () => {
-    it('should format overall statistics section correctly', () => {
-      const grandTotal = 6; // Sum of all commits
-      const result = formatOverallStats(sampleOverallStats, grandTotal);
-
-      assert.ok(result.includes('## Overall Statistics'));
-      assert.ok(result.includes('     2  John Doe'));
-      assert.ok(result.includes('     2  Jane Smith'));
-      assert.ok(result.includes('     1  Bob Johnson'));
-      assert.ok(result.includes('     1  Alice Brown'));
-      assert.ok(result.includes('     6  GRAND TOTAL'));
-    });
-
-    it('should sort authors by commit count', () => {
-      const grandTotal = 6;
-      const result = formatOverallStats(sampleOverallStats, grandTotal);
-
-      const lines = result.split('\n');
-
-      // Find lines with John Doe and Bob Johnson
-      const johnDoeLine = lines.find((line) => line.includes('John Doe'));
-      const bobJohnsonLine = lines.find((line) => line.includes('Bob Johnson'));
-
-      // Find their positions in the array
-      if (!johnDoeLine) {
-        assert.fail('Could not find expected lines in output: John Doe missing');
-      } else if (!bobJohnsonLine) {
-        assert.fail('Could not find expected lines in output:Bob Johnson missing');
-      } else {
-        const johnDoeIndex = lines.indexOf(johnDoeLine);
-        const bobJohnsonIndex = lines.indexOf(bobJohnsonLine);
-
-        assert.ok(johnDoeIndex >= 0, 'John Doe line not found');
-        assert.ok(bobJohnsonIndex >= 0, 'Bob Johnson line not found');
-        assert.ok(johnDoeIndex < bobJohnsonIndex, 'John Doe line should appear before Bob Johnson line');
-      }
-    });
-  });
-
-  describe('formatAsCsv', () => {
-    it('should format report data as CSV', () => {
-      const result = formatAsCsv(sampleReportData);
-
-      // Check that output is a string and contains expected header
-      assert.strictEqual(typeof result, 'string');
-      assert.ok(result.startsWith('Month,'));
-
-      // Check that all months are included
-      assert.ok(result.includes('\nJanuary,'));
-      assert.ok(result.includes('\nFebruary,'));
-      assert.ok(result.includes('\nMarch,'));
-      assert.ok(result.includes('\nOverall,'));
-
-      // Check that columns are correctly ordered and total is included
-      const lines = result.split('\n');
-      assert.ok(lines[0].endsWith(',Total'));
-
-      // Check that values are included properly
-      const januaryLine = lines.find((line) => line.startsWith('January'));
-      if (januaryLine) {
-        assert.ok(januaryLine.includes(',2,') && januaryLine.includes(',3'));
-      } else {
-        assert.fail('Cannot find January line');
-      }
-    });
-
-    it('should handle empty data', () => {
-      const emptyData = {
-        monthly: {},
-        overall: { total: 0 },
-      };
-
-      const result = formatAsCsv(emptyData);
-
-      assert.strictEqual(typeof result, 'string');
-      assert.ok(result.startsWith('Month,'));
-      assert.ok(result.includes('Overall'));
-    });
-  });
-
-  describe('formatAsText', () => {
-    it('should format report data as text', () => {
-      const result = formatAsText(sampleReportData);
-
-      // Check for expected sections and formatting
-      assert.ok(result.includes('Monthly Commit Report'));
-      assert.ok(result.includes('## January'));
-      assert.ok(result.includes('## February'));
-      assert.ok(result.includes('## March'));
-      assert.ok(result.includes('## Overall Statistics'));
-
-      // Check for correct counts and totals
-      assert.ok(result.includes('     2  John Doe'));
-      assert.ok(result.includes('     3  TOTAL')); // January total
-      assert.ok(result.includes('     6  GRAND TOTAL'));
-    });
-
-    it('should sort authors by commit count within each section', () => {
-      const result = formatAsText(sampleReportData);
-
-      const lines = result.split('\n');
-
-      // Find the January section boundaries
-      const januarySectionStart = lines.indexOf('## January');
-      const nextSectionStart = lines.findIndex((line, index) => index > januarySectionStart && line.startsWith('## '));
-
-      // Extract just the January section lines
-      const januarySectionLines = lines.slice(januarySectionStart, nextSectionStart);
-
-      // Find the lines for John Doe and Alice Brown within this section
-      const johnDoeLine = januarySectionLines.find((line) => line.includes('John Doe'));
-      const aliceBrownLine = januarySectionLines.find((line) => line.includes('Alice Brown'));
-
-      if (!johnDoeLine) {
-        assert.fail('Could not find expected lines in output: John Doe missing');
-      } else if (!aliceBrownLine) {
-        assert.fail('Could not find expected lines in output:Alice Brown missing');
-      } else {
-        // Get their positions within the January section array
-        const johnDoeIndex = januarySectionLines.indexOf(johnDoeLine);
-        const aliceBrownIndex = januarySectionLines.indexOf(aliceBrownLine);
-
-        assert.ok(johnDoeIndex >= 0, 'John Doe line not found in January section');
-        assert.ok(aliceBrownIndex >= 0, 'Alice Brown line not found in January section');
-        assert.ok(johnDoeIndex < aliceBrownIndex, 'John Doe line should appear before Alice Brown line');
-      }
-    });
-  });
-
-  describe('formatOutputBasedOnFlag', () => {
-    it('should format as JSON when json flag is provided', () => {
-      const result = formatOutputBasedOnFlag('json', sampleReportData);
-
-      // Verify result is valid JSON
-      const parsedResult = JSON.parse(result);
-      assert.deepStrictEqual(parsedResult, sampleReportData);
-    });
-
-    it('should format as CSV when csv flag is provided', () => {
-      const result = formatOutputBasedOnFlag('csv', sampleReportData);
-
-      assert.strictEqual(typeof result, 'string');
-      assert.ok(result.startsWith('Month,'));
-    });
-
-    it('should format as text when any other flag is provided', () => {
-      const result = formatOutputBasedOnFlag('text', sampleReportData);
-
-      assert.ok(result.includes('Monthly Commit Report'));
-      assert.ok(result.includes('## January'));
+      assert.deepStrictEqual(result, []);
     });
   });
 });
