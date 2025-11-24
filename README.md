@@ -84,6 +84,7 @@ USAGE
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
+* [`hd tracker init`](#hd-tracker-init)
 * [`hd update [CHANNEL]`](#hd-update-channel)
   * **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
@@ -197,6 +198,40 @@ EXAMPLES
 ```
 
 _See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.12/src/commands/scan/eol.ts)_
+
+## `hd tracker init`
+
+Initialize the tracker configuration
+
+```
+USAGE
+  $ hd tracker init [--force -o] [-d <value>] [-f <value>] [-i <value>...]
+
+FLAGS
+  -d, --outputDir=<value>          [default: hd-tracker] Output directory for the tracker configuration file
+  -f, --configFile=<value>         [default: config.json] Filename for the tracker configuration file
+  -i, --ignorePatterns=<value>...  [default: node_modules] Ignore patterns to use for the tracker configuration file
+  -o, --overwrite                  Overwrites the tracker configuration file if it exists
+      --force                      Force tracker configuration file creation. Use with --overwrite flag
+
+DESCRIPTION
+  Initialize the tracker configuration
+
+EXAMPLES
+  $ hd tracker init
+
+  $ hd tracker init -d trackerDir
+
+  $ hd tracker init -d trackerDir -f configFileName
+
+  $ hd tracker init -i node_modules
+
+  $ hd tracker init -i node_modules -i custom_modules
+
+  $ hd tracker init -o
+```
+
+_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.13/src/commands/tracker/init.ts)_
 
 ## `hd update [CHANNEL]`
 
