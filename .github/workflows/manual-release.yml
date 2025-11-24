@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+      - uses: actions/setup-node@6
         with:
           node-version-file: '.nvmrc'
       - uses: ./.github/actions/verify-version
@@ -54,7 +54,7 @@ jobs:
       EOL_REPORT_URL: ${{ secrets.EOL_REPORT_URL }}
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+      - uses: actions/setup-node@6
         with:
           node-version-file: '.nvmrc'
       - run: npm ci
@@ -70,7 +70,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+      - uses: actions/setup-node@6
         with:
           node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
@@ -139,7 +139,7 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+      - uses: actions/setup-node@6
         with:
           node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
@@ -162,7 +162,7 @@ jobs:
 
   publish-images:
     name: Publish Images
-    needs: [check-version, test]
+    needs: [npm-publish]
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -171,12 +171,16 @@ jobs:
 
       - uses: jlumbroso/free-disk-space@main
         with:
-          tool-cache: false
-          dotnet: false
+          tool-cache: true
+          large-packages: true
           haskell: false
-          large-packages: false
           docker-images: false
           swap-storage: false
+      
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
 
       - name: Parse tag
         run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
