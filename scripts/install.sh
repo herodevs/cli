@@ -32,7 +32,7 @@ INSTALL_DIR="$HOME/.herodevs"
 BIN_DIR="$INSTALL_DIR/bin"
 GITHUB_API_URL="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases"
 TMP_DIR=""
-LATEST_VERSION="v2.0.0-beta.13"
+LATEST_VERSION="v2.0.0-beta.14"
 DEBUG=${DEBUG:-}
 
 # Colors for output

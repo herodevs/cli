@@ -43,11 +43,11 @@ npm install -g @herodevs/cli@beta
 HeroDevs CLI is available as a binary installation, without requiring `npm`. To do that, you may either download and run the script manually, or use the following cURL or Wget command:
 
 ```sh
-curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.13/scripts/install.sh | bash
+curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.14/scripts/install.sh | bash
 ```
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.13/scripts/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.14/scripts/install.sh | bash
 ```
 
 ## Scanning Behavior
@@ -72,7 +72,7 @@ $ npm install -g @herodevs/cli@beta
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.12 darwin-arm64 node-v24.10.0
+@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v24.10.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -142,7 +142,7 @@ EXAMPLES
   $ hd report committers --csv
 ```
 
-_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.13/src/commands/report/committers.ts)_
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/report/committers.ts)_
 
 ## `hd scan eol`
 
@@ -197,7 +197,7 @@ EXAMPLES
     $ hd scan eol --json
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.12/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/scan/eol.ts)_
 
 ## `hd tracker init`
 
@@ -231,7 +231,7 @@ EXAMPLES
   $ hd tracker init -o
 ```
 
-_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.13/src/commands/tracker/init.ts)_
+_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/tracker/init.ts)_
 
 ## `hd update [CHANNEL]`
 
