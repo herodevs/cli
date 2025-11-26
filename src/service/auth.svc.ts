@@ -20,7 +20,7 @@ export async function getAccessToken(): Promise<string | undefined> {
   }
 
   if (!tokens.refreshToken) {
-    return undefined;
+    return;
   }
 
   const refreshed = await refreshTokens(tokens.refreshToken);
