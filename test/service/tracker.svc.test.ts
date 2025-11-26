@@ -1,10 +1,17 @@
+import mock from 'mock-fs';
 import assert from 'node:assert';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
-import mock from 'mock-fs';
+import { DEFAULT_TRACKER_RUN_DATA_FILE } from '../../src/config/constants.ts';
 import { TRACKER_DEFAULT_CONFIG, TRACKER_ROOT_FILE } from '../../src/config/tracker.config.ts';
-import { createTrackerConfig, getRootDir } from '../../src/service/tracker.svc.ts';
+import {
+  createTrackerConfig,
+  getFilesFromCategory,
+  getFileStats,
+  getRootDir,
+  saveResults,
+} from '../../src/service/tracker.svc.ts';
 
 describe('tracker.svc', () => {
   describe('getRootDir', () => {
@@ -130,6 +137,345 @@ describe('tracker.svc', () => {
           ignorePatterns: [],
         });
       } catch (_err) {}
+    });
+  });
+
+  describe('getFilesFromCategory', () => {
+    beforeEach(() => {
+      mock({
+        root: {
+          'demo.js': '',
+          'demo.css': '',
+          'demo.html': '',
+          folder: {
+            'folder-demo-one.html': '',
+            'folder-demo-one.js': '',
+            'folder-demo-one.css': '',
+            'folder-demo-two.html': '',
+            'folder-demo-two.js': '',
+            'folder-demo-two.css': '',
+            'folder-demo-three.html': '',
+            'folder-demo-three.js': '',
+            'folder-demo-three.css': '',
+          },
+          another: {
+            'another.html': '',
+            'another.js': '',
+          },
+        },
+      });
+    });
+
+    afterEach(() => {
+      mock.restore();
+    });
+
+    it('should return empty array if no fileTypes are defined in config', () => {
+      const result = getFilesFromCategory(
+        {
+          fileTypes: [],
+          includes: [''],
+          jsTsPairs: 'js',
+        },
+        {
+          rootDir: 'root',
+        },
+      );
+
+      assert.deepStrictEqual(result, []);
+    });
+
+    it('should return empty array if includes is empty are defined in config', () => {
+      const result = getFilesFromCategory(
+        {
+          fileTypes: ['js'],
+          includes: [],
+          jsTsPairs: 'js',
+        },
+        {
+          rootDir: 'root',
+        },
+      );
+
+      assert.deepStrictEqual(result, []);
+    });
+
+    it('should only return files with specified file types in specified folder', () => {
+      const result = getFilesFromCategory(
+        {
+          fileTypes: ['js'],
+          includes: ['folder'],
+          jsTsPairs: 'js',
+        },
+        {
+          rootDir: 'root',
+        },
+      );
+
+      assert.deepStrictEqual(
+        result.sort(),
+        ['folder/folder-demo-one.js', 'folder/folder-demo-two.js', 'folder/folder-demo-three.js'].sort(),
+      );
+    });
+
+    it('should handle multiple file types', () => {
+      const result = getFilesFromCategory(
+        {
+          fileTypes: ['js', 'css'],
+          includes: ['folder'],
+          jsTsPairs: 'js',
+        },
+        {
+          rootDir: 'root',
+        },
+      );
+
+      assert.deepStrictEqual(
+        result.sort(),
+        [
+          'folder/folder-demo-one.js',
+          'folder/folder-demo-one.css',
+          'folder/folder-demo-two.js',
+          'folder/folder-demo-two.css',
+          'folder/folder-demo-three.js',
+          'folder/folder-demo-three.css',
+        ].sort(),
+      );
+    });
+
+    it('should handle multiple included folders', () => {
+      const result = getFilesFromCategory(
+        {
+          fileTypes: ['js'],
+          includes: ['folder', 'another'],
+          jsTsPairs: 'js',
+        },
+        {
+          rootDir: 'root',
+        },
+      );
+
+      assert.deepStrictEqual(
+        result.sort(),
+        [
+          'folder/folder-demo-one.js',
+          'folder/folder-demo-two.js',
+          'folder/folder-demo-three.js',
+          'another/another.js',
+        ].sort(),
+      );
+    });
+
+    it('should handle multiple file types within multiple folders', () => {
+      const result = getFilesFromCategory(
+        {
+          fileTypes: ['js', 'html'],
+          includes: ['folder', 'another'],
+          jsTsPairs: 'js',
+        },
+        {
+          rootDir: 'root',
+        },
+      );
+
+      assert.deepStrictEqual(
+        result.sort(),
+        [
+          'folder/folder-demo-one.html',
+          'folder/folder-demo-one.js',
+          'folder/folder-demo-two.html',
+          'folder/folder-demo-two.js',
+          'folder/folder-demo-three.html',
+          'folder/folder-demo-three.js',
+          'another/another.html',
+          'another/another.js',
+        ].sort(),
+      );
+    });
+
+    it('should skip files that match ignorePatterns', () => {
+      const result = getFilesFromCategory(
+        {
+          fileTypes: ['js', 'html'],
+          includes: ['folder', 'another'],
+          jsTsPairs: 'js',
+        },
+        {
+          rootDir: 'root',
+          ignorePatterns: ['**/*.js'],
+        },
+      );
+
+      assert.deepStrictEqual(
+        result.sort(),
+        [
+          'folder/folder-demo-one.html',
+          'folder/folder-demo-two.html',
+          'folder/folder-demo-three.html',
+          'another/another.html',
+        ].sort(),
+      );
+    });
+  });
+
+  describe('getFileStats', () => {
+    beforeEach(() => {
+      mock({
+        root: {
+          'demo.js': `
+            const test = 'This is a test';
+            // This should be a comment
+            
+            const log = () => {
+              console.log('Hello from log!');
+            }
+          `,
+          'empty.js': '',
+        },
+      });
+    });
+
+    afterEach(() => {
+      mock.restore();
+    });
+
+    it('should handle missing file', () => {
+      const stats = getFileStats('missing.js', {
+        rootDir: 'root',
+      });
+
+      assert.deepStrictEqual(stats, {
+        path: 'missing.js',
+        fileType: 'js',
+        error: true,
+      });
+    });
+
+    it('should handle empty files', () => {
+      const stats = getFileStats('empty.js', {
+        rootDir: 'root',
+      });
+
+      assert.strictEqual(stats.path, 'empty.js');
+      assert.strictEqual(stats.fileType, 'js');
+      assert.strictEqual('empty' in stats, true);
+      if ('empty' in stats) {
+        assert.strictEqual(stats.empty, 1);
+      }
+    });
+
+    it('should handle files with content', () => {
+      const stats = getFileStats('demo.js', {
+        rootDir: 'root',
+      });
+
+      assert.strictEqual(stats.path, 'demo.js');
+      assert.strictEqual(stats.fileType, 'js');
+      assert.strictEqual('total' in stats, true);
+      if ('total' in stats) {
+        assert.strictEqual(stats.total, 8);
+      }
+    });
+  });
+
+  describe('saveResults', () => {
+    beforeEach(() => {
+      mock({
+        new: {},
+        existing: {
+          [DEFAULT_TRACKER_RUN_DATA_FILE]: '[]',
+        },
+        empty: {
+          [DEFAULT_TRACKER_RUN_DATA_FILE]: '',
+        },
+        invalid: {
+          [DEFAULT_TRACKER_RUN_DATA_FILE]: 'deiosjdioesj',
+        },
+      });
+    });
+
+    afterEach(() => {
+      mock.restore();
+    });
+
+    it('should save information in file', () => {
+      const result = saveResults([], '', 'new', {
+        author: 'demo',
+        hash: '20384209384',
+        timestamp: '20384209384',
+      });
+
+      const file = readFileSync(`new/${DEFAULT_TRACKER_RUN_DATA_FILE}`).toString('utf-8');
+
+      assert.strictEqual(result, `new/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
+      assert.deepStrictEqual(JSON.parse(file), [
+        {
+          author: 'demo',
+          hash: '20384209384',
+          timestamp: '20384209384',
+          categories: [],
+        },
+      ]);
+    });
+
+    it('should handle saving with existing file', () => {
+      const result = saveResults([], '', 'existing', {
+        author: 'demo',
+        hash: '20384209384',
+        timestamp: '20384209384',
+      });
+
+      const file = readFileSync(`existing/${DEFAULT_TRACKER_RUN_DATA_FILE}`).toString('utf-8');
+
+      assert.strictEqual(result, `existing/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
+      assert.deepStrictEqual(JSON.parse(file), [
+        {
+          author: 'demo',
+          hash: '20384209384',
+          timestamp: '20384209384',
+          categories: [],
+        },
+      ]);
+    });
+
+    it('should handle saving with existing empty file', () => {
+      const result = saveResults([], '', 'empty', {
+        author: 'demo',
+        hash: '20384209384',
+        timestamp: '20384209384',
+      });
+
+      const file = readFileSync(`empty/${DEFAULT_TRACKER_RUN_DATA_FILE}`).toString('utf-8');
+
+      assert.strictEqual(result, `empty/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
+      assert.deepStrictEqual(JSON.parse(file), [
+        {
+          author: 'demo',
+          hash: '20384209384',
+          timestamp: '20384209384',
+          categories: [],
+        },
+      ]);
+    });
+
+    it('should handle saving with existing invalid file', () => {
+      const result = saveResults([], '', 'invalid', {
+        author: 'demo',
+        hash: '20384209384',
+        timestamp: '20384209384',
+      });
+
+      const file = readFileSync(`invalid/${DEFAULT_TRACKER_RUN_DATA_FILE}`).toString('utf-8');
+
+      assert.strictEqual(result, `invalid/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
+      assert.deepStrictEqual(JSON.parse(file), [
+        {
+          author: 'demo',
+          hash: '20384209384',
+          timestamp: '20384209384',
+          categories: [],
+        },
+      ]);
     });
   });
 });
