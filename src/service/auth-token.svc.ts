@@ -1,4 +1,4 @@
-import keytar from 'keytar';
+import { AsyncEntry } from '@napi-rs/keyring';
 import { getAccessTokenKey, getRefreshTokenKey, getTokenServiceName } from './auth-config.svc.ts';
 
 export interface StoredTokens {
@@ -13,13 +13,12 @@ export async function saveTokens(tokens: { accessToken: string; refreshToken?: s
   const accessKey = getAccessTokenKey();
   const refreshKey = getRefreshTokenKey();
 
-  await keytar.setPassword(service, accessKey, tokens.accessToken);
+  const accessTokenSet = new AsyncEntry(service, accessKey).setPassword(tokens.accessToken);
+  const refreshTokenSet = tokens.refreshToken
+    ? new AsyncEntry(service, refreshKey).setPassword(tokens.refreshToken)
+    : new AsyncEntry(service, refreshKey).deletePassword();
 
-  if (tokens.refreshToken) {
-    await keytar.setPassword(service, refreshKey, tokens.refreshToken);
-  } else {
-    await keytar.deletePassword(service, refreshKey);
-  }
+  return Promise.all([accessTokenSet, refreshTokenSet]);
 }
 
 export async function getStoredTokens(): Promise<StoredTokens | undefined> {
@@ -27,19 +26,22 @@ export async function getStoredTokens(): Promise<StoredTokens | undefined> {
   const accessKey = getAccessTokenKey();
   const refreshKey = getRefreshTokenKey();
 
-  const [accessToken, refreshToken] = await Promise.all([
-    keytar.getPassword(service, accessKey),
-    keytar.getPassword(service, refreshKey),
-  ]);
+  return Promise.all([
+    new AsyncEntry(service, accessKey).getPassword(),
+    new AsyncEntry(service, refreshKey).getPassword(),
+  ]).then(([accessToken, refreshToken]) => {
+    const normalizedAccess = accessToken ?? undefined;
+    const normalizedRefresh = refreshToken ?? undefined;
 
-  if (!accessToken && !refreshToken) {
-    return;
-  }
+    if (!normalizedAccess && !normalizedRefresh) {
+      return;
+    }
 
-  return {
-    accessToken: accessToken ?? undefined,
-    refreshToken: refreshToken ?? undefined,
-  };
+    return {
+      accessToken: normalizedAccess,
+      refreshToken: normalizedRefresh,
+    };
+  });
 }
 
 export async function clearStoredTokens() {
@@ -47,7 +49,10 @@ export async function clearStoredTokens() {
   const accessKey = getAccessTokenKey();
   const refreshKey = getRefreshTokenKey();
 
-  await Promise.all([keytar.deletePassword(service, accessKey), keytar.deletePassword(service, refreshKey)]);
+  return Promise.all([
+    new AsyncEntry(service, accessKey).deletePassword(),
+    new AsyncEntry(service, refreshKey).deletePassword(),
+  ]);
 }
 
 export function isAccessTokenExpired(token: string | undefined): boolean {

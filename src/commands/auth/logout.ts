@@ -6,6 +6,10 @@ export default class AuthLogout extends Command {
   static description = 'Logs out of HeroDevs OAuth and clears stored tokens';
 
   async run() {
+    if (typeof (this.config as { runHook?: unknown }).runHook === 'function') {
+      await this.parse(AuthLogout);
+    }
+
     const tokens = await getStoredTokens();
     if (!tokens?.accessToken && !tokens?.refreshToken) {
       this.log('No stored authentication tokens found.');

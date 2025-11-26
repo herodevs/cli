@@ -27,7 +27,7 @@ describe('auth.svc', () => {
     vi.resetAllMocks();
   });
 
-  it('persists token responses via keytar service', async () => {
+  it('persists token responses via keyring service', async () => {
     await persistTokenResponse({ access_token: 'access', refresh_token: 'refresh' });
     expect(saveTokens).toHaveBeenCalledWith({ accessToken: 'access', refreshToken: 'refresh' });
   });

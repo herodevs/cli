@@ -10,7 +10,7 @@ export const GIT_OUTPUT_FORMAT = `"${['%h', '%an', '%ad'].join('|')}"`;
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const DEFAULT_DATE_COMMIT_FORMAT = 'MM/dd/yyyy, h:mm:ss a';
 export const DEFAULT_DATE_COMMIT_MONTH_FORMAT = 'MMMM yyyy';
-export const ENABLE_AUTH = false;
+export const ENABLE_AUTH = true;
 
 let concurrentPageRequests = CONCURRENT_PAGE_REQUESTS;
 const parsed = Number.parseInt(process.env.CONCURRENT_PAGE_REQUESTS ?? '0', 10);
