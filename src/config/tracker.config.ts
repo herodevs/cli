@@ -27,7 +27,7 @@ export const TRACKER_DEFAULT_CONFIG: TrackerConfig = {
       jsTsPairs: 'ts',
     },
   },
-  ignorePatterns: ['node_modules'],
+  ignorePatterns: ['**/node_modules/**'],
   outputDir: 'hd-tracker',
   configFile: 'config.json',
 };
