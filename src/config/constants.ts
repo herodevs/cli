@@ -11,6 +11,10 @@ export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const DEFAULT_DATE_COMMIT_FORMAT = 'MM/dd/yyyy, h:mm:ss a';
 export const DEFAULT_DATE_COMMIT_MONTH_FORMAT = 'MMMM yyyy';
 
+// Trackers - Constants
+export const DEFAULT_TRACKER_RUN_DATA_FILE = 'data.json';
+export const TRACKER_GIT_OUTPUT_FORMAT = `"${['%H', '%an', '%ad'].join('|')}"`;
+
 let concurrentPageRequests = CONCURRENT_PAGE_REQUESTS;
 const parsed = Number.parseInt(process.env.CONCURRENT_PAGE_REQUESTS ?? '0', 10);
 if (parsed > 0) {
