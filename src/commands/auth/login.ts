@@ -1,8 +1,8 @@
 import crypto from 'node:crypto';
 import http from 'node:http';
+import { createInterface } from 'node:readline';
 import { URL } from 'node:url';
 import { Command } from '@oclif/core';
-import inquirer from 'inquirer';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
 import { getClientId, getRealmUrl } from '../../service/auth-config.svc.ts';
 import type { TokenResponse } from '../../types/auth.ts';
@@ -18,6 +18,10 @@ export default class AuthLogin extends Command {
   private readonly clientId = getClientId();
 
   async run() {
+    if (typeof (this.config as { runHook?: unknown }).runHook === 'function') {
+      await this.parse(AuthLogin);
+    }
+
     const codeVerifier = crypto.randomBytes(32).toString('base64url');
     const codeChallenge = crypto.createHash('sha256').update(codeVerifier).digest('base64url');
     const state = crypto.randomBytes(16).toString('hex');
@@ -50,7 +54,17 @@ export default class AuthLogin extends Command {
           return;
         }
 
-        const parsedUrl = new URL(req.url, `http://localhost:${this.port}`);
+        let parsedUrl: URL;
+        try {
+          parsedUrl = new URL(req.url, `http://localhost:${this.port}`);
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'text/plain' });
+          res.end('Invalid callback URL');
+          this.stopServer();
+          reject(new Error('Invalid callback URL'));
+          return;
+        }
+
         if (parsedUrl.pathname === '/oauth2/callback') {
           const code = parsedUrl.searchParams.get('code');
           const state = parsedUrl.searchParams.get('state');
@@ -87,10 +101,12 @@ export default class AuthLogin extends Command {
       });
 
       this.server.listen(this.port, async () => {
-        await inquirer.prompt({
-          name: 'confirm',
-          message: `Press Enter to navigate to: ${authUrl}`,
-          type: 'confirm',
+        await new Promise<void>((resolve) => {
+          const rl = createInterface({ input: process.stdin, output: process.stdout });
+          rl.question(`Press Enter to navigate to: ${authUrl}\n`, () => {
+            rl.close();
+            resolve();
+          });
         });
 
         try {

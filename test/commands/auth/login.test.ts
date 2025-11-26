@@ -1,5 +1,4 @@
 import type { Config } from '@oclif/core';
-import inquirer from 'inquirer';
 import { type Mock, type MockedFunction, vi } from 'vitest';
 import AuthLogin from '../../../src/commands/auth/login.ts';
 import { persistTokenResponse } from '../../../src/service/auth.svc.ts';
@@ -75,11 +74,15 @@ vi.mock('../../../src/utils/open-in-browser.ts', () => ({
   openInBrowser: vi.fn(),
 }));
 
-vi.mock('inquirer', () => ({
+const questionMock = vi.fn<[string, (answer: string) => void], void>();
+const closeMock = vi.fn<[], void>();
+
+vi.mock('node:readline', () => ({
   __esModule: true,
-  default: {
-    prompt: vi.fn(),
-  },
+  createInterface: vi.fn(() => ({
+    question: questionMock,
+    close: closeMock,
+  })),
 }));
 
 vi.mock('../../../src/service/auth.svc.ts', () => ({
@@ -88,7 +91,6 @@ vi.mock('../../../src/service/auth.svc.ts', () => ({
 }));
 
 const openMock = vi.mocked(openInBrowser) as MockedFunction<typeof openInBrowser>;
-const promptMock = vi.mocked(inquirer.prompt) as MockedFunction<typeof inquirer.prompt>;
 const persistTokenResponseMock = vi.mocked(persistTokenResponse);
 
 const flushAsync = () => new Promise((resolve) => setImmediate(resolve));
@@ -123,7 +125,8 @@ const createCommand = (port: number) => {
 
 describe('AuthLogin', () => {
   beforeEach(() => {
-    promptMock.mockResolvedValue({ confirm: true });
+    questionMock.mockImplementation((_q, cb) => cb(''));
+    closeMock.mockClear();
     openMock.mockResolvedValue(undefined);
   });
 
@@ -150,7 +153,8 @@ describe('AuthLogin', () => {
       sendCallbackThroughStub({ code: 'test-code', state });
 
       await expect(pendingCode).resolves.toBe('test-code');
-      expect(promptMock).toHaveBeenCalledWith(expect.objectContaining({ message: expect.stringContaining(authUrl) }));
+      expect(questionMock).toHaveBeenCalledWith(expect.stringContaining(authUrl), expect.any(Function));
+      expect(closeMock).toHaveBeenCalledTimes(1);
       expect(openMock).toHaveBeenCalledWith(authUrl);
       expect(server.close).toHaveBeenCalledTimes(1);
     });
@@ -194,6 +198,22 @@ describe('AuthLogin', () => {
       sendCallbackThroughStub({ state: 'expected-state' });
 
       await expect(pendingCode).rejects.toThrow('No code returned from Keycloak');
+      expect(server.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects when the callback URL is invalid', async () => {
+      const command = createCommand(basePort + 4);
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
+      const server = getLatestServer();
+
+      await flushAsync();
+      const response = server.triggerRequest('http://%');
+
+      expect(response.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'text/plain' });
+      expect(response.end).toHaveBeenCalledWith('Invalid callback URL');
+      await expect(pendingCode).rejects.toThrow('Invalid callback URL');
       expect(server.close).toHaveBeenCalledTimes(1);
     });
 
