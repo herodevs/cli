@@ -33,7 +33,7 @@ export async function getStoredTokens(): Promise<StoredTokens | undefined> {
   ]);
 
   if (!accessToken && !refreshToken) {
-    return undefined;
+    return;
   }
 
   return {
@@ -47,10 +47,7 @@ export async function clearStoredTokens() {
   const accessKey = getAccessTokenKey();
   const refreshKey = getRefreshTokenKey();
 
-  await Promise.all([
-    keytar.deletePassword(service, accessKey),
-    keytar.deletePassword(service, refreshKey),
-  ]);
+  await Promise.all([keytar.deletePassword(service, accessKey), keytar.deletePassword(service, refreshKey)]);
 }
 
 export function isAccessTokenExpired(token: string | undefined): boolean {

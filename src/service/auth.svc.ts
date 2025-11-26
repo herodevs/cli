@@ -1,6 +1,6 @@
+import type { TokenResponse } from '../types/auth.ts';
 import { refreshTokens } from './auth-refresh.svc.ts';
 import { clearStoredTokens, getStoredTokens, isAccessTokenExpired, saveTokens } from './auth-token.svc.ts';
-import type { TokenResponse } from '../types/auth.ts';
 
 export async function persistTokenResponse(token: TokenResponse) {
   await saveTokens({

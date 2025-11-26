@@ -20,7 +20,12 @@ vi.mock('keytar', () => {
 });
 
 import keytar from 'keytar';
-import { clearStoredTokens, getStoredTokens, isAccessTokenExpired, saveTokens } from '../../src/service/auth-token.svc.ts';
+import {
+  clearStoredTokens,
+  getStoredTokens,
+  isAccessTokenExpired,
+  saveTokens,
+} from '../../src/service/auth-token.svc.ts';
 import { createTokenWithExp } from '../utils/token.ts';
 
 describe('auth-token.svc', () => {

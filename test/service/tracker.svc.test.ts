@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import mock from 'mock-fs';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { TRACKER_DEFAULT_CONFIG, TRACKER_ROOT_FILE } from '../../src/config/tracker.config.ts';
 import { createTrackerConfig, getRootDir } from '../../src/service/tracker.svc.ts';
 

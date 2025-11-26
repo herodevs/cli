@@ -46,10 +46,10 @@ describe('file.svc', () => {
     metadata: {
       totalComponentsCount: 0,
       unknownComponentsCount: 0,
-      totalUniqueComponentsCount: 0
+      totalUniqueComponentsCount: 0,
     },
     page: 1,
-    totalRecords: 0
+    totalRecords: 0,
   };
 
   afterAll(() => {
@@ -97,7 +97,9 @@ describe('file.svc', () => {
       const filePath = join(tempDir, 'invalid-format.json');
       await writeFile(filePath, JSON.stringify({ invalid: 'format' }));
 
-      expect(() => readSbomFromFile(filePath)).toThrow(/Invalid SBOM file format\. Expected SPDX 2\.3 or CycloneDX format/);
+      expect(() => readSbomFromFile(filePath)).toThrow(
+        /Invalid SBOM file format\. Expected SPDX 2\.3 or CycloneDX format/,
+      );
     });
   });
 

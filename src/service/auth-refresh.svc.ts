@@ -28,7 +28,7 @@ export async function refreshTokens(refreshToken: string, options: AuthOptions =
     throw new Error(`Token refresh failed: ${response.status} ${response.statusText}\n${text}`);
   }
 
-  return await response.json() as TokenResponse;
+  return response.json() as Promise<TokenResponse>;
 }
 
 export async function logoutFromProvider(refreshToken: string | undefined, options: AuthOptions = {}) {

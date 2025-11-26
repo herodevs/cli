@@ -64,10 +64,10 @@ describe('display.svc', () => {
     metadata: {
       totalComponentsCount: 5,
       unknownComponentsCount: 1,
-      totalUniqueComponentsCount: 5
+      totalUniqueComponentsCount: 5,
     },
     page: 1,
-    totalRecords: 5
+    totalRecords: 5,
   };
 
   describe('countComponentsByStatus', () => {
@@ -98,10 +98,10 @@ describe('display.svc', () => {
         metadata: {
           totalComponentsCount: 0,
           unknownComponentsCount: 0,
-          totalUniqueComponentsCount: 0
+          totalUniqueComponentsCount: 0,
         },
         page: 1,
-        totalRecords: 0
+        totalRecords: 0,
       };
 
       const counts = countComponentsByStatus(emptyReport);
@@ -131,10 +131,10 @@ describe('display.svc', () => {
         metadata: {
           totalComponentsCount: 0,
           unknownComponentsCount: 0,
-          totalUniqueComponentsCount: 0
+          totalUniqueComponentsCount: 0,
         },
         page: 1,
-        totalRecords: 0
+        totalRecords: 0,
       };
 
       const lines = formatScanResults(emptyReport);

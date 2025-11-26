@@ -14,6 +14,7 @@ import type { EolScanComponent } from '@herodevs/eol-shared';
 import { runCommand } from '@oclif/test';
 import { config, filenamePrefix } from '../../src/config/constants.ts';
 import { FetchMock } from '../../test/utils/mocks/fetch.mock.ts';
+
 // import { getAccessTokenKey, getRefreshTokenKey, getTokenServiceName } from '../../src/service/auth-config.svc.ts';
 // import { createTokenWithExp } from '../../test/utils/token.ts';
 

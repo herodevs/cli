@@ -1,4 +1,4 @@
-import { vi, type Mock } from 'vitest';
+import { type Mock, vi } from 'vitest';
 
 vi.mock('../../src/service/auth-token.svc.ts', () => ({
   __esModule: true,
@@ -14,8 +14,13 @@ vi.mock('../../src/service/auth-refresh.svc.ts', () => ({
 }));
 
 import { getAccessToken, logoutLocally, persistTokenResponse, requireAccessToken } from '../../src/service/auth.svc.ts';
-import { clearStoredTokens, getStoredTokens, isAccessTokenExpired, saveTokens } from '../../src/service/auth-token.svc.ts';
 import { refreshTokens } from '../../src/service/auth-refresh.svc.ts';
+import {
+  clearStoredTokens,
+  getStoredTokens,
+  isAccessTokenExpired,
+  saveTokens,
+} from '../../src/service/auth-token.svc.ts';
 
 describe('auth.svc', () => {
   beforeEach(() => {

@@ -1,8 +1,9 @@
 import type { ChildProcess } from 'node:child_process';
-import { vi, type Mock, type MockedFunction } from 'vitest';
-import open from 'open';
-import inquirer from 'inquirer';
+
 import type { Config } from '@oclif/core';
+import inquirer from 'inquirer';
+import open from 'open';
+import { type Mock, type MockedFunction, vi } from 'vitest';
 import AuthLogin from '../../../src/commands/auth/login.ts';
 import { persistTokenResponse } from '../../../src/service/auth.svc.ts';
 
@@ -25,7 +26,7 @@ const createServerStub = (handler: ServerHandler): ServerStub => {
   let errorListener: ((error: Error) => void) | undefined;
   const stub: ServerStub = {
     handler,
-    listen: vi.fn((port: number, cb?: () => void) => {
+    listen: vi.fn((_port: number, cb?: () => void) => {
       if (cb) {
         setImmediate(cb);
       }
@@ -142,7 +143,9 @@ describe('AuthLogin', () => {
     it('resolves with the authorization code when the callback is valid', async () => {
       const command = createCommand(basePort);
       const state = 'expected-state';
-      const pendingCode = (command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }).startServerAndAwaitCode(authUrl, state);
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, state);
       const server = getLatestServer();
 
       await flushAsync();
@@ -156,7 +159,9 @@ describe('AuthLogin', () => {
 
     it('rejects when the callback is missing the state parameter', async () => {
       const command = createCommand(basePort + 1);
-      const pendingCode = (command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }).startServerAndAwaitCode(authUrl, 'expected-state');
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
       const server = getLatestServer();
 
       await flushAsync();
@@ -168,7 +173,9 @@ describe('AuthLogin', () => {
 
     it('rejects when the callback state does not match', async () => {
       const command = createCommand(basePort + 2);
-      const pendingCode = (command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }).startServerAndAwaitCode(authUrl, 'expected-state');
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
       const server = getLatestServer();
 
       await flushAsync();
@@ -180,7 +187,9 @@ describe('AuthLogin', () => {
 
     it('rejects when the callback omits the authorization code', async () => {
       const command = createCommand(basePort + 3);
-      const pendingCode = (command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }).startServerAndAwaitCode(authUrl, 'expected-state');
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
       const server = getLatestServer();
 
       await flushAsync();
@@ -192,7 +201,9 @@ describe('AuthLogin', () => {
 
     it('returns a 400 response when the incoming request is missing a URL', async () => {
       const command = createCommand(basePort + 4);
-      const pendingCode = (command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }).startServerAndAwaitCode(authUrl, 'expected-state');
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
       const server = getLatestServer();
 
       await flushAsync();
@@ -209,7 +220,9 @@ describe('AuthLogin', () => {
 
     it('responds with not found for unrelated paths', async () => {
       const command = createCommand(basePort + 5);
-      const pendingCode = (command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }).startServerAndAwaitCode(authUrl, 'expected-state');
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
       const server = getLatestServer();
 
       await flushAsync();
@@ -226,7 +239,9 @@ describe('AuthLogin', () => {
 
     it('rejects when the local HTTP server emits an error', async () => {
       const command = createCommand(basePort + 6);
-      const pendingCode = (command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }).startServerAndAwaitCode(authUrl, 'expected-state');
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
       const server = getLatestServer();
 
       await flushAsync();
@@ -240,11 +255,15 @@ describe('AuthLogin', () => {
     it('warns and allows manual navigation when browser launch fails', async () => {
       openMock.mockRejectedValueOnce(new Error('browser unavailable'));
       const command = createCommand(basePort + 7);
-      const warnSpy = vi.spyOn(command as unknown as { warn: (...args: unknown[]) => unknown }, 'warn').mockImplementation(() => {});
+      const warnSpy = vi
+        .spyOn(command as unknown as { warn: (...args: unknown[]) => unknown }, 'warn')
+        .mockImplementation(() => {});
       const state = 'expected-state';
 
       try {
-        const pendingCode = (command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }).startServerAndAwaitCode(authUrl, state);
+        const pendingCode = (
+          command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+        ).startServerAndAwaitCode(authUrl, state);
         const server = getLatestServer();
 
         await flushAsync();
@@ -271,7 +290,9 @@ describe('AuthLogin', () => {
       } as unknown as Response);
 
       try {
-        const token = await (command as unknown as { exchangeCodeForToken: (code: string, verifier: string) => Promise<unknown> }).exchangeCodeForToken('code-123', 'verifier-456');
+        const token = await (
+          command as unknown as { exchangeCodeForToken: (code: string, verifier: string) => Promise<unknown> }
+        ).exchangeCodeForToken('code-123', 'verifier-456');
 
         expect(fetchSpy).toHaveBeenCalledTimes(1);
         const [url, options] = fetchSpy.mock.calls[0];
@@ -300,8 +321,11 @@ describe('AuthLogin', () => {
       } as unknown as Response);
 
       try {
-        await expect((command as unknown as { exchangeCodeForToken: (code: string, verifier: string) => Promise<unknown> }).exchangeCodeForToken('code-123', 'verifier-456')).rejects
-          .toThrow('Token exchange failed: 500 Server Error');
+        await expect(
+          (
+            command as unknown as { exchangeCodeForToken: (code: string, verifier: string) => Promise<unknown> }
+          ).exchangeCodeForToken('code-123', 'verifier-456'),
+        ).rejects.toThrow('Token exchange failed: 500 Server Error');
         expect(textMock).toHaveBeenCalled();
       } finally {
         fetchSpy.mockRestore();

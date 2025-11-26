@@ -8,10 +8,10 @@ import type {
 } from '@herodevs/eol-shared';
 import type { GraphQLFormattedError } from 'graphql';
 import { config } from '../config/constants.ts';
+import { requireAccessToken } from '../service/auth.svc.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { stripTypename } from '../utils/strip-typename.ts';
 import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
-import { requireAccessToken } from '../service/auth.svc.ts';
 
 const createAuthorizedFetch = (): typeof fetch => async (input, init) => {
   const headers = new Headers(init?.headers);

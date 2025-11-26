@@ -1,4 +1,4 @@
-import { vi, type Mock } from 'vitest';
+import { type Mock, vi } from 'vitest';
 
 vi.mock('../../../src/service/auth-token.svc.ts', () => ({
   __esModule: true,
@@ -12,8 +12,8 @@ vi.mock('../../../src/service/auth-refresh.svc.ts', () => ({
 }));
 
 import AuthLogout from '../../../src/commands/auth/logout.ts';
-import { clearStoredTokens, getStoredTokens } from '../../../src/service/auth-token.svc.ts';
 import { logoutFromProvider } from '../../../src/service/auth-refresh.svc.ts';
+import { clearStoredTokens, getStoredTokens } from '../../../src/service/auth-token.svc.ts';
 
 describe('AuthLogout command', () => {
   beforeEach(() => {
