@@ -12,7 +12,7 @@ export async function persistTokenResponse(token: TokenResponse) {
 export async function getAccessToken(): Promise<string | undefined> {
   const tokens = await getStoredTokens();
   if (!tokens) {
-    return undefined;
+    return;
   }
 
   if (tokens.accessToken && !isAccessTokenExpired(tokens.accessToken)) {
