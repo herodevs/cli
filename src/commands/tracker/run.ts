@@ -1,6 +1,6 @@
+import { spawnSync } from 'node:child_process';
 import { Command, Flags, ux } from '@oclif/core';
 import { Presets, SingleBar } from 'cli-progress';
-import { spawnSync } from 'node:child_process';
 import ora from 'ora';
 import terminalLink from 'terminal-link';
 import { TRACKER_GIT_OUTPUT_FORMAT } from '../../config/constants.js';
@@ -8,11 +8,11 @@ import { getErrorMessage, isErrnoException } from '../../service/error.svc.js';
 import {
   type CategoryStatsResult,
   type FilesStats,
-  getConfiguration,
-  getFilesFromCategory,
-  getFileStats,
-  getRootDir,
   type GitLastCommit,
+  getConfiguration,
+  getFileStats,
+  getFilesFromCategory,
+  getRootDir,
   INITIAL_FILES_STATS,
   saveResults,
 } from '../../service/tracker.svc.js';

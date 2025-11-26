@@ -1,14 +1,14 @@
-import mock from 'mock-fs';
 import assert from 'node:assert';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
+import mock from 'mock-fs';
 import { DEFAULT_TRACKER_RUN_DATA_FILE } from '../../src/config/constants.ts';
 import { TRACKER_DEFAULT_CONFIG, TRACKER_ROOT_FILE } from '../../src/config/tracker.config.ts';
 import {
   createTrackerConfig,
-  getFilesFromCategory,
   getFileStats,
+  getFilesFromCategory,
   getRootDir,
   saveResults,
 } from '../../src/service/tracker.svc.ts';
