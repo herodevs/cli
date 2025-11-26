@@ -1,11 +1,9 @@
-import type { ChildProcess } from 'node:child_process';
-
 import type { Config } from '@oclif/core';
 import inquirer from 'inquirer';
-import open from 'open';
 import { type Mock, type MockedFunction, vi } from 'vitest';
 import AuthLogin from '../../../src/commands/auth/login.ts';
 import { persistTokenResponse } from '../../../src/service/auth.svc.ts';
+import { openInBrowser } from '../../../src/utils/open-in-browser.ts';
 
 type ServerRequest = { url?: string };
 type ServerResponse = { writeHead: Mock; end: Mock };
@@ -72,9 +70,9 @@ vi.mock('http', () => ({
   },
 }));
 
-vi.mock('open', () => ({
+vi.mock('../../../src/utils/open-in-browser.ts', () => ({
   __esModule: true,
-  default: vi.fn(),
+  openInBrowser: vi.fn(),
 }));
 
 vi.mock('inquirer', () => ({
@@ -89,7 +87,7 @@ vi.mock('../../../src/service/auth.svc.ts', () => ({
   persistTokenResponse: vi.fn().mockResolvedValue(undefined),
 }));
 
-const openMock = vi.mocked(open) as MockedFunction<typeof open>;
+const openMock = vi.mocked(openInBrowser) as MockedFunction<typeof openInBrowser>;
 const promptMock = vi.mocked(inquirer.prompt) as MockedFunction<typeof inquirer.prompt>;
 const persistTokenResponseMock = vi.mocked(persistTokenResponse);
 
@@ -126,7 +124,7 @@ const createCommand = (port: number) => {
 describe('AuthLogin', () => {
   beforeEach(() => {
     promptMock.mockResolvedValue({ confirm: true });
-    openMock.mockResolvedValue({} as ChildProcess);
+    openMock.mockResolvedValue(undefined);
   });
 
   afterEach(() => {

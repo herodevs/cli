@@ -3,10 +3,10 @@ import http from 'node:http';
 import { URL } from 'node:url';
 import { Command } from '@oclif/core';
 import inquirer from 'inquirer';
-import open from 'open';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
 import { getClientId, getRealmUrl } from '../../service/auth-config.svc.ts';
 import type { TokenResponse } from '../../types/auth.ts';
+import { openInBrowser } from '../../utils/open-in-browser.ts';
 
 export default class AuthLogin extends Command {
   static description = 'OAuth CLI login';
@@ -94,7 +94,7 @@ export default class AuthLogin extends Command {
         });
 
         try {
-          await open(authUrl);
+          await openInBrowser(authUrl);
         } catch (err) {
           this.warn(
             `Failed to open browser automatically. Please open this URL manually:\n${authUrl}\n${err instanceof Error ? err.message : err}`,
