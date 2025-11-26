@@ -5,20 +5,25 @@ import { default as sinon } from 'sinon';
  * from a FIFO
  */
 export class BaseStackMock {
-  private stack: unknown[] = [];
+  protected queue: unknown[] = [];
   private stub: sinon.SinonStub | null = null;
+  private calls: unknown[][] = [];
 
   constructor(target: Record<string, unknown>, prop: string) {
-    // Create a new sandbox for each instance
-    this.stub = sinon.stub(target, prop).callsFake(() => this.next());
+    this.stub = sinon.stub(target, prop).callsFake((...args: unknown[]) => this.invoke(args));
   }
 
   protected next() {
-    return Promise.resolve(this.stack.shift());
+    return Promise.resolve(this.queue.shift());
+  }
+
+  private invoke(args: unknown[]) {
+    this.calls.push(args);
+    return this.next();
   }
 
   public push(value: unknown) {
-    this.stack.push(value);
+    this.queue.push(value);
     return this;
   }
 
@@ -27,6 +32,11 @@ export class BaseStackMock {
       this.stub.restore();
       this.stub = null;
     }
-    this.stack = [];
+    this.queue = [];
+    this.calls = [];
+  }
+
+  public getCalls() {
+    return [...this.calls];
   }
 }

@@ -1,9 +1,7 @@
-import assert from 'node:assert';
 import fs from 'node:fs';
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { after, describe, it } from 'node:test';
 import type { CdxBom, EolReport, SPDX23 } from '@herodevs/eol-shared';
 import { readSbomFromFile, saveArtifactToFile, validateDirectory } from '../../src/service/file.svc.ts';
 
@@ -48,10 +46,13 @@ describe('file.svc', () => {
     metadata: {
       totalComponentsCount: 0,
       unknownComponentsCount: 0,
+      totalUniqueComponentsCount: 0,
     },
+    page: 1,
+    totalRecords: 0,
   };
 
-  after(() => {
+  afterAll(() => {
     if (tempDir && fs.existsSync(tempDir)) {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
@@ -64,7 +65,7 @@ describe('file.svc', () => {
       await writeFile(filePath, JSON.stringify(mockSbom));
 
       const result = readSbomFromFile(filePath);
-      assert.deepStrictEqual(result, mockSbom);
+      expect(result).toEqual(mockSbom);
     });
 
     it('should read and convert a valid SPDX SBOM file to CycloneDX', async () => {
@@ -74,13 +75,13 @@ describe('file.svc', () => {
 
       const result = readSbomFromFile(filePath);
 
-      assert.strictEqual(result.bomFormat, 'CycloneDX');
-      assert.ok(result.specVersion);
-      assert.ok(Array.isArray(result.components));
+      expect(result.bomFormat).toBe('CycloneDX');
+      expect(result.specVersion).toBeTruthy();
+      expect(Array.isArray(result.components)).toBe(true);
     });
 
     it('should throw error for non-existent file', () => {
-      assert.throws(() => readSbomFromFile('/non/existent/path'), /SBOM file not found/);
+      expect(() => readSbomFromFile('/non/existent/path')).toThrow(/SBOM file not found/);
     });
 
     it('should throw error for invalid JSON', async () => {
@@ -88,7 +89,7 @@ describe('file.svc', () => {
       const filePath = join(tempDir, 'invalid.json');
       await writeFile(filePath, 'invalid json');
 
-      assert.throws(() => readSbomFromFile(filePath), /Failed to read SBOM file/);
+      expect(() => readSbomFromFile(filePath)).toThrow(/Failed to read SBOM file/);
     });
 
     it('should throw error for invalid SBOM format (neither SPDX nor CycloneDX)', async () => {
@@ -96,8 +97,7 @@ describe('file.svc', () => {
       const filePath = join(tempDir, 'invalid-format.json');
       await writeFile(filePath, JSON.stringify({ invalid: 'format' }));
 
-      assert.throws(
-        () => readSbomFromFile(filePath),
+      expect(() => readSbomFromFile(filePath)).toThrow(
         /Invalid SBOM file format\. Expected SPDX 2\.3 or CycloneDX format/,
       );
     });
@@ -105,12 +105,12 @@ describe('file.svc', () => {
 
   describe('validateDirectory', () => {
     it('should not throw for valid directory', async () => {
-      tempDir = createTempDir();
-      assert.doesNotThrow(() => validateDirectory(tempDir));
+      tempDir = await mkdtemp(join(tmpdir(), 'file-svc-test-'));
+      expect(() => validateDirectory(tempDir)).not.toThrow();
     });
 
     it('should throw error for non-existent directory', () => {
-      assert.throws(() => validateDirectory('/non/existent/directory'), /Directory not found/);
+      expect(() => validateDirectory('/non/existent/directory')).toThrow(/Directory not found/);
     });
 
     it('should throw error for file instead of directory', async () => {
@@ -118,7 +118,7 @@ describe('file.svc', () => {
       const filePath = join(tempDir, 'file.txt');
       await writeFile(filePath, 'content');
 
-      assert.throws(() => validateDirectory(filePath), /Path is not a directory/);
+      expect(() => validateDirectory(filePath)).toThrow(/Path is not a directory/);
     });
   });
 
@@ -128,10 +128,10 @@ describe('file.svc', () => {
 
       const outputPath = saveArtifactToFile(tempDir, { kind: 'sbom', payload: mockSbom });
 
-      assert.ok(fs.existsSync(outputPath));
+      expect(fs.existsSync(outputPath)).toBe(true);
       const content = fs.readFileSync(outputPath, 'utf8');
       const parsed = JSON.parse(content);
-      assert.deepStrictEqual(parsed, mockSbom);
+      expect(parsed).toEqual(mockSbom);
     });
 
     it('should return the correct SBOM output path', async () => {
@@ -139,8 +139,8 @@ describe('file.svc', () => {
 
       const outputPath = saveArtifactToFile(tempDir, { kind: 'sbom', payload: mockSbom });
 
-      assert.ok(outputPath.endsWith('herodevs.sbom.json'));
-      assert.ok(outputPath.includes(tempDir));
+      expect(outputPath.endsWith('herodevs.sbom.json')).toBe(true);
+      expect(outputPath.includes(tempDir)).toBe(true);
     });
 
     it('should save SBOM to a custom path', async () => {
@@ -190,10 +190,10 @@ describe('file.svc', () => {
 
       const outputPath = saveArtifactToFile(tempDir, { kind: 'sbomTrimmed', payload: mockSbom });
 
-      assert.ok(fs.existsSync(outputPath));
+      expect(fs.existsSync(outputPath)).toBe(true);
       const content = fs.readFileSync(outputPath, 'utf8');
       const parsed = JSON.parse(content);
-      assert.deepStrictEqual(parsed, mockSbom);
+      expect(parsed).toEqual(mockSbom);
     });
 
     it('should return the correct trimmed SBOM output path', async () => {
@@ -201,8 +201,8 @@ describe('file.svc', () => {
 
       const outputPath = saveArtifactToFile(tempDir, { kind: 'sbomTrimmed', payload: mockSbom });
 
-      assert.ok(outputPath.endsWith('herodevs.sbom-trimmed.json'));
-      assert.ok(outputPath.includes(tempDir));
+      expect(outputPath.endsWith('herodevs.sbom-trimmed.json')).toBe(true);
+      expect(outputPath.includes(tempDir)).toBe(true);
     });
 
     it('should save report to file successfully', async () => {
@@ -210,10 +210,10 @@ describe('file.svc', () => {
 
       const outputPath = saveArtifactToFile(tempDir, { kind: 'report', payload: mockReport });
 
-      assert.ok(fs.existsSync(outputPath));
+      expect(fs.existsSync(outputPath)).toBe(true);
       const content = fs.readFileSync(outputPath, 'utf8');
       const parsed = JSON.parse(content);
-      assert.deepStrictEqual(parsed, mockReport);
+      expect(parsed).toEqual(mockReport);
     });
 
     it('should return the correct report output path', async () => {
@@ -221,8 +221,8 @@ describe('file.svc', () => {
 
       const outputPath = saveArtifactToFile(tempDir, { kind: 'report', payload: mockReport });
 
-      assert.ok(outputPath.endsWith('herodevs.report.json'));
-      assert.ok(outputPath.includes(tempDir));
+      expect(outputPath.endsWith('herodevs.report.json')).toBe(true);
+      expect(outputPath.includes(tempDir)).toBe(true);
     });
 
     it('should save report to a custom path', async () => {

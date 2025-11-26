@@ -1,6 +1,10 @@
 {
   "extends": "../tsconfig",
   "compilerOptions": {
-    "noEmit": true
-  }
+    "noEmit": true,
+    "types": ["vitest/globals", "node"],
+    "rootDir": ".."
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["../node_modules", "../dist"]
 }
