@@ -53,7 +53,6 @@
     "@oclif/table": "^0.5.1",
     "date-fns": "^4.1.0",
     "graphql": "^16.11.0",
-    "inquirer": "^12.11.0",
     "keytar": "^7.9.0",
     "node-machine-id": "^1.1.12",
     "ora": "^9.0.0",
