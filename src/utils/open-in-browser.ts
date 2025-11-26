@@ -1,5 +1,5 @@
-import { exec } from "node:child_process";
-import { platform } from "node:os";
+import { exec } from 'node:child_process';
+import { platform } from 'node:os';
 
 export function openInBrowser(url: string): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -8,9 +8,9 @@ export function openInBrowser(url: string): Promise<void> {
     const command = (() => {
       const plat = platform();
 
-      if (plat === "darwin") return `open ${escapedUrl}`;            // macOS
-      if (plat === "win32") return `start "" ${escapedUrl}`;         // Windows
-      return `xdg-open ${escapedUrl}`;                               // Linux
+      if (plat === 'darwin') return `open ${escapedUrl}`; // macOS
+      if (plat === 'win32') return `start "" ${escapedUrl}`; // Windows
+      return `xdg-open ${escapedUrl}`; // Linux
     })();
 
     exec(command, (err) => {
