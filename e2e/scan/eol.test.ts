@@ -8,15 +8,11 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
 import { promisify } from 'node:util';
-//import keytar from 'keytar';
 import type { DeepPartial } from '@apollo/client/utilities';
 import type { EolScanComponent } from '@herodevs/eol-shared';
 import { runCommand } from '@oclif/test';
 import { config, filenamePrefix } from '../../src/config/constants.ts';
 import { FetchMock } from '../../test/utils/mocks/fetch.mock.ts';
-
-// import { getAccessTokenKey, getRefreshTokenKey, getTokenServiceName } from '../../src/service/auth-config.svc.ts';
-// import { createTokenWithExp } from '../../test/utils/token.ts';
 
 const execAsync = promisify(exec);
 const fixturesDir = path.resolve(import.meta.dirname, '../fixtures');
@@ -77,7 +73,6 @@ describe('environment', () => {
 
 describe('scan:eol e2e', () => {
   let fetchMock: FetchMock;
-  //let testAccessToken: string;
 
   beforeEach(async () => {
     await mkdir(fixturesDir, { recursive: true });
@@ -90,13 +85,10 @@ describe('scan:eol e2e', () => {
       },
     ];
     fetchMock = new FetchMock().addGraphQL(mockReport(components)).addGraphQL(mockGetReport(components));
-    // testAccessToken = createTokenWithExp(3600);
-    // await seedAuthTokens(testAccessToken);
   });
 
   afterEach(() => {
     fetchMock.restore();
-    //return clearAuthTokens();
   });
 
   describe('default arguments', () => {
@@ -144,8 +136,6 @@ describe('scan:eol e2e', () => {
     match(stdout, /Scan results:/, 'Should show results header');
     match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
     match(stdout, /2 total packages scanned/, 'Should show total packages scanned');
-    // Authorization assertions disabled for now
-    // assertAuthorizedCalls(fetchMock, testAccessToken);
   });
 
   it('scans existing SPDX SBOM file and converts to CycloneDX', async () => {
@@ -154,8 +144,6 @@ describe('scan:eol e2e', () => {
     match(stdout, /Scan results:/, 'Should show results header');
     match(stdout, /1( .*)End-of-Life \(EOL\)/, 'Should show EOL count');
     match(stdout, /2 total packages scanned/, 'Should show total packages scanned with SPDX input');
-    // Authorization assertions disabled for now
-    // assertAuthorizedCalls(fetchMock, testAccessToken);
   });
 
   it('shows warning and does not generate report when no components are found in scan', async () => {
@@ -166,8 +154,6 @@ describe('scan:eol e2e', () => {
       /No components found in scan. Report not generated./,
       'Should show warning, no results header or package totals',
     );
-    // Authorization assertions disabled for now
-    // assertAuthorizedCalls(fetchMock, testAccessToken);
   });
 
   it('saves report when --save flag is used (directory scan)', async () => {
@@ -195,8 +181,6 @@ describe('scan:eol e2e', () => {
       'Report should contain a date created on property in ISO format',
     );
     unlinkSync(reportPath);
-    // Authorization assertions disabled for now
-    // assertAuthorizedCalls(fetchMock, testAccessToken);
   });
 
   it('warns and skips saving when --output is provided without --save', async () => {
@@ -251,8 +235,6 @@ describe('scan:eol e2e', () => {
       );
       strictEqual(!!bootstrap, true, 'Should include bootstrap');
     }
-    // Authorization assertions disabled for now
-    // assertAuthorizedCalls(fetchMock, testAccessToken);
   });
 
   it('shows zero EOL components when scanning up-to-date packages', async () => {
@@ -649,34 +631,3 @@ describe('scan:eol e2e', () => {
     });
   });
 });
-
-// async function seedAuthTokens(accessToken: string) {
-//   const service = getTokenServiceName();
-//   const accessKey = getAccessTokenKey();
-//   const refreshKey = getRefreshTokenKey();
-//   await keytar.setPassword(service, accessKey, accessToken);
-//   await keytar.setPassword(service, refreshKey, 'test-refresh-token');
-// }
-
-// async function clearAuthTokens() {
-//   const service = getTokenServiceName();
-//   const accessKey = getAccessTokenKey();
-//   const refreshKey = getRefreshTokenKey();
-//   await keytar.deletePassword(service, accessKey);
-//   await keytar.deletePassword(service, refreshKey);
-// }
-
-// function assertAuthorizedCalls(mock: FetchMock, token: string, options: { expectCalls?: boolean } = {}) {
-//   const { expectCalls = true } = options;
-//   const calls = mock.getCalls();
-
-//   if (expectCalls) {
-//     strictEqual(calls.length > 0, true, 'Expected GraphQL calls to be made');
-//     for (const call of calls) {
-//       const headers = new Headers(call.init?.headers);
-//       strictEqual(headers.get('Authorization'), `Bearer ${token}`, 'Authorization header should include bearer token');
-//     }
-//   } else {
-//     strictEqual(calls.length, 0, 'Expected no GraphQL calls to be made');
-//   }
-// }
