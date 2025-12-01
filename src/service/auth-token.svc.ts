@@ -30,16 +30,13 @@ export async function getStoredTokens(): Promise<StoredTokens | undefined> {
     new AsyncEntry(service, accessKey).getPassword(),
     new AsyncEntry(service, refreshKey).getPassword(),
   ]).then(([accessToken, refreshToken]) => {
-    const normalizedAccess = accessToken ?? undefined;
-    const normalizedRefresh = refreshToken ?? undefined;
-
-    if (!normalizedAccess && !normalizedRefresh) {
+    if (!accessToken && !refreshToken) {
       return;
     }
 
     return {
-      accessToken: normalizedAccess,
-      refreshToken: normalizedRefresh,
+      accessToken,
+      refreshToken,
     };
   });
 }

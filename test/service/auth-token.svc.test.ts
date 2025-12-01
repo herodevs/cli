@@ -5,7 +5,7 @@ vi.mock('@napi-rs/keyring', () => {
   const setPasswordMock = vi.fn(async (service: string, account: string, password: string) => {
     store.set(`${service}:${account}`, password);
   });
-  const getPasswordMock = vi.fn(async (service: string, account: string) => store.get(`${service}:${account}`) ?? null);
+  const getPasswordMock = vi.fn(async (service: string, account: string) => store.get(`${service}:${account}`));
   const deletePasswordMock = vi.fn(async (service: string, account: string) => {
     store.delete(`${service}:${account}`);
     return true;
