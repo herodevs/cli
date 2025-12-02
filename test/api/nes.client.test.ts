@@ -1,8 +1,3 @@
-// vi.mock('../../src/service/auth.svc.ts', () => ({
-//   __esModule: true,
-//   requireAccessToken: vi.fn().mockResolvedValue('test-token'),
-// }));
-
 import type { CreateEolReportInput } from '@herodevs/eol-shared';
 import { submitScan } from '../../src/api/nes.client.ts';
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
