@@ -103,7 +103,7 @@ export default class Run extends Command {
           text: ux.colorize('green', `[${ux.colorize('blueBright', name)}] Found ${files.length} files`),
           symbol: ux.colorize('green', `\u2714`),
         });
-        fileProgress.start(files.length, 0);
+        fileProgress.start(files.length, 1);
 
         const fileResults = files.reduce((result: FilesStats, file, currentIndex, array) => {
           const fileStats = getFileStats(file, {
@@ -111,7 +111,7 @@ export default class Run extends Command {
           });
           if (currentIndex === array.length - 1) {
             fileProgress.update({
-              name: 'Files processed successfully',
+              name: ux.colorize('green', 'All files were processed successfully'),
             });
             fileProgress.stop();
           } else {

@@ -1,6 +1,7 @@
-import { existsSync, globSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { writeFile } from 'node:fs/promises';
 import { extname, join, resolve } from 'node:path';
+import { globSync } from 'glob';
 import sloc from 'sloc';
 import { DEFAULT_TRACKER_RUN_DATA_FILE } from '../config/constants.js';
 import { TRACKER_ROOT_FILE, type TrackerCategoryDefinition, type TrackerConfig } from '../config/tracker.config.ts';
@@ -114,7 +115,7 @@ export const getFilesFromCategory = (
   const patterns = includes.flatMap((include) => fileTypes.map((type) => `*${include.replace('./', '')}/**/*.${type}`));
   return globSync(patterns, {
     cwd: rootDir,
-    exclude: ignorePatterns?.map((ignore) => `${ignore}`) ?? [],
+    ignore: ignorePatterns?.map((ignore) => `${ignore}`) ?? [],
   });
 };
 
