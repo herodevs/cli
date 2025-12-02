@@ -84,12 +84,17 @@ export default class Run extends Command {
           ignorePatterns,
         });
 
-        if(files.length === 0){
+        if (files.length === 0) {
           loadingFilesSpinner.stopAndPersist({
             text: ux.colorize('yellow', `[${ux.colorize('yellowBright', name)}] Found 0 files`),
             symbol: ux.colorize('yellowBright', `\u26A0`),
           });
-          this.log(ux.colorize('yellow', `Please check your configuration [includes] property so it matches folders in your project directory`))
+          this.log(
+            ux.colorize(
+              'yellow',
+              `Please check your configuration [includes] property so it matches folders in your project directory`,
+            ),
+          );
           this.log('');
           return acc;
         }
