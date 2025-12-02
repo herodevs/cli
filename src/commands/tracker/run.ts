@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { cwd } from 'node:process';
 import { Command, Flags, ux } from '@oclif/core';
 import { Presets, SingleBar } from 'cli-progress';
 import ora from 'ora';
@@ -44,7 +45,7 @@ export default class Run extends Command {
     const { configDir, configFile } = flags;
 
     try {
-      const rootDir = getRootDir(global.process.cwd());
+      const rootDir = getRootDir(cwd());
       const confSpinner = ora('Searching for configuration file').start();
       const { categories, ignorePatterns, outputDir } = getConfiguration(rootDir, configDir, configFile);
 
