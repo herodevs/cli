@@ -213,7 +213,7 @@ describe('tracker.svc', () => {
       );
 
       assert.deepStrictEqual(
-        result.sort(),
+        result.map(p => p.replace(/\\/,'/')).sort(),
         ['folder/folder-demo-one.js', 'folder/folder-demo-two.js', 'folder/folder-demo-three.js'].sort(),
       );
     });
@@ -231,7 +231,7 @@ describe('tracker.svc', () => {
       );
 
       assert.deepStrictEqual(
-        result.sort(),
+        result.map(p => p.replace(/\\/,'/')).sort(),
         [
           'folder/folder-demo-one.js',
           'folder/folder-demo-one.css',
@@ -256,7 +256,7 @@ describe('tracker.svc', () => {
       );
 
       assert.deepStrictEqual(
-        result.sort(),
+        result.map(p => p.replace(/\\/,'/')).sort(),
         [
           'folder/folder-demo-one.js',
           'folder/folder-demo-two.js',
@@ -279,7 +279,7 @@ describe('tracker.svc', () => {
       );
 
       assert.deepStrictEqual(
-        result.sort(),
+        result.map(p => p.replace(/\\/,'/')).sort(),
         [
           'folder/folder-demo-one.html',
           'folder/folder-demo-one.js',
@@ -307,7 +307,7 @@ describe('tracker.svc', () => {
       );
 
       assert.deepStrictEqual(
-        result.sort(),
+        result.map(p => p.replace(/\\/,'/')).sort(),
         [
           'folder/folder-demo-one.html',
           'folder/folder-demo-two.html',
@@ -407,7 +407,7 @@ describe('tracker.svc', () => {
 
       const file = readFileSync(`new/${DEFAULT_TRACKER_RUN_DATA_FILE}`).toString('utf-8');
 
-      assert.strictEqual(result, `new/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
+      assert.strictEqual(result.replace(/\\/,'/'), `new/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
       assert.deepStrictEqual(JSON.parse(file), [
         {
           author: 'demo',
@@ -427,7 +427,7 @@ describe('tracker.svc', () => {
 
       const file = readFileSync(`existing/${DEFAULT_TRACKER_RUN_DATA_FILE}`).toString('utf-8');
 
-      assert.strictEqual(result, `existing/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
+      assert.strictEqual(result.replace(/\\/,'/'), `existing/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
       assert.deepStrictEqual(JSON.parse(file), [
         {
           author: 'demo',
@@ -447,7 +447,7 @@ describe('tracker.svc', () => {
 
       const file = readFileSync(`empty/${DEFAULT_TRACKER_RUN_DATA_FILE}`).toString('utf-8');
 
-      assert.strictEqual(result, `empty/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
+      assert.strictEqual(result.replace(/\\/,'/'), `empty/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
       assert.deepStrictEqual(JSON.parse(file), [
         {
           author: 'demo',
@@ -467,7 +467,7 @@ describe('tracker.svc', () => {
 
       const file = readFileSync(`invalid/${DEFAULT_TRACKER_RUN_DATA_FILE}`).toString('utf-8');
 
-      assert.strictEqual(result, `invalid/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
+      assert.strictEqual(result.replace(/\\/,'/'), `invalid/${DEFAULT_TRACKER_RUN_DATA_FILE}`);
       assert.deepStrictEqual(JSON.parse(file), [
         {
           author: 'demo',
