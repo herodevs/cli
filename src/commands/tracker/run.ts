@@ -163,7 +163,6 @@ export default class Run extends Command {
       if (err instanceof Error) {
         this.error(ux.colorize('red', err.message));
       }
-    } finally {
     }
   }
 
