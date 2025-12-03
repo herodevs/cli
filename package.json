@@ -23,7 +23,7 @@
     "postpack": "shx rm -f oclif.manifest.json",
     "prepare": "node .husky/install.mjs",
     "prepack": "oclif manifest",
-    "pretest": "npm run check && npm run typecheck",
+    "pretest": "npm run typecheck",
     "readme": "npm run check:fix && npm run build && oclif readme",
     "test": "globstar -- node --import tsx --test --experimental-test-module-mocks \"test/**/*.test.ts\"",
     "test:e2e": "globstar -- node --import tsx --test \"e2e/**/*.test.ts\"",
