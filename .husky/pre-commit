@@ -1,2 +1,2 @@
-npm run check
+npm run check:fix
 npm test
