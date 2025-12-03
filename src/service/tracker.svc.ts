@@ -61,21 +61,21 @@ export const getRootDir = (path: string): string => {
 
 export const getConfiguration = (path: string, folderName: string, fileName: string): TrackerConfig => {
   const filePath = join(path, folderName, fileName);
-  if (existsSync(filePath)) {
-    const stringConfiguration = readFileSync(filePath, {
-      encoding: 'utf-8',
-    }).toString();
-    try {
-      return JSON.parse(stringConfiguration);
-    } catch (_err) {
-      throw new Error(
-        `A configuration file was found, but it's contents are not valid. Review your configuration file and fix any errors, or run tracker init -o to overwrite the file`,
-      );
-    }
+  if (!existsSync(filePath)) {
+    throw new Error(
+      `Couldn't find configuration ${fileName} file in ${path}. If you haven't, run tracker init command to create the configuration file. If you have a custom folder and configuration file, use the flags -d (directory) and -f (filename) to specify it`,
+    );
   }
-  throw new Error(
-    `Couldn't find configuration ${fileName} file in ${path}. If you haven't, run tracker init command to create the configuration file. If you have a custom folder and configuration file, use the flags -d (directory) and -f (filename) to specify it`,
-  );
+  const stringConfiguration = readFileSync(filePath, {
+    encoding: 'utf-8',
+  });
+  try {
+    return JSON.parse(stringConfiguration);
+  } catch (_err) {
+    throw new Error(
+      `A configuration file was found, but it's contents are not valid. Review your configuration file and fix any errors, or run tracker init -o to overwrite the file`,
+    );
+  }
 };
 
 export const createTrackerConfig = async (rootPath: string, config: TrackerConfig, overwrite: boolean = false) => {
@@ -127,7 +127,7 @@ export const getFileStats = (
 ) => {
   const fileType = extname(path).replace(/\./g, '');
   try {
-    const stats = sloc(readFileSync(join(options.rootDir, path), 'utf8').toString(), fileType);
+    const stats = sloc(readFileSync(join(options.rootDir, path), 'utf8'), fileType);
     return {
       path,
       fileType,
