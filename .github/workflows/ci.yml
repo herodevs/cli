@@ -58,6 +58,6 @@ jobs:
         with:
           node-version: ${{matrix.node}}.x
       - run: npm ci
+      - run: npm run build
       - run: npm test
       - run: npm run test:e2e
-      - run: npm run build
