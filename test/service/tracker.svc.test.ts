@@ -1,8 +1,7 @@
-import assert from 'node:assert';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, it } from 'node:test';
 import mock from 'mock-fs';
+import { afterEach, assert, beforeEach, describe, it } from 'vitest';
 import { DEFAULT_TRACKER_RUN_DATA_FILE } from '../../src/config/constants.ts';
 import { TRACKER_DEFAULT_CONFIG, TRACKER_ROOT_FILE } from '../../src/config/tracker.config.ts';
 import {
@@ -98,7 +97,7 @@ describe('tracker.svc', () => {
 
         const fileOutput = readFileSync(`${outputDir}/${TRACKER_DEFAULT_CONFIG.configFile}`).toString('utf-8');
 
-        assert.strictEqual(fileOutput, TRACKER_DEFAULT_CONFIG);
+        assert.strictEqual(fileOutput, JSON.stringify(TRACKER_DEFAULT_CONFIG));
       } catch (_err) {}
     });
 
@@ -132,10 +131,13 @@ describe('tracker.svc', () => {
 
         const fileOutput = readFileSync(`${outputDir}/${TRACKER_DEFAULT_CONFIG.configFile}`).toString('utf-8');
 
-        assert.strictEqual(fileOutput, {
-          ...TRACKER_DEFAULT_CONFIG,
-          ignorePatterns: [],
-        });
+        assert.strictEqual(
+          fileOutput,
+          JSON.stringify({
+            ...TRACKER_DEFAULT_CONFIG,
+            ignorePatterns: [],
+          }),
+        );
       } catch (_err) {}
     });
   });
