@@ -10,6 +10,13 @@ export const GIT_OUTPUT_FORMAT = `"${['%h', '%an', '%ad'].join('|')}"`;
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const DEFAULT_DATE_COMMIT_FORMAT = 'MM/dd/yyyy, h:mm:ss a';
 export const DEFAULT_DATE_COMMIT_MONTH_FORMAT = 'MMMM yyyy';
+export const ENABLE_AUTH = false;
+
+const toBoolean = (value: string | undefined): boolean | undefined => {
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return undefined;
+};
 
 // Trackers - Constants
 export const DEFAULT_TRACKER_RUN_DATA_FILE = 'data.json';
@@ -32,6 +39,7 @@ export const config = {
   graphqlHost: process.env.GRAPHQL_HOST || GRAPHQL_HOST,
   graphqlPath: process.env.GRAPHQL_PATH || GRAPHQL_PATH,
   analyticsUrl: process.env.ANALYTICS_URL || ANALYTICS_URL,
+  enableAuth: toBoolean(process.env.ENABLE_AUTH) ?? ENABLE_AUTH,
   concurrentPageRequests,
   pageSize,
 };

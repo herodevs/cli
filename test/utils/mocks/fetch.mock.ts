@@ -7,11 +7,13 @@ import { BaseStackMock } from './base.mock.ts';
 export class FetchMock extends BaseStackMock {
   constructor(stack: unknown[] = []) {
     super(globalThis, 'fetch');
-    this.stack = stack;
+    for (const value of stack) {
+      this.push(value);
+    }
   }
 
   addGraphQL<D>(data?: D, errors: unknown[] = []) {
-    this.stack.push({
+    this.push({
       headers: {
         get: () => 'application/json; charset=utf-8',
       },
@@ -24,5 +26,12 @@ export class FetchMock extends BaseStackMock {
       },
     } as unknown as Response);
     return this;
+  }
+
+  getCalls() {
+    return super.getCalls().map(([input, init]) => ({
+      input,
+      init: init as RequestInit | undefined,
+    }));
   }
 }
