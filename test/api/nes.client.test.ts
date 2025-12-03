@@ -1,5 +1,3 @@
-import assert from 'node:assert';
-import { afterEach, beforeEach, describe, it } from 'node:test';
 import type { CreateEolReportInput } from '@herodevs/eol-shared';
 import { submitScan } from '../../src/api/nes.client.ts';
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
@@ -47,9 +45,9 @@ describe('nes.client', () => {
     };
     const res = await submitScan(input);
 
-    assert.strictEqual(res.id, 'test-123');
-    assert.strictEqual(Array.isArray(res.components), true);
-    assert.strictEqual(res.components.length, components.length);
+    expect(res.id).toBe('test-123');
+    expect(Array.isArray(res.components)).toBe(true);
+    expect(res.components).toHaveLength(components.length);
   });
 
   it('throws when mutation returns unsuccessful response or no report', async () => {
@@ -60,7 +58,7 @@ describe('nes.client', () => {
     const input: CreateEolReportInput = {
       sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
     };
-    await assert.rejects(() => submitScan(input), /Failed to create EOL report/);
+    await expect(submitScan(input)).rejects.toThrow(/Failed to create EOL report/);
   });
 
   it('throws when GraphQL errors are present in createReport mutation', async () => {
@@ -71,7 +69,7 @@ describe('nes.client', () => {
     const input: CreateEolReportInput = {
       sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
     };
-    await assert.rejects(() => submitScan(input), /Failed to create EOL report/);
+    await expect(submitScan(input)).rejects.toThrow(/Failed to create EOL report/);
   });
 
   it('throws when GraphQL errors are present in getReport query', async () => {
@@ -86,7 +84,7 @@ describe('nes.client', () => {
     const input: CreateEolReportInput = {
       sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
     };
-    await assert.rejects(() => submitScan(input), /Failed to fetch EOL report/);
+    await expect(submitScan(input)).rejects.toThrow(/Failed to fetch EOL report/);
   });
 
   it('throws when multiple GraphQL errors are present', async () => {
@@ -98,7 +96,7 @@ describe('nes.client', () => {
     const input: CreateEolReportInput = {
       sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
     };
-    await assert.rejects(() => submitScan(input), /Failed to create EOL report/);
+    await expect(submitScan(input)).rejects.toThrow(/Failed to create EOL report/);
   });
 
   it('throws with generic message when GraphQL errors have no message', async () => {
@@ -107,6 +105,6 @@ describe('nes.client', () => {
     const input: CreateEolReportInput = {
       sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
     };
-    await assert.rejects(() => submitScan(input), /Failed to create EOL report/);
+    await expect(submitScan(input)).rejects.toThrow(/Failed to create EOL report/);
   });
 });

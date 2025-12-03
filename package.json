@@ -20,6 +20,8 @@
     "clean:files": "shx rm -f herodevs.**.csv herodevs.**.json herodevs.**.txt",
     "dev": "npm run build && ./bin/dev.js",
     "dev:debug": "npm run build && DEBUG=oclif:* ./bin/dev.js",
+    "dev:auth:local": "OAUTH_CONNECT_URL='http://localhost:6040/realms/herodevs_local/protocol/openid-connect' npm run dev auth login",
+    "dev:auth:logout": "npm run dev auth logout",
     "format": "biome format --write",
     "lint": "biome lint --write",
     "postpack": "shx rm -f oclif.manifest.json",
@@ -27,7 +29,8 @@
     "prepack": "oclif manifest",
     "pretest": "npm run lint && npm run typecheck",
     "readme": "npm run ci:fix && npm run build && oclif readme",
-    "test": "globstar -- node --import tsx --test --experimental-test-module-mocks \"test/**/*.test.ts\"",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
     "test:e2e": "globstar -- node --import tsx --test \"e2e/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "version": "oclif manifest",
@@ -43,12 +46,14 @@
     "@apollo/client": "^4.0.9",
     "@cyclonedx/cdxgen": "^11.11.0",
     "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.12",
+    "@napi-rs/keyring": "^1.2.0",
     "@inquirer/prompts": "^8.0.1",
     "@oclif/core": "^4.8.0",
     "@oclif/plugin-help": "^6.2.32",
     "@oclif/plugin-update": "^4.7.14",
     "@oclif/table": "^0.5.1",
     "date-fns": "^4.1.0",
+    "graphql": "^16.11.0",
     "node-machine-id": "^1.1.12",
     "ora": "^9.0.0",
     "packageurl-js": "^2.0.1",
@@ -70,7 +75,8 @@
     "sinon": "^21.0.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^1.6.0"
   },
   "engines": {
     "node": ">=20.0.0"

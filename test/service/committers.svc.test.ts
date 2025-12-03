@@ -1,6 +1,5 @@
-import assert from 'node:assert';
-import { describe, it } from 'node:test';
 import { formatDate, parse } from 'date-fns';
+import { describe, expect, it } from 'vitest';
 import { DEFAULT_DATE_FORMAT } from '../../src/config/constants.ts';
 import {
   type AuthorReportRow,
@@ -142,13 +141,13 @@ describe('committers', () => {
     it('should parse git log output into commit entries', () => {
       const result = parseGitLogOutput(sampleGitLog);
 
-      assert.deepStrictEqual(result, sampleEntries);
+      expect(result).toEqual(sampleEntries);
     });
 
     it('should handle empty input', () => {
       const result = parseGitLogOutput('');
 
-      assert.deepStrictEqual(result, []);
+      expect(result).toEqual([]);
     });
 
     it('should handle quoted input', () => {
@@ -172,7 +171,7 @@ describe('committers', () => {
 
       const result = parseGitLogOutput(quotedLog);
 
-      assert.deepStrictEqual(result, expected);
+      expect(result).toEqual(expected);
     });
   });
 
@@ -180,13 +179,13 @@ describe('committers', () => {
     it('should generate the committers report from a git log input', () => {
       const result = generateCommittersReport(sampleEntries);
 
-      assert.deepStrictEqual(result, sampleAuthorReport);
+      expect(result).toEqual(sampleAuthorReport);
     });
 
     it('should not fail if the git log input is empty', () => {
       const result = generateCommittersReport([]);
 
-      assert.deepStrictEqual(result, []);
+      expect(result).toEqual([]);
     });
   });
 
@@ -194,13 +193,13 @@ describe('committers', () => {
     it('should generate the monthly report from a git log input', () => {
       const result = generateMonthlyReport(sampleEntries);
 
-      assert.deepStrictEqual(result, sampleMonthlyReport);
+      expect(result).toEqual(sampleMonthlyReport);
     });
 
     it('should not fail if the git log input is empty', () => {
       const result = generateMonthlyReport([]);
 
-      assert.deepStrictEqual(result, []);
+      expect(result).toEqual([]);
     });
   });
 });

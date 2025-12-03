@@ -1,5 +1,3 @@
-import assert from 'node:assert';
-import { describe, it } from 'node:test';
 import { stripTypename } from '../../src/utils/strip-typename';
 
 describe('stripTypename', () => {
@@ -33,20 +31,20 @@ describe('stripTypename', () => {
     };
 
     const output = stripTypename(input);
-    assert.deepStrictEqual(output, expectedOutput);
+    expect(output).toEqual(expectedOutput);
   });
 
   it('handles null and primitive values correctly', () => {
-    assert.strictEqual(stripTypename(null), null);
-    assert.strictEqual(stripTypename(42), 42);
-    assert.strictEqual(stripTypename('string'), 'string');
-    assert.strictEqual(stripTypename(true), true);
+    expect(stripTypename(null)).toBeNull();
+    expect(stripTypename(42)).toBe(42);
+    expect(stripTypename('string')).toBe('string');
+    expect(stripTypename(true)).toBe(true);
   });
 
   it('handles arrays of primitives correctly', () => {
     const input = [1, 2, 3, { __typename: 'Item', id: 'a' }];
     const expectedOutput = [1, 2, 3, { id: 'a' }];
     const output = stripTypename(input);
-    assert.deepStrictEqual(output, expectedOutput);
+    expect(output).toEqual(expectedOutput);
   });
 });
