@@ -85,6 +85,7 @@ USAGE
 * [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd tracker init`](#hd-tracker-init)
+* [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
   * **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
@@ -232,6 +233,31 @@ EXAMPLES
 ```
 
 _See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/tracker/init.ts)_
+
+## `hd tracker run`
+
+Run the tracker
+
+```
+USAGE
+  $ hd tracker run [-d <value>] [-f <value>]
+
+FLAGS
+  -d, --configDir=<value>   [default: hd-tracker] Directory where the tracker configuration file resides
+  -f, --configFile=<value>  [default: config.json] Filename for the tracker configuration file
+
+DESCRIPTION
+  Run the tracker
+
+EXAMPLES
+  $ hd tracker run
+
+  $ hd tracker run -d tracker-configuration
+
+  $ hd tracker run -d tracker -f settings.json
+```
+
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/tracker/run.ts)_
 
 ## `hd update [CHANNEL]`
 

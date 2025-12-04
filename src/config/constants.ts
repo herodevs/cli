@@ -18,6 +18,10 @@ const toBoolean = (value: string | undefined): boolean | undefined => {
   return undefined;
 };
 
+// Trackers - Constants
+export const DEFAULT_TRACKER_RUN_DATA_FILE = 'data.json';
+export const TRACKER_GIT_OUTPUT_FORMAT = `"${['%H', '%an', '%ad'].join('|')}"`;
+
 let concurrentPageRequests = CONCURRENT_PAGE_REQUESTS;
 const parsed = Number.parseInt(process.env.CONCURRENT_PAGE_REQUESTS ?? '0', 10);
 if (parsed > 0) {
