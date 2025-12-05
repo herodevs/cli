@@ -81,6 +81,8 @@ USAGE
 <!-- usagestop -->
 ## Commands
 <!-- commands -->
+* [`hd gh authorize`](#hd-gh-authorize)
+* [`hd gh logout`](#hd-gh-logout)
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
@@ -88,6 +90,47 @@ USAGE
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
   * **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
+
+## `hd gh authorize`
+
+Authorize HeroDevs CLI with GitHub
+
+```
+USAGE
+  $ hd gh authorize [-o]
+
+FLAGS
+  -o, --overwrite  Triggers the authorization flow even if credentials are already stored
+
+DESCRIPTION
+  Authorize HeroDevs CLI with GitHub
+
+EXAMPLES
+  $ hd gh authorize
+
+  $ hd gh authorize -o
+
+  $ hd gh authorize --overwrite
+```
+
+_See code: [src/commands/gh/authorize.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/gh/authorize.ts)_
+
+## `hd gh logout`
+
+Clear authorization credentials of GitHub
+
+```
+USAGE
+  $ hd gh logout
+
+DESCRIPTION
+  Clear authorization credentials of GitHub
+
+EXAMPLES
+  $ hd gh logout
+```
+
+_See code: [src/commands/gh/logout.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/gh/logout.ts)_
 
 ## `hd help [COMMAND]`
 
