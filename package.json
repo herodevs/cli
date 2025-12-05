@@ -65,7 +65,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.8",
-    "@oclif/test": "^4.1.13",
+    "@oclif/test": "^4.1.15",
     "@types/cli-progress": "^3.11.6",
     "@types/inquirer": "^9.0.9",
     "@types/mock-fs": "^4.13.4",
