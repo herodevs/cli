@@ -64,7 +64,7 @@ export default class Authorize extends Command {
           message: err.message,
         });
       } else {
-        this.error('An unknown error occurred while running the gh auth command');
+        this.error('An unknown error occurred while running the gh authorize command');
       }
     }
   }
