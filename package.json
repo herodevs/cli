@@ -71,7 +71,7 @@
     "@types/mock-fs": "^4.13.4",
     "@types/node": "^24.10.1",
     "@types/ora": "^3.1.0",
-    "@types/sinon": "^17.0.4",
+    "@types/sinon": "^21.0.0",
     "@types/sloc": "^0.2.3",
     "@types/terminal-link": "^1.1.0",
     "@types/update-notifier": "^6.0.8",
