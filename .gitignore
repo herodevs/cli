@@ -12,10 +12,11 @@ pnpm-lock.yaml
 **/tsconfig.tsbuildinfo
 .envrc
 
-# Various SBOM Test Output Files
+# Various CLI Output Files
 herodevs.report.json
 herodevs.sbom.json
 bom.json
 sbom.json
 cdx.json
 spdx.json
+hd-tracker
