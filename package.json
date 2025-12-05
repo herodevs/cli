@@ -50,7 +50,7 @@
     "@inquirer/prompts": "^8.0.1",
     "@oclif/core": "^4.8.0",
     "@oclif/plugin-help": "^6.2.32",
-    "@oclif/plugin-update": "^4.7.14",
+    "@oclif/plugin-update": "^4.7.16",
     "@oclif/table": "^0.5.1",
     "cli-progress": "^3.12.0",
     "date-fns": "^4.1.0",
