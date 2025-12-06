@@ -1,5 +1,5 @@
+import { CLIENT_ID, REALM_URL } from '../config/auth.config.js';
 import type { TokenResponse } from '../types/auth.ts';
-import { getClientId, getRealmUrl } from './auth-config.svc.ts';
 
 interface AuthOptions {
   clientId?: string;
@@ -7,8 +7,8 @@ interface AuthOptions {
 }
 
 export async function refreshTokens(refreshToken: string, options: AuthOptions = {}): Promise<TokenResponse> {
-  const clientId = options.clientId ?? getClientId();
-  const realmUrl = options.realmUrl ?? getRealmUrl();
+  const clientId = options.clientId ?? CLIENT_ID;
+  const realmUrl = options.realmUrl ?? REALM_URL;
   const tokenUrl = `${realmUrl}/token`;
 
   const body = new URLSearchParams({
@@ -36,8 +36,8 @@ export async function logoutFromProvider(refreshToken: string | undefined, optio
     return;
   }
 
-  const clientId = options.clientId ?? getClientId();
-  const realmUrl = options.realmUrl ?? getRealmUrl();
+  const clientId = options.clientId ?? CLIENT_ID;
+  const realmUrl = options.realmUrl ?? REALM_URL;
   const logoutUrl = `${realmUrl}/logout`;
 
   const body = new URLSearchParams({

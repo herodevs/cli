@@ -3,8 +3,8 @@ import http from 'node:http';
 import { createInterface } from 'node:readline';
 import { URL } from 'node:url';
 import { Command } from '@oclif/core';
+import { CLIENT_ID, REALM_URL } from '../../config/auth.config.js';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
-import { getClientId, getRealmUrl } from '../../service/auth-config.svc.ts';
 import type { TokenResponse } from '../../types/auth.ts';
 import { openInBrowser } from '../../utils/open-in-browser.ts';
 
@@ -14,8 +14,8 @@ export default class AuthLogin extends Command {
   private server?: http.Server;
   private readonly port = parseInt(process.env.OAUTH_CALLBACK_PORT || '4000', 10);
   private readonly redirectUri = process.env.OAUTH_CALLBACK_REDIRECT || `http://localhost:${this.port}/oauth2/callback`;
-  private readonly realmUrl = getRealmUrl();
-  private readonly clientId = getClientId();
+  private readonly realmUrl = REALM_URL;
+  private readonly clientId = CLIENT_ID;
 
   async run() {
     if (typeof (this.config as { runHook?: unknown }).runHook === 'function') {
