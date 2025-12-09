@@ -6,15 +6,21 @@ import { authenticateWithDeviceFlow, userAccessToken, userLogout, userRefreshTok
 const DEMO_ACCESS_TOKEN = 'DEMO_ACCESS_TOKEN';
 const DEMO_REFRESH_TOKEN = 'DEMO_REFRESH_TOKEN';
 
-vi.mock('@octokit/auth-oauth-device', () => ({
-  __esModule: true,
-  createOAuthDeviceAuth: vi.fn().mockReturnValue(() => ({
-    refreshToken: DEMO_REFRESH_TOKEN,
-    token: DEMO_ACCESS_TOKEN,
-  })),
-}));
-
 describe('gh.svc', () => {
+  beforeEach(() => {
+    vi.mock('@octokit/auth-oauth-device', () => ({
+      __esModule: true,
+      createOAuthDeviceAuth: vi.fn().mockReturnValue(() => ({
+        refreshToken: DEMO_REFRESH_TOKEN,
+        token: DEMO_ACCESS_TOKEN,
+      })),
+    }));
+  });
+
+  afterEach(() => {
+    vi.clearAllMocks();
+  });
+
   describe('userAccessToken', () => {
     describe('with no previous access_token saved', () => {
       beforeEach(() => {
