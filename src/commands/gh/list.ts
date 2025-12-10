@@ -28,17 +28,17 @@ export default class List extends Command {
       return;
     }
 
+    const authSpinner = ora({
+      text: 'Getting user GitHub repos',
+    });
     try {
       let getMore = true;
       let page = 1;
       const repos: Repo[] = [];
-      const authSpinner = ora({
-        text: 'Getting user GitHub repos',
-      }).start();
       do {
+        authSpinner.start();
         const pageRepos = await getUserRepositories(page);
         authSpinner.stop();
-
         repos.push(...pageRepos);
         this.log('');
         printTable({
@@ -81,6 +81,7 @@ export default class List extends Command {
         page++;
       } while (getMore);
     } catch (err) {
+      authSpinner.stop();
       if (err instanceof Error) {
         if (err.name === 'ExitPromptError') {
           this.log('User exited');
