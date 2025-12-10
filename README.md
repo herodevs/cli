@@ -82,7 +82,9 @@ USAGE
 ## Commands
 <!-- commands -->
 * [`hd gh authorize`](#hd-gh-authorize)
+* [`hd gh list`](#hd-gh-list)
 * [`hd gh logout`](#hd-gh-logout)
+* [`hd gh ls`](#hd-gh-ls)
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
@@ -114,6 +116,26 @@ EXAMPLES
 ```
 
 _See code: [src/commands/gh/authorize.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/gh/authorize.ts)_
+
+## `hd gh list`
+
+Get all GitHub repos of the authorized user
+
+```
+USAGE
+  $ hd gh list
+
+DESCRIPTION
+  Get all GitHub repos of the authorized user
+
+ALIASES
+  $ hd gh ls
+
+EXAMPLES
+  $ hd gh list
+```
+
+_See code: [src/commands/gh/list.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/gh/list.ts)_
 
 ## `hd gh logout`
 
