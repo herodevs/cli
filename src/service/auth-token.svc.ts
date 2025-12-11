@@ -1,5 +1,5 @@
 import { AsyncEntry } from '@napi-rs/keyring';
-import { getAccessTokenKey, getRefreshTokenKey, getTokenServiceName } from './auth-config.svc.ts';
+import { ACCESS_KEY, REFRESH_KEY, SERVICE_NAME } from '../config/auth.config.js';
 
 export interface StoredTokens {
   accessToken?: string;
@@ -9,26 +9,18 @@ export interface StoredTokens {
 const TOKEN_SKEW_SECONDS = 30;
 
 export async function saveTokens(tokens: { accessToken: string; refreshToken?: string }) {
-  const service = getTokenServiceName();
-  const accessKey = getAccessTokenKey();
-  const refreshKey = getRefreshTokenKey();
-
-  const accessTokenSet = new AsyncEntry(service, accessKey).setPassword(tokens.accessToken);
+  const accessTokenSet = new AsyncEntry(SERVICE_NAME, ACCESS_KEY).setPassword(tokens.accessToken);
   const refreshTokenSet = tokens.refreshToken
-    ? new AsyncEntry(service, refreshKey).setPassword(tokens.refreshToken)
-    : new AsyncEntry(service, refreshKey).deletePassword();
+    ? new AsyncEntry(SERVICE_NAME, REFRESH_KEY).setPassword(tokens.refreshToken)
+    : new AsyncEntry(SERVICE_NAME, REFRESH_KEY).deletePassword();
 
   return Promise.all([accessTokenSet, refreshTokenSet]);
 }
 
 export async function getStoredTokens(): Promise<StoredTokens | undefined> {
-  const service = getTokenServiceName();
-  const accessKey = getAccessTokenKey();
-  const refreshKey = getRefreshTokenKey();
-
   return Promise.all([
-    new AsyncEntry(service, accessKey).getPassword(),
-    new AsyncEntry(service, refreshKey).getPassword(),
+    new AsyncEntry(SERVICE_NAME, ACCESS_KEY).getPassword(),
+    new AsyncEntry(SERVICE_NAME, REFRESH_KEY).getPassword(),
   ]).then(([accessToken, refreshToken]) => {
     if (!accessToken && !refreshToken) {
       return;
@@ -42,13 +34,9 @@ export async function getStoredTokens(): Promise<StoredTokens | undefined> {
 }
 
 export async function clearStoredTokens() {
-  const service = getTokenServiceName();
-  const accessKey = getAccessTokenKey();
-  const refreshKey = getRefreshTokenKey();
-
   return Promise.all([
-    new AsyncEntry(service, accessKey).deletePassword(),
-    new AsyncEntry(service, refreshKey).deletePassword(),
+    new AsyncEntry(SERVICE_NAME, ACCESS_KEY).deletePassword(),
+    new AsyncEntry(SERVICE_NAME, REFRESH_KEY).deletePassword(),
   ]);
 }
 
