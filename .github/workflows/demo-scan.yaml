@@ -2,9 +2,13 @@ name: (DEMO) HeroDevs EOL Scan NPX
 
 on:
   workflow_dispatch: {}
+  push:
+    branches:
+      - 'chore/debug_file_warning'
 
 env:
   TRACKING_OPT_OUT: 'true'
+  NODE_OPTIONS: '--trace-warnings'
 
 jobs:
   scan:
