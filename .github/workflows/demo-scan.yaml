@@ -8,7 +8,6 @@ on:
 
 env:
   TRACKING_OPT_OUT: 'true'
-  NODE_OPTIONS: '--trace-warnings'
 
 jobs:
   scan:
@@ -23,6 +22,9 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Run EOL Scan
+        env:
+          NODE_OPTIONS: '--trace-warnings --trace-deprecation --expose-gc'
+          NODE_DEBUG: 'fs'
         run: npx @herodevs/cli@beta scan eol --save
 
       - name: Upload artifact
