@@ -22,7 +22,7 @@ jobs:
         run: npx @herodevs/cli@beta scan eol --save
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: my-eol-report
           path: ./herodevs.report.json
