@@ -22,6 +22,7 @@ export default class AuthLogin extends Command {
     const authUrl = `${this.realmUrl}/auth?` +
       `client_id=${this.clientId}` +
       `&response_type=code` +
+      `&scope=${encodeURIComponent('nes-claims email profile offline_access')}` +
       `&redirect_uri=${encodeURIComponent(this.redirectUri)}` +
       `&code_challenge=${codeChallenge}` +
       `&code_challenge_method=S256`
