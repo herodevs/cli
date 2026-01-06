@@ -3,7 +3,7 @@ import http from 'node:http';
 import { createInterface } from 'node:readline';
 import { URL } from 'node:url';
 import { Command } from '@oclif/core';
-import { CLIENT_ID, REALM_URL } from '../../config/auth.config.js';
+import { CLIENT_ID, REALM_URL } from '../../config/auth.config.ts';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
 import type { TokenResponse } from '../../types/auth.ts';
 import { openInBrowser } from '../../utils/open-in-browser.ts';
