@@ -46,8 +46,8 @@
     "@apollo/client": "^4.0.9",
     "@cyclonedx/cdxgen": "^12.0.0",
     "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.12",
-    "@napi-rs/keyring": "^1.2.0",
     "@inquirer/prompts": "^8.0.2",
+    "@napi-rs/keyring": "^1.2.0",
     "@oclif/core": "^4.8.0",
     "@oclif/plugin-help": "^6.2.32",
     "@oclif/plugin-update": "^4.7.16",
@@ -83,7 +83,7 @@
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
-    "vitest": "^1.6.0"
+    "vitest": "^4.0.16"
   },
   "engines": {
     "node": ">=20.0.0"
