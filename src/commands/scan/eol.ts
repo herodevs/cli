@@ -2,9 +2,11 @@ import type { CdxBom, EolReport } from '@herodevs/eol-shared';
 import { trimCdxBom } from '@herodevs/eol-shared';
 import { Command, Flags } from '@oclif/core';
 import ora from 'ora';
+import { ApiError } from '../../api/errors.ts';
 import { submitScan } from '../../api/nes.client.ts';
 import { config, filenamePrefix } from '../../config/constants.ts';
 import { track } from '../../service/analytics.svc.ts';
+import { requireAccessTokenForScan } from '../../service/auth.svc.ts';
 import { createSbom } from '../../service/cdx.svc.ts';
 import {
   countComponentsByStatus,
@@ -81,6 +83,10 @@ export default class ScanEol extends Command {
 
   public async run(): Promise<EolReport | undefined> {
     const { flags } = await this.parse(ScanEol);
+
+    if (config.enableAuth) {
+      await requireAccessTokenForScan();
+    }
 
     track('CLI EOL Scan Started', (context) => ({
       command: context.command,
@@ -209,6 +215,23 @@ export default class ScanEol extends Command {
       return scan;
     } catch (error) {
       spinner.fail('Scanning failed');
+
+      if (error instanceof ApiError) {
+        track('CLI EOL Scan Failed', (context) => ({
+          command: context.command,
+          command_flags: context.command_flags,
+          scan_failure_reason: error.code,
+        }));
+
+        const errorMessages: Record<string, string> = {
+          SESSION_EXPIRED: 'Your session is no longer valid. To re-authenticate, run "hd auth login".',
+          INVALID_TOKEN: 'Your session is no longer valid. To re-authenticate, run "hd auth login".',
+          UNAUTHENTICATED: 'Please log in to perform a scan. To authenticate, run "hd auth login".',
+          FORBIDDEN: 'You do not have permission to perform this action.',
+        };
+        this.error(errorMessages[error.code]);
+      }
+
       const errorMessage = getErrorMessage(error);
       track('CLI EOL Scan Failed', (context) => ({
         command: context.command,

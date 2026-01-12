@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
 
+# API Configuration
 export GRAPHQL_HOST='https://api.nes.herodevs.com';
+export GRAPHQL_PATH='/graphql';
 export EOL_REPORT_URL='https://eol-report-card.apps.herodevs.com/reports';
 export ANALYTICS_URL='https://eol-api.herodevs.com/track';
+
+# Authentication (set to 'true' to enable auth requirement for scans)
+export ENABLE_AUTH='false';
+export OAUTH_CONNECT_URL='';
+export OAUTH_CLIENT_ID='';
+
+# Performance tuning (optional)
+# export CONCURRENT_PAGE_REQUESTS='3';
+# export PAGE_SIZE='500';
+
+# Keyring configuration (optional, for debugging)
+# export HD_AUTH_SERVICE_NAME='@herodevs/cli';
+# export HD_AUTH_ACCESS_KEY='access-token';
+# export HD_AUTH_REFRESH_KEY='refresh-token';

@@ -8,17 +8,17 @@ import type {
 } from '@herodevs/eol-shared';
 import type { GraphQLFormattedError } from 'graphql';
 import { config } from '../config/constants.ts';
-import { requireAccessToken } from '../service/auth.svc.ts';
+import { requireAccessTokenForScan } from '../service/auth.svc.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { stripTypename } from '../utils/strip-typename.ts';
+import { ApiError, type ApiErrorCode, isApiErrorCode } from './errors.ts';
 import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
 
 const createAuthorizedFetch = (): typeof fetch => async (input, init) => {
   const headers = new Headers(init?.headers);
 
   if (config.enableAuth) {
-    // Temporary gate while legacy commands migrate to authenticated flow
-    const token = await requireAccessToken();
+    const token = await requireAccessTokenForScan();
     headers.set('Authorization', `Bearer ${token}`);
   }
 
@@ -28,6 +28,12 @@ const createAuthorizedFetch = (): typeof fetch => async (input, init) => {
 type GraphQLExecutionResult = {
   errors?: ReadonlyArray<GraphQLFormattedError>;
 };
+
+function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErrorCode | undefined {
+  const code = (errors[0]?.extensions as { code?: string })?.code;
+  if (!code || !isApiErrorCode(code)) return;
+  return code;
+}
 
 export const createApollo = (uri: string) =>
   new ApolloClient({
@@ -54,10 +60,14 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
     });
 
     if (res?.error || (res as GraphQLExecutionResult)?.errors) {
-      debugLogger(
-        'Error returned from createReport mutation: %o',
-        res.error || (res as GraphQLExecutionResult | undefined)?.errors,
-      );
+      const errors = (res as GraphQLExecutionResult | undefined)?.errors;
+      debugLogger('Error returned from createReport mutation: %o', res.error || errors);
+      if (errors?.length) {
+        const code = extractErrorCode(errors);
+        if (code) {
+          throw new ApiError(errors[0].message, code);
+        }
+      }
       throw new Error('Failed to create EOL report');
     }
 
@@ -97,6 +107,12 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
         const queryErrors = (response as GraphQLExecutionResult | undefined)?.errors;
         if (response?.error || queryErrors?.length || !response.data?.eol) {
           debugLogger('Error in getReport query response: %o', response?.error ?? queryErrors ?? response);
+          if (queryErrors?.length) {
+            const code = extractErrorCode(queryErrors);
+            if (code) {
+              throw new ApiError(queryErrors[0].message, code);
+            }
+          }
           throw new Error('Failed to fetch EOL report');
         }
 
