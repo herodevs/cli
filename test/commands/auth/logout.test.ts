@@ -1,3 +1,4 @@
+import type { Config } from '@oclif/core';
 import { type Mock, vi } from 'vitest';
 
 vi.mock('../../../src/service/auth-token.svc.ts', () => ({
@@ -22,7 +23,7 @@ describe('AuthLogout command', () => {
 
   it('logs when there are no stored tokens', async () => {
     (getStoredTokens as Mock).mockResolvedValue(undefined);
-    const command = new AuthLogout([], {} as Record<string, unknown>);
+    const command = new AuthLogout([], {} as unknown as Config);
     const logSpy = vi.spyOn(command, 'log').mockImplementation(() => {});
 
     await command.run();
@@ -33,7 +34,7 @@ describe('AuthLogout command', () => {
 
   it('revokes tokens and clears local storage', async () => {
     (getStoredTokens as Mock).mockResolvedValue({ refreshToken: 'refresh', accessToken: 'access' });
-    const command = new AuthLogout([], {} as Record<string, unknown>);
+    const command = new AuthLogout([], {} as unknown as Config);
     const logSpy = vi.spyOn(command, 'log').mockImplementation(() => {});
 
     await command.run();
@@ -46,7 +47,7 @@ describe('AuthLogout command', () => {
   it('warns when remote logout fails but still clears tokens', async () => {
     (getStoredTokens as Mock).mockResolvedValue({ refreshToken: 'refresh' });
     (logoutFromProvider as Mock).mockRejectedValueOnce(new Error('network fail'));
-    const command = new AuthLogout([], {} as Record<string, unknown>);
+    const command = new AuthLogout([], {} as unknown as Config);
     const warnSpy = vi.spyOn(command, 'warn').mockImplementation((msg) => msg);
 
     await command.run();

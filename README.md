@@ -81,13 +81,42 @@ USAGE
 <!-- usagestop -->
 ## Commands
 <!-- commands -->
+* [`hd auth login`](#hd-auth-login)
+* [`hd auth logout`](#hd-auth-logout)
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd tracker init`](#hd-tracker-init)
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
-  * **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
+
+## `hd auth login`
+
+OAuth CLI login
+
+```
+USAGE
+  $ hd auth login
+
+DESCRIPTION
+  OAuth CLI login
+```
+
+_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth/login.ts)_
+
+## `hd auth logout`
+
+Logs out of HeroDevs OAuth and clears stored tokens
+
+```
+USAGE
+  $ hd auth logout
+
+DESCRIPTION
+  Logs out of HeroDevs OAuth and clears stored tokens
+```
+
+_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth/logout.ts)_
 
 ## `hd help [COMMAND]`
 
