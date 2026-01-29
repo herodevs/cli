@@ -107,7 +107,7 @@ DESCRIPTION
   Display help for hd.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.34/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.36/src/commands/help.ts)_
 
 ## `hd report committers`
 
@@ -121,10 +121,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2024-11-19] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-01-29] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2025-11-19] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-01-29] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
@@ -152,7 +152,7 @@ Scan a given SBOM for EOL data
 ```
 USAGE
   $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [-o <value>] [--saveSbom] [--sbomOutput <value>]
-    [--saveTrimmedSbom] [--hideReportUrl] [--version]
+    [--saveTrimmedSbom] [--hideReportUrl] [--automated] [--version]
 
 FLAGS
   -d, --dir=<value>         [default: <current directory>] The directory to scan in order to create a cyclonedx SBOM
@@ -160,6 +160,7 @@ FLAGS
   -o, --output=<value>      Save the generated report to a custom path (defaults to herodevs.report.json when not
                             provided)
   -s, --save                Save the generated report as herodevs.report.json in the scanned directory
+      --automated           Mark scan as automated (for CI/CD pipelines)
       --hideReportUrl       Hide the generated web report URL for this scan
       --saveSbom            Save the generated SBOM as herodevs.sbom.json in the scanned directory
       --saveTrimmedSbom     Save the trimmed SBOM as herodevs.sbom-trimmed.json in the scanned directory
@@ -188,10 +189,6 @@ EXAMPLES
   Save the report or SBOM to a file
 
     $ hd scan eol --save --saveSbom
-
-  Save the report and SBOM to custom paths
-
-    $ hd scan eol --dir . --save --saveSbom --output ./reports/my-report.json --sbomOutput ./reports/my-sbom.json
 
   Output the report in JSON format (for APIs, CI, etc.)
 
@@ -297,7 +294,7 @@ EXAMPLES
     $ hd update --available
 ```
 
-_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.7.13/src/commands/update.ts)_
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.7.16/src/commands/update.ts)_
 <!-- commandsstop -->
 
 ## CI/CD Usage
