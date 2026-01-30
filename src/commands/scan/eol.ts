@@ -4,7 +4,7 @@ import { Command, Flags } from '@oclif/core';
 import ora from 'ora';
 import { ApiError } from '../../api/errors.ts';
 import { submitScan } from '../../api/nes.client.ts';
-import { config, filenamePrefix } from '../../config/constants.ts';
+import { config, filenamePrefix, SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../config/constants.ts';
 import { track } from '../../service/analytics.svc.ts';
 import { requireAccessTokenForScan } from '../../service/auth.svc.ts';
 import { createSbom } from '../../service/cdx.svc.ts';
@@ -77,6 +77,10 @@ export default class ScanEol extends Command {
       aliases: ['hide-report-url'],
       default: false,
       description: 'Hide the generated web report URL for this scan',
+    }),
+    automated: Flags.boolean({
+      default: false,
+      description: 'Mark scan as automated (for CI/CD pipelines)',
     }),
     version: Flags.version(),
   };
@@ -210,7 +214,8 @@ export default class ScanEol extends Command {
 
     spinner.start('Scanning for EOL packages');
     try {
-      const scan = await submitScan({ sbom: trimmedSbom });
+      const scanOrigin = flags.automated ? SCAN_ORIGIN_AUTOMATED : SCAN_ORIGIN_CLI;
+      const scan = await submitScan({ sbom: trimmedSbom, scanOrigin });
       spinner.succeed('Scan completed');
       return scan;
     } catch (error) {

@@ -45,3 +45,6 @@ export const config = {
 };
 
 export const filenamePrefix = 'herodevs';
+
+export const SCAN_ORIGIN_CLI = 'CLI Scan';
+export const SCAN_ORIGIN_AUTOMATED = 'Automated Scan';

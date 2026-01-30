@@ -1,6 +1,15 @@
 import type { CreateEolReportInput } from '@herodevs/eol-shared';
 import { submitScan } from '../../src/api/nes.client.ts';
+import { SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../src/config/constants.ts';
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
+
+function getGraphQLVariables(fetchMock: FetchMock, callIndex = 0): Record<string, unknown> {
+  const calls = fetchMock.getCalls();
+  const init = calls[callIndex]?.init;
+  if (!init?.body) return {};
+  const body = JSON.parse(init.body as string);
+  return body.variables ?? {};
+}
 
 describe('nes.client', () => {
   let fetchMock: FetchMock;
@@ -106,5 +115,96 @@ describe('nes.client', () => {
       sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
     };
     await expect(submitScan(input)).rejects.toThrow(/Failed to create EOL report/);
+  });
+
+  describe('scanOrigin', () => {
+    it('passes scanOrigin to createReport mutation when provided', async () => {
+      const components = [{ purl: 'pkg:npm/test@1.0.0', metadata: { isEol: false } }];
+
+      fetchMock
+        .addGraphQL({
+          eol: { createReport: { success: true, id: 'test-origin', totalRecords: components.length } },
+        })
+        .addGraphQL({
+          eol: {
+            report: {
+              id: 'test-origin',
+              createdOn: new Date().toISOString(),
+              metadata: {},
+              components,
+              page: 1,
+              totalRecords: components.length,
+            },
+          },
+        });
+
+      const input: CreateEolReportInput = {
+        sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+        scanOrigin: SCAN_ORIGIN_CLI,
+      };
+      await submitScan(input);
+
+      const variables = getGraphQLVariables(fetchMock, 0);
+      expect(variables.input).toHaveProperty('scanOrigin', SCAN_ORIGIN_CLI);
+    });
+
+    it('passes automated scanOrigin when specified', async () => {
+      const components = [{ purl: 'pkg:npm/test@1.0.0', metadata: { isEol: false } }];
+
+      fetchMock
+        .addGraphQL({
+          eol: { createReport: { success: true, id: 'test-automated', totalRecords: components.length } },
+        })
+        .addGraphQL({
+          eol: {
+            report: {
+              id: 'test-automated',
+              createdOn: new Date().toISOString(),
+              metadata: {},
+              components,
+              page: 1,
+              totalRecords: components.length,
+            },
+          },
+        });
+
+      const input: CreateEolReportInput = {
+        sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+        scanOrigin: SCAN_ORIGIN_AUTOMATED,
+      };
+      await submitScan(input);
+
+      const variables = getGraphQLVariables(fetchMock, 0);
+      expect(variables.input).toHaveProperty('scanOrigin', SCAN_ORIGIN_AUTOMATED);
+    });
+
+    it('does not include scanOrigin when not provided', async () => {
+      const components = [{ purl: 'pkg:npm/test@1.0.0', metadata: { isEol: false } }];
+
+      fetchMock
+        .addGraphQL({
+          eol: { createReport: { success: true, id: 'test-no-origin', totalRecords: components.length } },
+        })
+        .addGraphQL({
+          eol: {
+            report: {
+              id: 'test-no-origin',
+              createdOn: new Date().toISOString(),
+              metadata: {},
+              components,
+              page: 1,
+              totalRecords: components.length,
+            },
+          },
+        });
+
+      const input: CreateEolReportInput = {
+        sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+      };
+      await submitScan(input);
+
+      const variables = getGraphQLVariables(fetchMock, 0);
+      expect(variables.input).not.toHaveProperty('scanOrigin');
+    });
   });
 });
