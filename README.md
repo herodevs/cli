@@ -107,7 +107,7 @@ DESCRIPTION
   Display help for hd.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.36/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/6.2.36/src/commands/help.ts)_
 
 ## `hd report committers`
 
@@ -254,7 +254,7 @@ EXAMPLES
   $ hd tracker run -d tracker -f settings.json
 ```
 
-_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/tracker/run.ts)_
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/main/src/commands/tracker/run.ts)_
 
 ## `hd update [CHANNEL]`
 
@@ -294,7 +294,7 @@ EXAMPLES
     $ hd update --available
 ```
 
-_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.7.16/src/commands/update.ts)_
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/4.7.16/src/commands/update.ts)_
 <!-- commandsstop -->
 
 ## CI/CD Usage
