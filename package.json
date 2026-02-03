@@ -45,7 +45,7 @@
     "@amplitude/analytics-node": "^1.5.26",
     "@apollo/client": "^4.0.9",
     "@cyclonedx/cdxgen": "^12.0.0",
-    "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.16",
+    "@herodevs/eol-shared": "github:herodevs/eol-shared#v0.1.17",
     "@inquirer/prompts": "^8.0.2",
     "@napi-rs/keyring": "^1.2.0",
     "@oclif/core": "^4.8.0",
