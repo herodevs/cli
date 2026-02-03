@@ -28,7 +28,7 @@
     "prepare": "shx test -d dist || npm run build",
     "prepack": "oclif manifest",
     "pretest": "npm run lint && npm run typecheck",
-    "readme": "npm run ci:fix && npm run build && oclif readme",
+    "readme": "npm run ci:fix && npm run build && oclif readme && sed -i '' 's|/plugin-help/blob/v|/plugin-help/blob/|; s|/plugin-update/blob/v|/plugin-update/blob/|' README.md",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "test:e2e": "globstar -- node --import tsx --test \"e2e/**/*.test.ts\"",
@@ -101,7 +101,6 @@
     "commands": "./dist/commands",
     "plugins": [
       "@oclif/plugin-help",
-      "@oclif/plugin-plugins",
       "@oclif/plugin-update"
     ],
     "hooks": {
