@@ -70,18 +70,6 @@ vi.mock('http', () => ({
   },
 }));
 
-vi.mock('../../../src/config/constants.ts', () => ({
-  __esModule: true,
-  config: {
-    get enableAuth() {
-      return process.env.ENABLE_AUTH === 'true';
-    },
-    get enableUserSetup() {
-      return process.env.ENABLE_USER_SETUP === 'true';
-    },
-  },
-}));
-
 vi.mock('../../../src/api/user-setup.client.ts', () => ({
   __esModule: true,
   ensureUserSetup: vi.fn(),
@@ -148,13 +136,11 @@ describe('AuthLogin', () => {
     closeMock.mockClear();
     openMock.mockResolvedValue(undefined);
     ensureUserSetupMock.mockResolvedValue(undefined);
-    delete process.env.ENABLE_USER_SETUP;
   });
 
   afterEach(() => {
     vi.clearAllMocks();
     delete process.env.OAUTH_CALLBACK_PORT;
-    delete process.env.ENABLE_USER_SETUP;
     serverInstances.length = 0;
     persistTokenResponseMock.mockClear();
   });
@@ -387,10 +373,10 @@ describe('AuthLogin', () => {
       await command.run();
 
       expect(persistTokenResponseMock).toHaveBeenCalledWith(tokenResponse);
+      expect(ensureUserSetupMock).toHaveBeenCalledTimes(1);
     });
 
     it('runs user setup after login', async () => {
-      process.env.ENABLE_USER_SETUP = 'true';
       const command = createCommand(6001);
       const tokenResponse = { access_token: 'access', refresh_token: 'refresh' };
       const commandWithInternals = command as unknown as {
@@ -406,7 +392,6 @@ describe('AuthLogin', () => {
     });
 
     it('fails login when user setup fails', async () => {
-      process.env.ENABLE_USER_SETUP = 'true';
       ensureUserSetupMock.mockRejectedValueOnce(new Error('setup failed'));
       const command = createCommand(6002);
       const tokenResponse = { access_token: 'access', refresh_token: 'refresh' };

@@ -1,6 +1,12 @@
+import { vi } from 'vitest';
 import { ApiError } from '../../src/api/errors.ts';
 import { completeUserSetup, ensureUserSetup, getUserSetupStatus } from '../../src/api/user-setup.client.ts';
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
+
+vi.mock('../../src/service/auth.svc.ts', () => ({
+  requireAccessTokenForScan: vi.fn().mockResolvedValue('test-token'),
+  requireAccessToken: vi.fn().mockResolvedValue('test-token'),
+}));
 
 describe('user-setup.client', () => {
   let fetchMock: FetchMock;

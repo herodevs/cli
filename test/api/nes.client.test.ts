@@ -1,7 +1,12 @@
 import type { CreateEolReportInput } from '@herodevs/eol-shared';
+import { vi } from 'vitest';
 import { submitScan } from '../../src/api/nes.client.ts';
 import { SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../src/config/constants.ts';
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
+
+vi.mock('../../src/service/auth.svc.ts', () => ({
+  requireAccessTokenForScan: vi.fn().mockResolvedValue('test-token'),
+}));
 
 function getGraphQLVariables(fetchMock: FetchMock, callIndex = 0): Record<string, unknown> {
   const calls = fetchMock.getCalls();

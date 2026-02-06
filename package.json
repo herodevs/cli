@@ -31,7 +31,7 @@
     "readme": "npm run ci:fix && npm run build && oclif readme && sed -i '' 's|/plugin-help/blob/v|/plugin-help/blob/|; s|/plugin-update/blob/v|/plugin-update/blob/|' README.md",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "test:e2e": "globstar -- node --import tsx --test \"e2e/**/*.test.ts\"",
+    "test:e2e": "globstar -- node --import tsx --import ./e2e/setup/register-mock-auth.mjs --test \"e2e/**/*.test.ts\"",
     "typecheck": "tsc --noEmit",
     "version": "oclif manifest",
     "postversion": "node scripts/update-install-script-version.js && git add README.md"
