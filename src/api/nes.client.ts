@@ -22,10 +22,8 @@ const createAuthorizedFetch =
   async (input, init) => {
     const headers = new Headers(init?.headers);
 
-    if (config.enableAuth) {
-      const token = await tokenProvider();
-      headers.set('Authorization', `Bearer ${token}`);
-    }
+    const token = await tokenProvider();
+    headers.set('Authorization', `Bearer ${token}`);
 
     return fetch(input, { ...init, headers });
   };

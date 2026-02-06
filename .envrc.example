@@ -6,8 +6,6 @@ export GRAPHQL_PATH='/graphql';
 export EOL_REPORT_URL='https://eol-report-card.apps.herodevs.com/reports';
 export ANALYTICS_URL='https://eol-api.herodevs.com/track';
 
-# Authentication (set to 'true' to enable auth requirement for scans)
-export ENABLE_AUTH='false';
 export OAUTH_CONNECT_URL='';
 export OAUTH_CLIENT_ID='';
 

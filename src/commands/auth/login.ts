@@ -4,7 +4,6 @@ import { createInterface } from 'node:readline';
 import { URL } from 'node:url';
 import { Command } from '@oclif/core';
 import { ensureUserSetup } from '../../api/user-setup.client.ts';
-import { config } from '../../config/constants.ts';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
 import { getClientId, getRealmUrl } from '../../service/auth-config.svc.ts';
 import { getErrorMessage } from '../../service/log.svc.ts';
@@ -48,9 +47,6 @@ export default class AuthLogin extends Command {
       return;
     }
 
-    if (!config.enableUserSetup) {
-      return;
-    }
     try {
       await ensureUserSetup();
     } catch (error) {

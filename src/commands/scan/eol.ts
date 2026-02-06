@@ -88,9 +88,7 @@ export default class ScanEol extends Command {
   public async run(): Promise<EolReport | undefined> {
     const { flags } = await this.parse(ScanEol);
 
-    if (config.enableAuth) {
-      await requireAccessTokenForScan();
-    }
+    await requireAccessTokenForScan();
 
     track('CLI EOL Scan Started', (context) => ({
       command: context.command,
