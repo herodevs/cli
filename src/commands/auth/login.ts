@@ -3,8 +3,11 @@ import http from 'node:http';
 import { createInterface } from 'node:readline';
 import { URL } from 'node:url';
 import { Command } from '@oclif/core';
+import { ensureUserSetup } from '../../api/user-setup.client.ts';
+import { config } from '../../config/constants.ts';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
 import { getClientId, getRealmUrl } from '../../service/auth-config.svc.ts';
+import { getErrorMessage } from '../../service/log.svc.ts';
 import type { TokenResponse } from '../../types/auth.ts';
 import { openInBrowser } from '../../utils/open-in-browser.ts';
 
@@ -42,6 +45,16 @@ export default class AuthLogin extends Command {
       await persistTokenResponse(token);
     } catch (error) {
       this.warn(`Failed to store tokens securely: ${error instanceof Error ? error.message : error}`);
+      return;
+    }
+
+    if (!config.enableUserSetup) {
+      return;
+    }
+    try {
+      await ensureUserSetup();
+    } catch (error) {
+      this.error(`User setup failed. ${getErrorMessage(error)}`);
     }
   }
 

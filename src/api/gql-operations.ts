@@ -37,3 +37,19 @@ query GetEolReport($input: GetEolReportInput) {
   }
 }
 `;
+
+export const userSetupStatusQuery = gql`
+query Eol {
+  eol {
+    userSetupStatus
+  }
+}
+`;
+
+export const completeUserSetupMutation = gql`
+mutation Eol {
+  eol {
+    completeUserSetup
+  }
+}
+`;

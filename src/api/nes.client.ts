@@ -13,21 +13,22 @@ import { debugLogger } from '../service/log.svc.ts';
 import { stripTypename } from '../utils/strip-typename.ts';
 import { ApiError, type ApiErrorCode, isApiErrorCode } from './errors.ts';
 import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
+import { getGraphQLErrors } from './graphql-errors.ts';
 
-const createAuthorizedFetch = (): typeof fetch => async (input, init) => {
-  const headers = new Headers(init?.headers);
+type TokenProvider = () => Promise<string>;
 
-  if (config.enableAuth) {
-    const token = await requireAccessTokenForScan();
-    headers.set('Authorization', `Bearer ${token}`);
-  }
+const createAuthorizedFetch =
+  (tokenProvider: TokenProvider): typeof fetch =>
+  async (input, init) => {
+    const headers = new Headers(init?.headers);
 
-  return fetch(input, { ...init, headers });
-};
+    if (config.enableAuth) {
+      const token = await tokenProvider();
+      headers.set('Authorization', `Bearer ${token}`);
+    }
 
-type GraphQLExecutionResult = {
-  errors?: ReadonlyArray<GraphQLFormattedError>;
-};
+    return fetch(input, { ...init, headers });
+  };
 
 function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErrorCode | undefined {
   const code = (errors[0]?.extensions as { code?: string })?.code;
@@ -35,7 +36,7 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
   return code;
 }
 
-export const createApollo = (uri: string) =>
+export const createApollo = (uri: string, tokenProvider: TokenProvider = requireAccessTokenForScan) =>
   new ApolloClient({
     cache: new InMemoryCache(),
     defaultOptions: {
@@ -44,7 +45,7 @@ export const createApollo = (uri: string) =>
     },
     link: new HttpLink({
       uri,
-      fetch: createAuthorizedFetch(),
+      fetch: createAuthorizedFetch(tokenProvider),
       headers: {
         'User-Agent': `hdcli/${process.env.npm_package_version ?? 'unknown'}`,
       },
@@ -59,8 +60,8 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
       variables: { input },
     });
 
-    if (res?.error || (res as GraphQLExecutionResult)?.errors) {
-      const errors = (res as GraphQLExecutionResult | undefined)?.errors;
+    const errors = getGraphQLErrors(res);
+    if (res?.error || errors?.length) {
       debugLogger('Error returned from createReport mutation: %o', res.error || errors);
       if (errors?.length) {
         const code = extractErrorCode(errors);
@@ -104,7 +105,7 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
       batchResponses = await Promise.all(batch);
 
       for (const response of batchResponses) {
-        const queryErrors = (response as GraphQLExecutionResult | undefined)?.errors;
+        const queryErrors = getGraphQLErrors(response);
         if (response?.error || queryErrors?.length || !response.data?.eol) {
           debugLogger('Error in getReport query response: %o', response?.error ?? queryErrors ?? response);
           if (queryErrors?.length) {
