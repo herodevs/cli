@@ -52,6 +52,8 @@ export default class AuthLogin extends Command {
     } catch (error) {
       this.error(`User setup failed. ${getErrorMessage(error)}`);
     }
+
+    this.log('\nLogin completed successfully.');
   }
 
   private startServerAndAwaitCode(authUrl: string, expectedState: string): Promise<string> {
