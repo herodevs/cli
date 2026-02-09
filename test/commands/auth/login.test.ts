@@ -20,8 +20,18 @@ interface ServerStub {
 
 const serverInstances: ServerStub[] = [];
 
+class ServerNotRunningError extends Error implements NodeJS.ErrnoException {
+  code = 'ERR_SERVER_NOT_RUNNING';
+
+  constructor() {
+    super('Server is not running.');
+    this.name = 'ServerNotRunningError';
+  }
+}
+
 const createServerStub = (handler: ServerHandler): ServerStub => {
   let errorListener: ((error: Error) => void) | undefined;
+  let closed = false;
   const stub: ServerStub = {
     handler,
     listen: vi.fn((_port: number, cb?: () => void) => {
@@ -32,7 +42,9 @@ const createServerStub = (handler: ServerHandler): ServerStub => {
       return stub;
     }),
     close: vi.fn((cb?: (err?: Error) => void) => {
-      cb?.();
+      const closeError = closed ? new ServerNotRunningError() : undefined;
+      closed = true;
+      setImmediate(() => cb?.(closeError));
       return stub;
     }),
     on: vi.fn((event: string, cb: (err: Error) => void) => {
@@ -80,8 +92,8 @@ vi.mock('../../../src/utils/open-in-browser.ts', () => ({
   openInBrowser: vi.fn(),
 }));
 
-const questionMock = vi.fn<[string, (answer: string) => void], void>();
-const closeMock = vi.fn<[], void>();
+const questionMock = vi.fn<(question: string, callback: (answer: string) => void) => void>();
+const closeMock = vi.fn<() => void>();
 
 vi.mock('node:readline', () => ({
   __esModule: true,
@@ -299,6 +311,30 @@ describe('AuthLogin', () => {
         sendCallbackThroughStub({ code: 'manual-code', state });
         await expect(pendingCode).resolves.toBe('manual-code');
         expect(server.close).toHaveBeenCalledTimes(1);
+      } finally {
+        warnSpy.mockRestore();
+      }
+    });
+
+    it('deduplicates shutdown when callback success and server error race', async () => {
+      const command = createCommand(basePort + 8);
+      const state = 'expected-state';
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, state);
+      const server = getLatestServer();
+      const warnSpy = vi
+        .spyOn(command as unknown as { warn: (...args: unknown[]) => unknown }, 'warn')
+        .mockImplementation(() => {});
+
+      try {
+        await flushAsync();
+        sendCallbackThroughStub({ code: 'race-code', state });
+        server.emitError(new Error('late listener error'));
+
+        await expect(pendingCode).resolves.toBe('race-code');
+        expect(server.close).toHaveBeenCalledTimes(1);
+        expect(warnSpy).not.toHaveBeenCalledWith(expect.stringContaining('Failed to stop local OAuth callback server'));
       } finally {
         warnSpy.mockRestore();
       }
