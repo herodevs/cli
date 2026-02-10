@@ -236,7 +236,8 @@ export default class ScanEol extends Command {
           UNAUTHENTICATED: 'Please log in to perform a scan. To authenticate, run "hd auth login".',
           FORBIDDEN: 'You do not have permission to perform this action.',
         };
-        this.error(errorMessages[error.code]);
+        const message = error.message?.trim() || errorMessages[error.code];
+        this.error(message);
       }
 
       const errorMessage = getErrorMessage(error);
