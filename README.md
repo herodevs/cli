@@ -68,11 +68,11 @@ Maven and Gradle projects should run an install and build before scanning
 ## Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @herodevs/cli@beta
+$ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v24.10.0
+@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v20.19.5
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -81,13 +81,73 @@ USAGE
 <!-- usagestop -->
 ## Commands
 <!-- commands -->
+* [`hd auth-ci login`](#hd-auth-ci-login)
+* [`hd auth-ci provision`](#hd-auth-ci-provision)
+* [`hd auth login`](#hd-auth-login)
+* [`hd auth logout`](#hd-auth-logout)
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd tracker init`](#hd-tracker-init)
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
-  * **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
+
+## `hd auth-ci login`
+
+Obtain an access token for CI scans (outputs export HD_ACCESS_TOKEN=... for eval)
+
+```
+USAGE
+  $ hd auth-ci login
+
+DESCRIPTION
+  Obtain an access token for CI scans (outputs export HD_ACCESS_TOKEN=... for eval)
+```
+
+_See code: [src/commands/auth-ci/login.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth-ci/login.ts)_
+
+## `hd auth-ci provision`
+
+Provision a CI/CD long-lived refresh token for headless auth
+
+```
+USAGE
+  $ hd auth-ci provision --orgId <value>
+
+FLAGS
+  --orgId=<value>  (required) Organization ID for the CI token (required)
+
+DESCRIPTION
+  Provision a CI/CD long-lived refresh token for headless auth
+```
+
+## `hd auth login`
+
+OAuth CLI login
+
+```
+USAGE
+  $ hd auth login
+
+DESCRIPTION
+  OAuth CLI login
+```
+
+_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth/login.ts)_
+
+## `hd auth logout`
+
+Logs out of HeroDevs OAuth and clears stored tokens
+
+```
+USAGE
+  $ hd auth logout
+
+DESCRIPTION
+  Logs out of HeroDevs OAuth and clears stored tokens
+```
+
+_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth/logout.ts)_
 
 ## `hd help [COMMAND]`
 
@@ -121,10 +181,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2025-02-02] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-02-13] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2026-02-02] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-02-13] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
@@ -254,13 +314,11 @@ EXAMPLES
   $ hd tracker run -d tracker -f settings.json
 ```
 
-_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/main/src/commands/tracker/run.ts)_
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/tracker/run.ts)_
 
 ## `hd update [CHANNEL]`
 
 update the hd CLI
-
-* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ```
 USAGE
@@ -300,6 +358,76 @@ _See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/4.
 ## CI/CD Usage
 
 You can use `@herodevs/cli` in your CI/CD pipelines to automate EOL scanning.
+
+### CI/CD authentication
+
+For headless use in CI/CD (e.g. GitHub Actions, GitLab CI), the CLI supports long-lived organization-scoped refresh tokens. You do not need to run an interactive login in the pipeline.
+
+**One-time setup (interactive):**
+
+```bash
+hd auth login
+hd auth-ci provision --org-id <your-org-id>
+```
+
+Copy the token and org ID, add as CI secrets: `HD_AUTH_TOKEN` and `HD_ORG_ID`.
+
+**CI pipeline (headless):** Run `hd auth-ci login` to exchange the refresh token for an access token; use `eval` to export it before the scan:
+
+```bash
+export HD_ORG_ID=<id> HD_AUTH_TOKEN="<token>"
+eval $(hd auth-ci login) && hd scan eol --dir .
+```
+
+| Secret / Env Var | Purpose |
+|------------------|---------|
+| `HD_AUTH_TOKEN` | Long-lived refresh token from provision |
+| `HD_ORG_ID` | Organization ID (required when using HD_AUTH_TOKEN) |
+
+#### Local testing
+
+Reproduce the CI flow locally:
+
+```bash
+export HD_ORG_ID=1234 HD_AUTH_TOKEN="eyJ..."
+eval $(hd auth-ci login) && hd scan eol --dir /path/to/project
+```
+
+#### GitHub Actions (authenticated scan)
+
+Add secrets `HD_AUTH_TOKEN` and `HD_ORG_ID` in your repository or organization, then:
+
+```yaml
+- uses: actions/checkout@v5
+- uses: actions/setup-node@v6
+  with:
+    node-version: '24'
+- name: Run EOL Scan
+  env:
+    HD_ORG_ID: ${{ secrets.HD_ORG_ID }}
+    HD_AUTH_TOKEN: ${{ secrets.HD_AUTH_TOKEN }}
+  run: |
+    eval $(npx @herodevs/cli@beta auth-ci login)
+    npx @herodevs/cli@beta scan eol -s
+```
+
+#### GitLab CI (authenticated scan)
+
+Add CI/CD variables `HD_AUTH_TOKEN` and `HD_ORG_ID` (masked) in your project:
+
+```yaml
+eol-scan:
+  image: node:24
+  variables:
+    HD_ORG_ID: $HD_ORG_ID
+    HD_AUTH_TOKEN: $HD_AUTH_TOKEN
+  script:
+    - eval $(npx @herodevs/cli@beta auth-ci login)
+    - npx @herodevs/cli@beta scan eol -s
+  artifacts:
+    paths:
+      - herodevs.report.json
+```
 
 ### Using the Docker Image (Recommended)
 

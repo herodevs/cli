@@ -11,11 +11,13 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export async function withRetries<T>(operation: string, fn: () => Promise<T>, options: RetryOptions): Promise<T> {
   const { attempts, baseDelayMs, onRetry, finalErrorMessage } = options;
+  let lastError: unknown;
 
   for (let attempt = 1; attempt <= attempts; attempt += 1) {
     try {
       return await fn();
     } catch (error) {
+      lastError = error;
       if (attempt === attempts) {
         break;
       }
@@ -30,5 +32,9 @@ export async function withRetries<T>(operation: string, fn: () => Promise<T>, op
     }
   }
 
-  throw new Error(finalErrorMessage ?? 'Please contact your administrator.');
+  const message =
+    finalErrorMessage ??
+    (lastError instanceof Error ? lastError.message : null) ??
+    'Please contact your administrator.';
+  throw new Error(message);
 }

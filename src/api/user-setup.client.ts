@@ -1,12 +1,12 @@
 import type { GraphQLFormattedError } from 'graphql';
 import { config } from '../config/constants.ts';
-import { requireAccessToken } from '../service/auth.svc.ts';
+import { requireAccessToken, requireAccessTokenForScan } from '../service/auth.svc.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { withRetries } from '../utils/retry.ts';
+import { createApollo } from './apollo.client.ts';
 import { ApiError, type ApiErrorCode, isApiErrorCode } from './errors.ts';
 import { completeUserSetupMutation, userSetupStatusQuery } from './gql-operations.ts';
 import { getGraphQLErrors } from './graphql-errors.ts';
-import { createApollo } from './nes.client.ts';
 
 const USER_SETUP_MAX_ATTEMPTS = 3;
 const USER_SETUP_RETRY_DELAY_MS = 500;
@@ -40,9 +40,11 @@ export async function getUserSetupStatus(): Promise<boolean> {
     debugLogger('Error returned from userSetupStatus query: %o', res.error || errors);
     if (errors?.length) {
       const code = extractErrorCode(errors);
+      const message = errors[0].message ?? 'Failed to check user setup status';
       if (code) {
-        throw new ApiError(errors[0].message, code);
+        throw new ApiError(message, code);
       }
+      throw new Error(message);
     }
     throw new Error('Failed to check user setup status');
   }
@@ -57,7 +59,7 @@ export async function getUserSetupStatus(): Promise<boolean> {
 }
 
 export async function completeUserSetup(): Promise<boolean> {
-  const client = createApollo(getGraphqlUrl(), requireAccessToken);
+  const client = createApollo(getGraphqlUrl(), requireAccessTokenForScan);
   const res = await client.mutate<CompleteUserSetupResponse>({ mutation: completeUserSetupMutation });
 
   const errors = getGraphQLErrors(res);
@@ -65,9 +67,11 @@ export async function completeUserSetup(): Promise<boolean> {
     debugLogger('Error returned from completeUserSetup mutation: %o', res.error || errors);
     if (errors?.length) {
       const code = extractErrorCode(errors);
+      const message = errors[0].message ?? 'Failed to complete user setup';
       if (code) {
-        throw new ApiError(errors[0].message, code);
+        throw new ApiError(message, code);
       }
+      throw new Error(message);
     }
     throw new Error('Failed to complete user setup');
   }

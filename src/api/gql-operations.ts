@@ -53,3 +53,18 @@ mutation Eol {
   }
 }
 `;
+
+export const getOrgAccessTokensMutation = gql`
+mutation GetOrgAccessTokens(
+  $input: IamAccessOrgTokensInput!
+) {
+  iamV2 {
+    access {
+      getOrgAccessTokens(input: $input) {
+        accessToken
+        refreshToken
+      }
+    }
+  }
+}
+`;
