@@ -135,6 +135,7 @@ describe('scan:eol analytics timing', () => {
     expect(properties.scan_failure_reason).toBe('GraphQL request timed out after 60000ms');
     expect(properties.scan_load_time).toEqual(expect.any(Number));
     expect(properties.scan_load_time as number).toBeGreaterThanOrEqual(0);
+    expect(properties.number_of_packages).toBe(1);
   });
 
   it('tracks scan_load_time on ApiError scan failures', async () => {
@@ -154,6 +155,7 @@ describe('scan:eol analytics timing', () => {
     expect(properties.scan_failure_reason).toBe('FORBIDDEN');
     expect(properties.scan_load_time).toEqual(expect.any(Number));
     expect(properties.scan_load_time as number).toBeGreaterThanOrEqual(0);
+    expect(properties.number_of_packages).toBe(1);
   });
 
   it('keeps scan_load_time on successful completion events', async () => {

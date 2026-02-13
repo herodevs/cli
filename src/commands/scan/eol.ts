@@ -195,6 +195,7 @@ export default class ScanEol extends Command {
 
   private async scanSbom(sbom: CdxBom): Promise<EolReport> {
     const scanStartTime = performance.now();
+    const numberOfPackages = sbom.components?.length ?? 0;
     const { flags } = await this.parse(ScanEol);
 
     const spinner = ora().start('Trimming SBOM');
@@ -218,14 +219,15 @@ export default class ScanEol extends Command {
       return scan;
     } catch (error) {
       spinner.fail('Scanning failed');
-      const scan_load_time = this.getScanLoadTime(scanStartTime);
+      const scanLoadTime = this.getScanLoadTime(scanStartTime);
 
       if (error instanceof ApiError) {
         track('CLI EOL Scan Failed', (context) => ({
           command: context.command,
           command_flags: context.command_flags,
           scan_failure_reason: error.code,
-          scan_load_time,
+          scan_load_time: scanLoadTime,
+          number_of_packages: numberOfPackages,
         }));
 
         const errorMessages: Record<string, string> = {
@@ -242,7 +244,8 @@ export default class ScanEol extends Command {
         command: context.command,
         command_flags: context.command_flags,
         scan_failure_reason: errorMessage,
-        scan_load_time,
+        scan_load_time: scanLoadTime,
+        number_of_packages: numberOfPackages,
       }));
       this.error(`Failed to submit scan to NES. ${errorMessage}`);
     }
