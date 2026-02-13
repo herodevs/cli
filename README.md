@@ -68,11 +68,11 @@ Maven and Gradle projects should run an install and build before scanning
 ## Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @herodevs/cli
+$ npm install -g @herodevs/cli@beta
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v20.19.5
+@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v24.10.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -314,7 +314,7 @@ EXAMPLES
   $ hd tracker run -d tracker -f settings.json
 ```
 
-_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/tracker/run.ts)_
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/main/src/commands/tracker/run.ts)_
 
 ## `hd update [CHANNEL]`
 

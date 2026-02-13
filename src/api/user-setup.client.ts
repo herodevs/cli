@@ -10,6 +10,8 @@ import { getGraphQLErrors } from './graphql-errors.ts';
 
 const USER_SETUP_MAX_ATTEMPTS = 3;
 const USER_SETUP_RETRY_DELAY_MS = 500;
+const USER_FACING_SERVER_ERROR = 'Please contact your administrator.';
+const SERVER_ERROR_CODES = ['INTERNAL_SERVER_ERROR', 'SERVER_ERROR', 'SERVICE_UNAVAILABLE'];
 
 type UserSetupStatusResponse = {
   eol?: {
@@ -39,6 +41,10 @@ export async function getUserSetupStatus(): Promise<boolean> {
   if (res?.error || errors?.length) {
     debugLogger('Error returned from userSetupStatus query: %o', res.error || errors);
     if (errors?.length) {
+      const rawCode = (errors[0]?.extensions as { code?: string })?.code;
+      if (rawCode && SERVER_ERROR_CODES.includes(rawCode)) {
+        throw new Error(USER_FACING_SERVER_ERROR);
+      }
       const code = extractErrorCode(errors);
       const message = errors[0].message ?? 'Failed to check user setup status';
       if (code) {
@@ -66,6 +72,10 @@ export async function completeUserSetup(): Promise<boolean> {
   if (res?.error || errors?.length) {
     debugLogger('Error returned from completeUserSetup mutation: %o', res.error || errors);
     if (errors?.length) {
+      const rawCode = (errors[0]?.extensions as { code?: string })?.code;
+      if (rawCode && SERVER_ERROR_CODES.includes(rawCode)) {
+        throw new Error(USER_FACING_SERVER_ERROR);
+      }
       const code = extractErrorCode(errors);
       const message = errors[0].message ?? 'Failed to complete user setup';
       if (code) {

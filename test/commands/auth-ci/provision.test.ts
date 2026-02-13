@@ -63,21 +63,17 @@ describe('AuthCiProvision command', () => {
     await command.run();
 
     expect(requireAccessToken).toHaveBeenCalled();
-    expect(provisionCIToken).toHaveBeenCalledWith({
-      orgId: 123,
-      previousToken: null,
-    });
+    expect(provisionCIToken).toHaveBeenCalledWith({ orgId: 123 });
     expect(saveCIToken).toHaveBeenCalledWith('new-ci-refresh-token');
     expect(saveCIOrgId).toHaveBeenCalledWith(123);
     expect(logSpy).toHaveBeenCalledWith('CI token provisioned and saved locally.');
     expect(logSpy).toHaveBeenCalledWith('new-ci-refresh-token');
   });
 
-  it('passes existing CI token as previousToken when rotating', async () => {
-    (getCIToken as Mock).mockReturnValue('existing-refresh-token');
+  it('provisions for different org when logged in', async () => {
     (requireAccessToken as Mock).mockResolvedValue('access-token');
     (provisionCIToken as Mock).mockResolvedValue({
-      refresh_token: 'rotated-ci-refresh-token',
+      refresh_token: 'new-ci-refresh-token',
     });
     const command = new AuthCiProvision([], {} as Record<string, unknown>);
     vi.spyOn(command, 'parse').mockResolvedValue({ flags: { orgId: 456 }, args: {} } as never);
@@ -85,10 +81,7 @@ describe('AuthCiProvision command', () => {
 
     await command.run();
 
-    expect(provisionCIToken).toHaveBeenCalledWith({
-      orgId: 456,
-      previousToken: 'existing-refresh-token',
-    });
+    expect(provisionCIToken).toHaveBeenCalledWith({ orgId: 456 });
     expect(saveCIOrgId).toHaveBeenCalledWith(456);
   });
 
