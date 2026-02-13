@@ -1,5 +1,6 @@
 import type { CreateEolReportInput } from '@herodevs/eol-shared';
 import { vi } from 'vitest';
+
 vi.mock('../../src/config/constants.ts', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../src/config/constants.ts')>();
   return {

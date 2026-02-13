@@ -15,18 +15,6 @@ export const DEFAULT_DATE_COMMIT_MONTH_FORMAT = 'MMMM yyyy';
 export const ENABLE_AUTH = false;
 export const ENABLE_USER_SETUP = false;
 
-const toBoolean = (value: string | undefined): boolean | undefined => {
-  if (value === 'true') return true;
-  if (value === 'false') return false;
-  return undefined;
-};
-
-const toPositiveInt = (value: string | undefined): number | undefined => {
-  if (value === undefined || value === '') return undefined;
-  const n = Number.parseInt(value, 10);
-  return Number.isInteger(n) && n >= 1 ? n : undefined;
-};
-
 // Trackers - Constants
 export const DEFAULT_TRACKER_RUN_DATA_FILE = 'data.json';
 export const TRACKER_GIT_OUTPUT_FORMAT = `"${['%H', '%an', '%ad'].join('|')}"`;
@@ -43,6 +31,15 @@ if (parsedPageSize > 0) {
   pageSize = parsedPageSize;
 }
 
+const enableAuthEnv = process.env.ENABLE_AUTH;
+const enableAuth = enableAuthEnv === 'true' ? true : enableAuthEnv === 'false' ? false : ENABLE_AUTH;
+const enableUserSetupEnv = process.env.ENABLE_USER_SETUP;
+const enableUserSetup =
+  enableUserSetupEnv === 'true' ? true : enableUserSetupEnv === 'false' ? false : ENABLE_USER_SETUP;
+const orgIdEnv = process.env.HD_ORG_ID?.trim();
+const orgIdParsed = orgIdEnv ? Number.parseInt(orgIdEnv, 10) : NaN;
+const orgIdFromEnv = Number.isInteger(orgIdParsed) && orgIdParsed >= 1 ? orgIdParsed : undefined;
+
 export const config = {
   eolReportUrl: process.env.EOL_REPORT_URL || EOL_REPORT_URL,
   graphqlHost: process.env.GRAPHQL_HOST || GRAPHQL_HOST,
@@ -52,10 +49,10 @@ export const config = {
   analyticsUrl: process.env.ANALYTICS_URL || ANALYTICS_URL,
   concurrentPageRequests,
   pageSize,
-  enableAuth: toBoolean(process.env.ENABLE_AUTH) ?? ENABLE_AUTH,
-  enableUserSetup: toBoolean(process.env.ENABLE_USER_SETUP) ?? ENABLE_USER_SETUP,
+  enableAuth,
+  enableUserSetup,
   ciTokenFromEnv: process.env.HD_AUTH_TOKEN?.trim() || undefined,
-  orgIdFromEnv: toPositiveInt(process.env.HD_ORG_ID),
+  orgIdFromEnv,
   accessTokenFromEnv: process.env.HD_ACCESS_TOKEN?.trim() || undefined,
 };
 
