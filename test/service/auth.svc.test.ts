@@ -1,5 +1,17 @@
 import { type Mock, vi } from 'vitest';
 
+const { mockConfig } = vi.hoisted(() => ({
+  mockConfig: {
+    ciTokenFromEnv: undefined as string | undefined,
+    orgIdFromEnv: undefined as number | undefined,
+    accessTokenFromEnv: undefined as string | undefined,
+  },
+}));
+
+vi.mock('../../src/config/constants.ts', () => ({
+  config: mockConfig,
+}));
+
 vi.mock('../../src/service/auth-token.svc.ts', () => ({
   __esModule: true,
   getStoredTokens: vi.fn(),
@@ -12,6 +24,21 @@ vi.mock('../../src/service/auth-refresh.svc.ts', () => ({
   __esModule: true,
   refreshTokens: vi.fn(),
 }));
+
+vi.mock('../../src/service/ci-token.svc.ts', () => ({
+  __esModule: true,
+  getCIToken: vi.fn(),
+  getCIOrgId: vi.fn(),
+  saveCIToken: vi.fn(),
+}));
+
+vi.mock('../../src/service/ci-auth.svc.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/service/ci-auth.svc.ts')>();
+  return {
+    ...actual,
+    requireCIAccessToken: vi.fn(),
+  };
+});
 
 import {
   AuthError,
@@ -28,10 +55,16 @@ import {
   isAccessTokenExpired,
   saveTokens,
 } from '../../src/service/auth-token.svc.ts';
+import { CITokenError, requireCIAccessToken } from '../../src/service/ci-auth.svc.ts';
+import { getCIToken } from '../../src/service/ci-token.svc.ts';
 
 describe('auth.svc', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    (getCIToken as Mock).mockReturnValue(undefined);
+    mockConfig.ciTokenFromEnv = undefined;
+    mockConfig.orgIdFromEnv = undefined;
+    mockConfig.accessTokenFromEnv = undefined;
   });
 
   it('persists token responses via keyring service', async () => {
@@ -86,7 +119,47 @@ describe('auth.svc', () => {
   });
 
   describe('requireAccessTokenForScan', () => {
-    it('returns token when access token is valid', async () => {
+    it('delegates to requireCIAccessToken when CI token present', async () => {
+      (getCIToken as Mock).mockReturnValue('ci-refresh-token');
+      (requireCIAccessToken as Mock).mockResolvedValue('ci-access-token');
+
+      const token = await requireAccessTokenForScan();
+      expect(token).toBe('ci-access-token');
+      expect(requireCIAccessToken).toHaveBeenCalled();
+    });
+
+    it('delegates to requireCIAccessToken when HD_ACCESS_TOKEN present', async () => {
+      mockConfig.accessTokenFromEnv = 'env-access-token';
+      (requireCIAccessToken as Mock).mockResolvedValue('env-access-token');
+
+      const token = await requireAccessTokenForScan();
+      expect(token).toBe('env-access-token');
+      expect(requireCIAccessToken).toHaveBeenCalled();
+    });
+
+    it('uses CI path before keyring when both CI token and keyring tokens exist', async () => {
+      (getCIToken as Mock).mockReturnValue('ci-refresh-token');
+      (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'keyring-token', refreshToken: 'keyring-refresh' });
+      (requireCIAccessToken as Mock).mockResolvedValue('ci-access-token');
+
+      const token = await requireAccessTokenForScan();
+
+      expect(token).toBe('ci-access-token');
+      expect(requireCIAccessToken).toHaveBeenCalled();
+      expect(refreshTokens).not.toHaveBeenCalled();
+    });
+
+    it('propagates CITokenError when requireCIAccessToken throws', async () => {
+      (getCIToken as Mock).mockReturnValue('ci-refresh-token');
+      (requireCIAccessToken as Mock).mockRejectedValue(new CITokenError('Org required', 'CI_ORG_ID_REQUIRED'));
+
+      await expect(requireAccessTokenForScan()).rejects.toMatchObject({
+        name: 'CITokenError',
+        code: 'CI_ORG_ID_REQUIRED',
+      });
+    });
+
+    it('returns token when access token is valid (login path)', async () => {
       (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'valid-token' });
       (isAccessTokenExpired as Mock).mockReturnValue(false);
 
@@ -109,8 +182,8 @@ describe('auth.svc', () => {
     it('throws AuthError with NOT_LOGGED_IN when no tokens exist', async () => {
       (getStoredTokens as Mock).mockResolvedValue(undefined);
 
-      await expect(requireAccessTokenForScan()).rejects.toThrow(AuthError);
       await expect(requireAccessTokenForScan()).rejects.toMatchObject({
+        name: 'AuthError',
         code: 'NOT_LOGGED_IN',
         message: 'Please log in to perform a scan. To authenticate, run "hd auth login".',
       });

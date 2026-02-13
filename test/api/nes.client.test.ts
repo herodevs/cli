@@ -1,5 +1,14 @@
 import type { CreateEolReportInput } from '@herodevs/eol-shared';
 import { vi } from 'vitest';
+
+vi.mock('../../src/config/constants.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../src/config/constants.ts')>();
+  return {
+    ...actual,
+    config: { ...actual.config, enableAuth: false },
+  };
+});
+
 import { submitScan } from '../../src/api/nes.client.ts';
 import { SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../src/config/constants.ts';
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
