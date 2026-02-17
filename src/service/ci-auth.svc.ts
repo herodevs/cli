@@ -7,10 +7,10 @@ import { debugLogger } from './log.svc.ts';
 export type CITokenErrorCode = 'CI_TOKEN_INVALID' | 'CI_TOKEN_REFRESH_FAILED' | 'CI_ORG_ID_REQUIRED';
 
 const CITOKEN_ERROR_MESSAGE =
-  "CI token is invalid or expired. To provision a new CI token, run 'hd auth-ci provision --org-id <id>' (after logging in with 'hd auth login').";
+  "CI token is invalid or expired. To provision a new CI token, run 'hd auth-ci provision' (after logging in with 'hd auth login').";
 
 const CI_ORG_ID_ERROR_MESSAGE =
-  'Organization ID is required for CI token. When using HD_AUTH_TOKEN, set HD_ORG_ID to your organization ID (e.g. HD_ORG_ID=123). When using a locally stored CI token, re-provision with: hd auth-ci provision --org-id <id>';
+  'Organization ID is required for CI token. When using HD_AUTH_TOKEN, set HD_ORG_ID to your organization ID (e.g. HD_ORG_ID=123). When using a locally stored CI token, re-provision with: hd auth-ci provision';
 
 export class CITokenError extends Error {
   readonly code: CITokenErrorCode;

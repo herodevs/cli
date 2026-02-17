@@ -8,6 +8,8 @@ import { ApiError, type ApiErrorCode, isApiErrorCode } from './errors.ts';
 import { getOrgAccessTokensMutation } from './gql-operations.ts';
 import { getGraphQLErrors } from './graphql-errors.ts';
 
+const graphqlUrl = `${config.iamHost}${config.iamPath}`;
+
 const noAuthTokenProvider = async (): Promise<string> => '';
 
 function createOptionalTokenProvider(token?: string) {
@@ -41,20 +43,16 @@ type GetOrgAccessTokensResponse = {
   };
 };
 
-function getGraphqlUrl(): string {
-  return `${config.iamHost}${config.iamPath}`;
-}
-
 function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErrorCode | undefined {
   const code = (errors[0]?.extensions as { code?: string })?.code;
-  if (!code || !isApiErrorCode(code)) return undefined;
+  if (!code || !isApiErrorCode(code)) return;
   return code;
 }
 
 async function getOrgAccessTokens(
   input: IamAccessOrgTokensInput,
 ): Promise<{ accessToken: string; refreshToken: string }> {
-  const client = createApollo(getGraphqlUrl(), requireAccessToken);
+  const client = createApollo(graphqlUrl, requireAccessToken);
   const res = await client.mutate<GetOrgAccessTokensResponse, { input: IamAccessOrgTokensInput }>({
     mutation: getOrgAccessTokensMutation,
     variables: {
@@ -87,7 +85,7 @@ async function getOrgAccessTokens(
   };
 }
 
-async function getOrgAccessTokensUnauthenticated(
+export async function getOrgAccessTokensUnauthenticated(
   input: IamAccessOrgTokensInput,
 ): Promise<{ accessToken: string; refreshToken: string }> {
   return callGetOrgAccessTokensInternal(input, noAuthTokenProvider);
@@ -99,7 +97,7 @@ async function callGetOrgAccessTokensInternal(
   input: IamAccessOrgTokensInput,
   tokenProvider: TokenProvider,
 ): Promise<{ accessToken: string; refreshToken: string }> {
-  const client = createApollo(getGraphqlUrl(), tokenProvider);
+  const client = createApollo(graphqlUrl, tokenProvider);
   const res = await client.mutate<GetOrgAccessTokensResponse, { input: IamAccessOrgTokensInput }>({
     mutation: getOrgAccessTokensMutation,
     variables: { input },
@@ -142,16 +140,6 @@ export async function exchangeCITokenForAccess(
   const { refreshToken, orgId, optionalAccessToken } = options;
   const tokenProvider = createOptionalTokenProvider(optionalAccessToken);
   return callGetOrgAccessTokensInternal({ orgId, previousToken: refreshToken }, tokenProvider);
-}
-
-export async function getAccessTokenFromCIRefresh(
-  refreshToken: string,
-  orgId: number,
-): Promise<{ accessToken: string; refreshToken: string }> {
-  return getOrgAccessTokensUnauthenticated({
-    orgId,
-    previousToken: refreshToken,
-  });
 }
 
 export async function provisionCIToken(options: ProvisionCITokenOptions = {}): Promise<ProvisionCITokenResponse> {

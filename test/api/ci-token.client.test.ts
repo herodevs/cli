@@ -19,7 +19,7 @@ vi.mock('../../src/config/constants.ts', async (importOriginal) => {
 
 import {
   exchangeCITokenForAccess,
-  getAccessTokenFromCIRefresh,
+  getOrgAccessTokensUnauthenticated,
   provisionCIToken,
 } from '../../src/api/ci-token.client.ts';
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
@@ -184,7 +184,7 @@ describe('ci-token.client', () => {
     await expect(provisionCIToken()).rejects.toThrow(/missing refreshToken/);
   });
 
-  describe('getAccessTokenFromCIRefresh', () => {
+  describe('getOrgAccessTokensUnauthenticated', () => {
     it('calls IAM with orgId and previousToken, without Bearer header', async () => {
       fetchMock.push(
         mockGraphQLResponse({
@@ -199,7 +199,10 @@ describe('ci-token.client', () => {
         }),
       );
 
-      const result = await getAccessTokenFromCIRefresh('stored-ci-refresh-token', 42);
+      const result = await getOrgAccessTokensUnauthenticated({
+        orgId: 42,
+        previousToken: 'stored-ci-refresh-token',
+      });
       expect(result.accessToken).toBe('new-access-from-refresh');
       expect(result.refreshToken).toBe('new-refresh');
 
@@ -221,13 +224,15 @@ describe('ci-token.client', () => {
     it('throws when GraphQL returns errors', async () => {
       fetchMock.push(mockGraphQLErrorResponse('Invalid refresh token'));
 
-      await expect(getAccessTokenFromCIRefresh('bad-token', 1)).rejects.toThrow(/Invalid refresh token/);
+      await expect(getOrgAccessTokensUnauthenticated({ orgId: 1, previousToken: 'bad-token' })).rejects.toThrow(
+        /Invalid refresh token/,
+      );
     });
 
     it('throws when response is not ok', async () => {
       fetchMock.push(mockErrorResponse(500, 'Internal Server Error'));
 
-      await expect(getAccessTokenFromCIRefresh('token', 1)).rejects.toThrow(/500/);
+      await expect(getOrgAccessTokensUnauthenticated({ orgId: 1, previousToken: 'token' })).rejects.toThrow(/500/);
     });
   });
 

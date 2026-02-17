@@ -5,8 +5,22 @@ import { requireAccessTokenForScan } from '../service/auth.svc.ts';
 export type TokenProvider = (forceRefresh?: boolean) => Promise<string>;
 
 function isTokenEndpoint(input: string | URL | Request): boolean {
-  const url = typeof input === 'string' ? input : input instanceof Request ? input.url : input.toString();
-  return url.endsWith('/token');
+  let urlString: string;
+  if (typeof input === 'string') {
+    urlString = input;
+  } else if (input instanceof Request) {
+    urlString = input.url;
+  } else {
+    urlString = input.toString();
+  }
+
+  try {
+    const url = new URL(urlString);
+    return url.pathname.endsWith('/token');
+  } catch {
+    const pathOnly = urlString.split('?')[0].split('#')[0];
+    return pathOnly.endsWith('/token');
+  }
 }
 
 const createAuthorizedFetch =
@@ -21,7 +35,7 @@ const createAuthorizedFetch =
       }
     }
 
-    let response = await fetch(input, { ...init, headers });
+    const response = await fetch(input, { ...init, headers });
 
     if (
       config.enableAuth &&
@@ -32,7 +46,7 @@ const createAuthorizedFetch =
       const refreshed = await tokenProvider(true);
       const retryHeaders = new Headers(init?.headers);
       retryHeaders.set('Authorization', `Bearer ${refreshed}`);
-      response = await fetch(input, { ...init, headers: retryHeaders });
+      return fetch(input, { ...init, headers: retryHeaders });
     }
 
     return response;

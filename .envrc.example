@@ -9,6 +9,19 @@ export ANALYTICS_URL='https://eol-api.herodevs.com/track';
 export OAUTH_CONNECT_URL='';
 export OAUTH_CLIENT_ID='';
 
+# IAM (for CI token provisioning)
+# export IAM_HOST='https://apps.herodevs.io/api/iam';
+# export IAM_PATH='/graphql';
+
+# Auth / User setup (optional)
+# export ENABLE_AUTH='true';
+# export ENABLE_USER_SETUP='true';
+
+# CI token (for headless auth - set when testing CI flow locally)
+# export HD_ORG_ID='1234';  # Required when using HD_AUTH_TOKEN; also stored at provision time
+# export HD_AUTH_TOKEN='<long-lived-refresh-token>';
+# export HD_ACCESS_TOKEN='<access-token>';
+
 # Performance tuning (optional)
 # export CONCURRENT_PAGE_REQUESTS='3';
 # export PAGE_SIZE='500';

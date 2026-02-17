@@ -1,5 +1,6 @@
-import { Command, Flags } from '@oclif/core';
+import { Command } from '@oclif/core';
 import { provisionCIToken } from '../../api/ci-token.client.ts';
+import { ensureUserSetup } from '../../api/user-setup.client.ts';
 import { requireAccessToken } from '../../service/auth.svc.ts';
 import { saveCIOrgId, saveCIToken } from '../../service/ci-token.svc.ts';
 import { getErrorMessage } from '../../service/log.svc.ts';
@@ -7,25 +8,20 @@ import { getErrorMessage } from '../../service/log.svc.ts';
 export default class AuthCiProvision extends Command {
   static override description = 'Provision a CI/CD long-lived refresh token for headless auth';
 
-  static override flags = {
-    orgId: Flags.integer({
-      description: 'Organization ID for the CI token (required)',
-      required: true,
-      aliases: ['org-id'],
-    }),
-  };
-
   async run() {
-    const { flags } = await this.parse(AuthCiProvision);
-    const orgId = flags.orgId;
-    if (orgId === undefined) {
-      this.error('--org-id is required');
-    }
+    await this.parse(AuthCiProvision);
 
     try {
       await requireAccessToken();
     } catch (error) {
       this.error(`Must be logged in to provision CI token. Run 'hd auth login' first. ${getErrorMessage(error)}`);
+    }
+
+    let orgId: number;
+    try {
+      orgId = await ensureUserSetup();
+    } catch (error) {
+      this.error(`User setup failed. ${getErrorMessage(error)}`);
     }
 
     try {

@@ -13,15 +13,17 @@ const USER_SETUP_RETRY_DELAY_MS = 500;
 const USER_FACING_SERVER_ERROR = 'Please contact your administrator.';
 const SERVER_ERROR_CODES = ['INTERNAL_SERVER_ERROR', 'SERVER_ERROR', 'SERVICE_UNAVAILABLE'];
 
+type UserSetupStatusData = { isComplete: boolean; orgId?: number | null };
+
 type UserSetupStatusResponse = {
   eol?: {
-    userSetupStatus?: boolean;
+    userSetupStatus?: UserSetupStatusData;
   };
 };
 
 type CompleteUserSetupResponse = {
   eol?: {
-    completeUserSetup?: boolean;
+    completeUserSetup?: UserSetupStatusData;
   };
 };
 
@@ -33,7 +35,7 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
   return code;
 }
 
-export async function getUserSetupStatus(): Promise<boolean> {
+export async function getUserSetupStatus(): Promise<{ isComplete: boolean; orgId?: number | null }> {
   const client = createApollo(getGraphqlUrl(), requireAccessToken);
   const res = await client.query<UserSetupStatusResponse>({ query: userSetupStatusQuery });
 
@@ -55,16 +57,16 @@ export async function getUserSetupStatus(): Promise<boolean> {
     throw new Error('Failed to check user setup status');
   }
 
-  const isComplete = res.data?.eol?.userSetupStatus;
-  if (typeof isComplete !== 'boolean') {
+  const status = res.data?.eol?.userSetupStatus;
+  if (!status || typeof status.isComplete !== 'boolean') {
     debugLogger('Unexpected userSetupStatus query response: %o', res.data);
     throw new Error('Failed to check user setup status');
   }
 
-  return isComplete;
+  return { isComplete: status.isComplete, orgId: status.orgId ?? undefined };
 }
 
-export async function completeUserSetup(): Promise<boolean> {
+export async function completeUserSetup(): Promise<{ isComplete: boolean; orgId?: number | null }> {
   const client = createApollo(getGraphqlUrl(), requireAccessTokenForScan);
   const res = await client.mutate<CompleteUserSetupResponse>({ mutation: completeUserSetupMutation });
 
@@ -86,26 +88,31 @@ export async function completeUserSetup(): Promise<boolean> {
     throw new Error('Failed to complete user setup');
   }
 
-  const success = res.data?.eol?.completeUserSetup;
-  if (!success) {
+  const result = res.data?.eol?.completeUserSetup;
+  if (!result || result.isComplete !== true) {
     debugLogger('completeUserSetup mutation returned unsuccessful response: %o', res.data);
     throw new Error('Failed to complete user setup');
   }
 
-  return success;
+  return { isComplete: true, orgId: result.orgId ?? undefined };
 }
 
-export async function ensureUserSetup(): Promise<void> {
-  const isComplete = await withRetries('user-setup-status', () => getUserSetupStatus(), {
+export async function ensureUserSetup(): Promise<number> {
+  const status = await withRetries('user-setup-status', () => getUserSetupStatus(), {
     attempts: USER_SETUP_MAX_ATTEMPTS,
     baseDelayMs: USER_SETUP_RETRY_DELAY_MS,
   });
-  if (isComplete) {
-    return;
+  if (status.isComplete && status.orgId != null) {
+    return status.orgId;
   }
 
-  await withRetries('user-setup-complete', () => completeUserSetup(), {
+  const result = await withRetries('user-setup-complete', () => completeUserSetup(), {
     attempts: USER_SETUP_MAX_ATTEMPTS,
     baseDelayMs: USER_SETUP_RETRY_DELAY_MS,
   });
+  if (result.orgId != null) {
+    return result.orgId;
+  }
+
+  throw new Error('User setup did not return an organization ID. Please contact your administrator.');
 }

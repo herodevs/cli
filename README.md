@@ -81,7 +81,6 @@ USAGE
 <!-- usagestop -->
 ## Commands
 <!-- commands -->
-* [`hd auth-ci login`](#hd-auth-ci-login)
 * [`hd auth-ci provision`](#hd-auth-ci-provision)
 * [`hd auth login`](#hd-auth-login)
 * [`hd auth logout`](#hd-auth-logout)
@@ -92,34 +91,19 @@ USAGE
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
 
-## `hd auth-ci login`
-
-Obtain an access token for CI scans (outputs export HD_ACCESS_TOKEN=... for eval)
-
-```
-USAGE
-  $ hd auth-ci login
-
-DESCRIPTION
-  Obtain an access token for CI scans (outputs export HD_ACCESS_TOKEN=... for eval)
-```
-
-_See code: [src/commands/auth-ci/login.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth-ci/login.ts)_
-
 ## `hd auth-ci provision`
 
 Provision a CI/CD long-lived refresh token for headless auth
 
 ```
 USAGE
-  $ hd auth-ci provision --orgId <value>
-
-FLAGS
-  --orgId=<value>  (required) Organization ID for the CI token (required)
+  $ hd auth-ci provision
 
 DESCRIPTION
   Provision a CI/CD long-lived refresh token for headless auth
 ```
+
+_See code: [src/commands/auth-ci/provision.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth-ci/provision.ts)_
 
 ## `hd auth login`
 
@@ -181,10 +165,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2025-02-13] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-02-17] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2026-02-13] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-02-17] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
@@ -367,22 +351,22 @@ For headless use in CI/CD (e.g. GitHub Actions, GitLab CI), the CLI supports lon
 
 ```bash
 hd auth login
-hd auth-ci provision --org-id <your-org-id>
+hd auth-ci provision
 ```
 
-Copy the token and org ID, add as CI secrets: `HD_AUTH_TOKEN` and `HD_ORG_ID`.
+Copy the token output, add as CI secrets: `HD_AUTH_TOKEN` and `HD_ORG_ID` (orgId is obtained from user setup and stored at provision time when using locally).
 
-**CI pipeline (headless):** Run `hd auth-ci login` to exchange the refresh token for an access token; use `eval` to export it before the scan:
+**CI pipeline (headless):** Run `hd scan eol` directly with `HD_AUTH_TOKEN` and `HD_ORG_ID` set. The CLI exchanges the token for an access token automatically:
 
 ```bash
 export HD_ORG_ID=<id> HD_AUTH_TOKEN="<token>"
-eval $(hd auth-ci login) && hd scan eol --dir .
+hd scan eol --dir .
 ```
 
 | Secret / Env Var | Purpose |
 |------------------|---------|
 | `HD_AUTH_TOKEN` | Long-lived refresh token from provision |
-| `HD_ORG_ID` | Organization ID (required when using HD_AUTH_TOKEN) |
+| `HD_ORG_ID` | Organization ID (required when using HD_AUTH_TOKEN; also stored at provision time when using local file) |
 
 #### Local testing
 
@@ -390,7 +374,7 @@ Reproduce the CI flow locally:
 
 ```bash
 export HD_ORG_ID=1234 HD_AUTH_TOKEN="eyJ..."
-eval $(hd auth-ci login) && hd scan eol --dir /path/to/project
+hd scan eol --dir /path/to/project
 ```
 
 #### GitHub Actions (authenticated scan)
@@ -406,9 +390,7 @@ Add secrets `HD_AUTH_TOKEN` and `HD_ORG_ID` in your repository or organization, 
   env:
     HD_ORG_ID: ${{ secrets.HD_ORG_ID }}
     HD_AUTH_TOKEN: ${{ secrets.HD_AUTH_TOKEN }}
-  run: |
-    eval $(npx @herodevs/cli@beta auth-ci login)
-    npx @herodevs/cli@beta scan eol -s
+  run: npx @herodevs/cli@beta scan eol -s
 ```
 
 #### GitLab CI (authenticated scan)
@@ -422,7 +404,6 @@ eol-scan:
     HD_ORG_ID: $HD_ORG_ID
     HD_AUTH_TOKEN: $HD_AUTH_TOKEN
   script:
-    - eval $(npx @herodevs/cli@beta auth-ci login)
     - npx @herodevs/cli@beta scan eol -s
   artifacts:
     paths:
