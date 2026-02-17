@@ -142,7 +142,6 @@ export default class ScanEol extends Command {
 
     const scanStartTime = performance.now();
     const scan = await this.scanSbom(sbom);
-    const scanEndTime = performance.now();
 
     const componentCounts = countComponentsByStatus(scan);
     track('CLI EOL Scan Completed', (context) => ({
@@ -153,7 +152,7 @@ export default class ScanEol extends Command {
       nes_available_count: componentCounts.NES_AVAILABLE,
       number_of_packages: componentCounts.TOTAL,
       sbom_created: !flags.file,
-      scan_load_time: (scanEndTime - scanStartTime) / 1000,
+      scan_load_time: this.getScanLoadTime(scanStartTime),
       scanned_ecosystems: componentCounts.ECOSYSTEMS,
       web_report_link: !flags.hideReportUrl && scan.id ? `${config.eolReportUrl}/${scan.id}` : undefined,
       web_report_hidden: flags.hideReportUrl,
@@ -195,6 +194,8 @@ export default class ScanEol extends Command {
   }
 
   private async scanSbom(sbom: CdxBom): Promise<EolReport> {
+    const scanStartTime = performance.now();
+    const numberOfPackages = sbom.components?.length ?? 0;
     const { flags } = await this.parse(ScanEol);
 
     const spinner = ora().start('Trimming SBOM');
@@ -218,12 +219,15 @@ export default class ScanEol extends Command {
       return scan;
     } catch (error) {
       spinner.fail('Scanning failed');
+      const scanLoadTime = this.getScanLoadTime(scanStartTime);
 
       if (error instanceof ApiError) {
         track('CLI EOL Scan Failed', (context) => ({
           command: context.command,
           command_flags: context.command_flags,
           scan_failure_reason: error.code,
+          scan_load_time: scanLoadTime,
+          number_of_packages: numberOfPackages,
         }));
 
         const errorMessages: Record<string, string> = {
@@ -240,9 +244,15 @@ export default class ScanEol extends Command {
         command: context.command,
         command_flags: context.command_flags,
         scan_failure_reason: errorMessage,
+        scan_load_time: scanLoadTime,
+        number_of_packages: numberOfPackages,
       }));
       this.error(`Failed to submit scan to NES. ${errorMessage}`);
     }
+  }
+
+  private getScanLoadTime(scanStartTime: number): number {
+    return (performance.now() - scanStartTime) / 1000;
   }
 
   private saveReport(report: EolReport, dir: string, outputPath?: string): string {
