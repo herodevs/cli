@@ -1,6 +1,10 @@
 import sinon from 'sinon';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// Hoisted so the mock is registered before any module loads (avoids real machineIdSync on Windows CI)
+const mockNodeMachineId = vi.hoisted(() => ({ machineIdSync: vi.fn(() => 'test-machine-id') }));
+vi.mock('node-machine-id', () => ({ __esModule: true, default: mockNodeMachineId }));
+
 describe('analytics.svc', () => {
   const mockAmplitude = {
     init: sinon.spy(),
@@ -10,7 +14,6 @@ describe('analytics.svc', () => {
     Identify: sinon.stub().returns({}),
     Types: { LogLevel: { None: 0 } },
   };
-  const mockNodeMachineId = { machineIdSync: sinon.stub().returns('test-machine-id') };
   let originalEnv: typeof process.env;
 
   async function setupModule() {
@@ -23,10 +26,6 @@ describe('analytics.svc', () => {
       track: mockAmplitude.track,
       Identify: mockAmplitude.Identify,
       Types: mockAmplitude.Types,
-    }));
-    vi.doMock('node-machine-id', () => ({
-      __esModule: true,
-      default: mockNodeMachineId,
     }));
     vi.doMock('../../src/config/constants.ts', () => ({
       __esModule: true,
@@ -46,7 +45,7 @@ describe('analytics.svc', () => {
     mockAmplitude.setOptOut.resetHistory();
     mockAmplitude.identify.resetHistory();
     mockAmplitude.track.resetHistory();
-    mockNodeMachineId.machineIdSync.resetHistory();
+    mockNodeMachineId.machineIdSync.mockClear();
   });
 
   describe('initializeAnalytics', () => {
@@ -198,8 +197,8 @@ describe('analytics.svc', () => {
     it('should initialize device_id using NodeMachineId.machineIdSync', async () => {
       await setupModule();
 
-      expect(mockNodeMachineId.machineIdSync.calledOnce).toBe(true);
-      expect(mockNodeMachineId.machineIdSync.getCall(0).args[0]).toBe(true);
+      expect(mockNodeMachineId.machineIdSync).toHaveBeenCalledTimes(1);
+      expect(mockNodeMachineId.machineIdSync).toHaveBeenCalledWith(true);
     });
 
     it('should initialize started_at as a Date object', async () => {
