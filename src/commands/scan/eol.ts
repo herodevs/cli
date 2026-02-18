@@ -4,6 +4,7 @@ import { Command, Flags } from '@oclif/core';
 import ora from 'ora';
 import { ApiError } from '../../api/errors.ts';
 import { submitScan } from '../../api/nes.client.ts';
+import { ensureUserSetup } from '../../api/user-setup.client.ts';
 import { config, filenamePrefix, SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../config/constants.ts';
 import { track } from '../../service/analytics.svc.ts';
 import { requireAccessTokenForScan } from '../../service/auth.svc.ts';
@@ -141,6 +142,7 @@ export default class ScanEol extends Command {
     }
 
     const scanStartTime = performance.now();
+    await ensureUserSetup();
     const scan = await this.scanSbom(sbom);
 
     const componentCounts = countComponentsByStatus(scan);

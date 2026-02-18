@@ -1,6 +1,7 @@
 import type { GraphQLFormattedError } from 'graphql';
 import { config } from '../config/constants.ts';
 import { requireAccessToken, requireAccessTokenForScan } from '../service/auth.svc.ts';
+import { getCIToken } from '../service/ci-token.svc.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { withRetries } from '../utils/retry.ts';
 import { createApollo } from './apollo.client.ts';
@@ -36,7 +37,8 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
 }
 
 export async function getUserSetupStatus(): Promise<{ isComplete: boolean; orgId?: number | null }> {
-  const client = createApollo(getGraphqlUrl(), requireAccessToken);
+  const tokenProvider = getCIToken() || config.accessTokenFromEnv ? requireAccessTokenForScan : requireAccessToken;
+  const client = createApollo(getGraphqlUrl(), tokenProvider);
   const res = await client.query<UserSetupStatusResponse>({ query: userSetupStatusQuery });
 
   const errors = getGraphQLErrors(res);

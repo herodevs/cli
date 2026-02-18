@@ -5,11 +5,11 @@ import { requireAccessToken } from '../../service/auth.svc.ts';
 import { saveCIOrgId, saveCIToken } from '../../service/ci-token.svc.ts';
 import { getErrorMessage } from '../../service/log.svc.ts';
 
-export default class AuthCiProvision extends Command {
+export default class AuthProvisionCiToken extends Command {
   static override description = 'Provision a CI/CD long-lived refresh token for headless auth';
 
   async run() {
-    await this.parse(AuthCiProvision);
+    await this.parse(AuthProvisionCiToken);
 
     try {
       await requireAccessToken();
@@ -30,7 +30,10 @@ export default class AuthCiProvision extends Command {
       saveCIToken(refreshToken);
       saveCIOrgId(orgId);
       this.log('CI token provisioned and saved locally.');
-      this.log(refreshToken);
+      this.log('');
+      this.log('For CI/CD, set these environment variables:');
+      this.log(`  HD_ORG_ID=${orgId}`);
+      this.log(`  HD_AUTH_TOKEN=${refreshToken}`);
     } catch (error) {
       this.error(`CI token provisioning failed. ${getErrorMessage(error)}`);
     }

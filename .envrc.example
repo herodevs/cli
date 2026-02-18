@@ -1,32 +1,41 @@
 #!/usr/bin/env bash
 
-# API Configuration
+# API Configuration (override defaults in src/config/constants.ts)
 export GRAPHQL_HOST='https://api.nes.herodevs.com';
 export GRAPHQL_PATH='/graphql';
 export EOL_REPORT_URL='https://eol-report-card.apps.herodevs.com/reports';
 export ANALYTICS_URL='https://eol-api.herodevs.com/track';
 
+# OAuth (for hd auth login)
 export OAUTH_CONNECT_URL='';
 export OAUTH_CLIENT_ID='';
+# export OAUTH_CALLBACK_PORT='4000';
+# export OAUTH_CALLBACK_REDIRECT='http://localhost:4000/oauth2/callback';
 
-# IAM (for CI token provisioning)
+# IAM (for CI token provisioning via hd auth provision-ci-token)
 # export IAM_HOST='https://apps.herodevs.io/api/iam';
 # export IAM_PATH='/graphql';
 
-# Auth / User setup (optional)
+# Auth toggles (optional; both default false)
 # export ENABLE_AUTH='true';
 # export ENABLE_USER_SETUP='true';
 
-# CI token (for headless auth - set when testing CI flow locally)
-# export HD_ORG_ID='1234';  # Required when using HD_AUTH_TOKEN; also stored at provision time
+# CI token (for headless flows)
+# HD_ORG_ID: required when using HD_AUTH_TOKEN; also stored when provisioning
+# HD_AUTH_TOKEN: refresh token from provision; exchanged for access token
+# HD_ACCESS_TOKEN: direct access token (skips exchange)
+# export HD_ORG_ID='1234';
 # export HD_AUTH_TOKEN='<long-lived-refresh-token>';
 # export HD_ACCESS_TOKEN='<access-token>';
 
-# Performance tuning (optional)
+# Performance (optional)
 # export CONCURRENT_PAGE_REQUESTS='3';
 # export PAGE_SIZE='500';
 
-# Keyring configuration (optional, for debugging)
+# Privacy
+# export TRACKING_OPT_OUT='true';
+
+# Keyring (optional; for debugging token storage)
 # export HD_AUTH_SERVICE_NAME='@herodevs/cli';
 # export HD_AUTH_ACCESS_KEY='access-token';
 # export HD_AUTH_REFRESH_KEY='refresh-token';

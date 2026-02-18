@@ -68,11 +68,11 @@ Maven and Gradle projects should run an install and build before scanning
 ## Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @herodevs/cli@beta
+$ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v24.10.0
+@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v24.11.1
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -81,29 +81,15 @@ USAGE
 <!-- usagestop -->
 ## Commands
 <!-- commands -->
-* [`hd auth-ci provision`](#hd-auth-ci-provision)
 * [`hd auth login`](#hd-auth-login)
 * [`hd auth logout`](#hd-auth-logout)
+* [`hd auth provision-ci-token`](#hd-auth-provision-ci-token)
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd tracker init`](#hd-tracker-init)
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
-
-## `hd auth-ci provision`
-
-Provision a CI/CD long-lived refresh token for headless auth
-
-```
-USAGE
-  $ hd auth-ci provision
-
-DESCRIPTION
-  Provision a CI/CD long-lived refresh token for headless auth
-```
-
-_See code: [src/commands/auth-ci/provision.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth-ci/provision.ts)_
 
 ## `hd auth login`
 
@@ -133,6 +119,20 @@ DESCRIPTION
 
 _See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth/logout.ts)_
 
+## `hd auth provision-ci-token`
+
+Provision a CI/CD long-lived refresh token for headless auth
+
+```
+USAGE
+  $ hd auth provision-ci-token
+
+DESCRIPTION
+  Provision a CI/CD long-lived refresh token for headless auth
+```
+
+_See code: [src/commands/auth/provision-ci-token.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth/provision-ci-token.ts)_
+
 ## `hd help [COMMAND]`
 
 Display help for hd.
@@ -151,7 +151,7 @@ DESCRIPTION
   Display help for hd.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/6.2.37/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.37/src/commands/help.ts)_
 
 ## `hd report committers`
 
@@ -165,10 +165,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2025-02-17] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-02-18] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2026-02-17] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-02-18] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
@@ -298,7 +298,7 @@ EXAMPLES
   $ hd tracker run -d tracker -f settings.json
 ```
 
-_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/main/src/commands/tracker/run.ts)_
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/tracker/run.ts)_
 
 ## `hd update [CHANNEL]`
 
@@ -336,7 +336,7 @@ EXAMPLES
     $ hd update --available
 ```
 
-_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/4.7.18/src/commands/update.ts)_
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.7.18/src/commands/update.ts)_
 <!-- commandsstop -->
 
 ## CI/CD Usage
@@ -351,7 +351,7 @@ For headless use in CI/CD (e.g. GitHub Actions, GitLab CI), the CLI supports lon
 
 ```bash
 hd auth login
-hd auth-ci provision
+hd auth provision-ci-token
 ```
 
 Copy the token output, add as CI secrets: `HD_AUTH_TOKEN` and `HD_ORG_ID` (orgId is obtained from user setup and stored at provision time when using locally).
