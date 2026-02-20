@@ -60,7 +60,7 @@ describe('user-setup.client', () => {
         { message: 'Internal server error', extensions: { code: 'INTERNAL_SERVER_ERROR' } },
       ]);
 
-    await expect(ensureUserSetup()).rejects.toThrow('Please contact your administrator.');
+    await expect(ensureUserSetup()).rejects.toThrow('Please contact support@herodevs.com.');
     expect(fetchMock.getCalls()).toHaveLength(3);
   });
 });
