@@ -1,5 +1,6 @@
 import { AsyncEntry } from '@napi-rs/keyring';
 import { getAccessTokenKey, getRefreshTokenKey, getTokenServiceName } from './auth-config.svc.ts';
+import { decodeJwtPayload } from './jwt.svc.ts';
 
 export interface StoredTokens {
   accessToken?: string;
@@ -53,25 +54,11 @@ export async function clearStoredTokens() {
 }
 
 export function isAccessTokenExpired(token: string | undefined): boolean {
-  if (!token) {
+  const payload = decodeJwtPayload(token) as { exp?: number } | undefined;
+  if (!payload?.exp) {
     return true;
   }
 
-  try {
-    const [, payloadB64] = token.split('.');
-    if (!payloadB64) {
-      return true;
-    }
-
-    const payloadJson = Buffer.from(payloadB64, 'base64url').toString('utf8');
-    const payload = JSON.parse(payloadJson) as { exp?: number };
-    if (!payload.exp) {
-      return true;
-    }
-
-    const now = Date.now() / 1000;
-    return now + TOKEN_SKEW_SECONDS >= payload.exp;
-  } catch {
-    return true;
-  }
+  const now = Date.now() / 1000;
+  return now + TOKEN_SKEW_SECONDS >= payload.exp;
 }

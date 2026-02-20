@@ -4,7 +4,7 @@ import { initializeAnalytics, track } from '../../service/analytics.svc.ts';
 
 const hook: Hook.Init = async () => {
   const args = parseArgs({ allowPositionals: true, strict: false });
-  initializeAnalytics();
+  await initializeAnalytics();
   track('CLI Command Submitted', (context) => ({
     command: args.positionals.join(' ').trim(),
     command_flags: Object.entries(args.values).flat().join(' '),
