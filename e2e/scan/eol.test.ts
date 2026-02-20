@@ -23,17 +23,6 @@ const upToDateDir = path.resolve(fixturesDir, 'npm/up-to-date');
 const upToDateSbom = path.join(fixturesDir, 'npm/up-to-date.sbom.json');
 const noComponentsSbom = path.join(fixturesDir, 'npm/no-components.sbom.json');
 
-function mockUserSetupStatus(orgId = 1) {
-  return {
-    eol: {
-      userSetupStatus: {
-        isComplete: true,
-        orgId,
-      },
-    },
-  };
-}
-
 function mockReport(components: DeepPartial<EolScanComponent>[] = []) {
   return {
     eol: {
@@ -95,10 +84,7 @@ describe('scan:eol e2e', () => {
         nesRemediation: { remediations: [{ urls: { main: 'https://example.com' } }] },
       },
     ];
-    fetchMock = new FetchMock()
-      .addGraphQL(mockUserSetupStatus())
-      .addGraphQL(mockReport(components))
-      .addGraphQL(mockGetReport(components));
+    fetchMock = new FetchMock().addGraphQL(mockReport(components)).addGraphQL(mockGetReport(components));
   });
 
   afterEach(() => {
@@ -257,10 +243,7 @@ describe('scan:eol e2e', () => {
       { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
     ];
     fetchMock.restore();
-    fetchMock = new FetchMock()
-      .addGraphQL(mockUserSetupStatus())
-      .addGraphQL(mockReport(components))
-      .addGraphQL(mockGetReport(components));
+    fetchMock = new FetchMock().addGraphQL(mockReport(components)).addGraphQL(mockGetReport(components));
     const cmd = `scan:eol --file ${upToDateSbom}`;
     const { stdout } = await run(cmd);
     match(stdout, /Scan results:/, 'Should show results header');
@@ -270,10 +253,7 @@ describe('scan:eol e2e', () => {
 
   it('handles empty components array without errors', async () => {
     fetchMock.restore();
-    fetchMock = new FetchMock()
-      .addGraphQL(mockUserSetupStatus())
-      .addGraphQL(mockReport([]))
-      .addGraphQL(mockGetReport([]));
+    fetchMock = new FetchMock().addGraphQL(mockReport([])).addGraphQL(mockGetReport([]));
     const cmd = `scan:eol --file ${noComponentsSbom}`;
     const { stdout } = await run(cmd);
     match(stdout, /No components found in scan/, 'Should show no packages found in scan');
@@ -418,10 +398,7 @@ describe('scan:eol e2e', () => {
       { purl: 'pkg:npm/bootstrap@5.3.5', metadata: {} },
       { purl: 'pkg:npm/vue@3.5.13', metadata: {} },
     ];
-    fetchMock = new FetchMock()
-      .addGraphQL(mockUserSetupStatus())
-      .addGraphQL(mockReport(components))
-      .addGraphQL(mockGetReport(components));
+    fetchMock = new FetchMock().addGraphQL(mockReport(components)).addGraphQL(mockGetReport(components));
     const cmd = `scan:eol --dir ${upToDateDir}`;
     const { stdout } = await run(cmd);
     match(stdout, /Scan results:/, 'Should show results header');
@@ -615,9 +592,7 @@ describe('scan:eol e2e', () => {
     it('fails when NES returns unsuccessful result', async () => {
       // Override fetch mock to return unsuccessful mutation for this test
       fetchMock.restore();
-      fetchMock = new FetchMock()
-        .addGraphQL(mockUserSetupStatus())
-        .addGraphQL({ eol: { createReport: { success: false, id: null, totalRecords: 0 } } });
+      fetchMock = new FetchMock().addGraphQL({ eol: { createReport: { success: false, id: null, totalRecords: 0 } } });
       const out = await runExpectFail(`scan:eol --file ${simpleSbom}`);
       match(
         combinedOutputText(out),
@@ -628,11 +603,9 @@ describe('scan:eol e2e', () => {
 
     it('fails when NES returns GraphQL errors', async () => {
       fetchMock.restore();
-      fetchMock = new FetchMock()
-        .addGraphQL(mockUserSetupStatus())
-        .addGraphQL({ eol: { createReport: null } }, [
-          { message: 'Internal server error', path: ['eol', 'createReport'] },
-        ]);
+      fetchMock = new FetchMock().addGraphQL({ eol: { createReport: null } }, [
+        { message: 'Internal server error', path: ['eol', 'createReport'] },
+      ]);
       const out = await runExpectFail(`scan:eol --file ${simpleSbom}`);
       match(
         combinedOutputText(out),

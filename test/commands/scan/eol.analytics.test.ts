@@ -2,14 +2,12 @@ import type { CdxBom, EolReport } from '@herodevs/eol-shared';
 import { ApiError } from '../../../src/api/errors.ts';
 import ScanEol from '../../../src/commands/scan/eol.ts';
 
-const { trackMock, requireAccessTokenForScanMock, submitScanMock, countComponentsByStatusMock, ensureUserSetupMock } =
-  vi.hoisted(() => ({
-    trackMock: vi.fn(),
-    requireAccessTokenForScanMock: vi.fn(),
-    submitScanMock: vi.fn(),
-    countComponentsByStatusMock: vi.fn(),
-    ensureUserSetupMock: vi.fn(),
-  }));
+const { trackMock, requireAccessTokenForScanMock, submitScanMock, countComponentsByStatusMock } = vi.hoisted(() => ({
+  trackMock: vi.fn(),
+  requireAccessTokenForScanMock: vi.fn(),
+  submitScanMock: vi.fn(),
+  countComponentsByStatusMock: vi.fn(),
+}));
 
 vi.mock('@herodevs/eol-shared', () => ({
   trimCdxBom: vi.fn((sbom: unknown) => sbom),
@@ -25,10 +23,6 @@ vi.mock('../../../src/service/auth.svc.ts', () => ({
 
 vi.mock('../../../src/api/nes.client.ts', () => ({
   submitScan: submitScanMock,
-}));
-
-vi.mock('../../../src/api/user-setup.client.ts', () => ({
-  ensureUserSetup: ensureUserSetupMock,
 }));
 
 vi.mock('../../../src/service/display.svc.ts', () => ({
@@ -111,7 +105,6 @@ describe('scan:eol analytics timing', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     requireAccessTokenForScanMock.mockResolvedValue(undefined);
-    ensureUserSetupMock.mockResolvedValue(1);
     countComponentsByStatusMock.mockReturnValue({
       EOL: 1,
       EOL_UPCOMING: 0,

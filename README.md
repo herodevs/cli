@@ -68,11 +68,11 @@ Maven and Gradle projects should run an install and build before scanning
 ## Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @herodevs/cli
+$ npm install -g @herodevs/cli@beta
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v24.11.1
+@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v24.10.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -90,6 +90,7 @@ USAGE
 * [`hd tracker init`](#hd-tracker-init)
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
+* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ## `hd auth login`
 
@@ -151,7 +152,7 @@ DESCRIPTION
   Display help for hd.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/v6.2.37/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/6.2.37/src/commands/help.ts)_
 
 ## `hd report committers`
 
@@ -298,11 +299,13 @@ EXAMPLES
   $ hd tracker run -d tracker -f settings.json
 ```
 
-_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/tracker/run.ts)_
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/main/src/commands/tracker/run.ts)_
 
 ## `hd update [CHANNEL]`
 
 update the hd CLI
+
+* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ```
 USAGE
@@ -336,7 +339,7 @@ EXAMPLES
     $ hd update --available
 ```
 
-_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/v4.7.18/src/commands/update.ts)_
+_See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/4.7.18/src/commands/update.ts)_
 <!-- commandsstop -->
 
 ## CI/CD Usage
