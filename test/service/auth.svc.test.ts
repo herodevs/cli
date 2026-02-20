@@ -185,7 +185,7 @@ describe('auth.svc', () => {
       await expect(requireAccessTokenForScan()).rejects.toMatchObject({
         name: 'AuthError',
         code: 'NOT_LOGGED_IN',
-        message: 'Please log in to perform a scan. To authenticate, run "hd auth login".',
+        message: 'Please log in to perform a scan. To authenticate, please run an "auth login" command.',
       });
     });
 
@@ -206,7 +206,7 @@ describe('auth.svc', () => {
       await expect(requireAccessTokenForScan()).rejects.toThrow(AuthError);
       await expect(requireAccessTokenForScan()).rejects.toMatchObject({
         code: 'SESSION_EXPIRED',
-        message: 'Your session is no longer valid. To re-authenticate, run "hd auth login".',
+        message: 'Your session is no longer valid. To re-authenticate, please run an "auth login" command.',
       });
     });
 
