@@ -11,10 +11,19 @@ describe('analytics.svc', () => {
     setOptOut: sinon.spy(),
     identify: sinon.spy(),
     track: sinon.spy(),
-    Identify: sinon.stub().returns({}),
+    Identify: sinon.stub().callsFake(() => ({
+      set: sinon.stub().returnsThis(),
+    })),
     Types: { LogLevel: { None: 0 } },
   };
+  const mockAuthTokenService = { getStoredTokens: sinon.stub().resolves(undefined) };
   let originalEnv: typeof process.env;
+
+  const createAccessToken = (payload: Record<string, unknown>) => {
+    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+    return `${header}.${body}.sig`;
+  };
 
   async function setupModule() {
     vi.resetModules();
@@ -31,6 +40,10 @@ describe('analytics.svc', () => {
       __esModule: true,
       config: { analyticsUrl: 'https://test-analytics.com' },
     }));
+    vi.doMock('../../src/service/auth-token.svc.ts', () => ({
+      __esModule: true,
+      getStoredTokens: mockAuthTokenService.getStoredTokens,
+    }));
 
     return import('../../src/service/analytics.svc.ts');
   }
@@ -46,12 +59,15 @@ describe('analytics.svc', () => {
     mockAmplitude.identify.resetHistory();
     mockAmplitude.track.resetHistory();
     mockNodeMachineId.machineIdSync.mockClear();
+    mockAmplitude.Identify.resetHistory();
+    mockAuthTokenService.getStoredTokens.resetHistory();
+    mockAuthTokenService.getStoredTokens.resolves(undefined);
   });
 
   describe('initializeAnalytics', () => {
     it('should call amplitude init with correct parameters', async () => {
       const mod = await setupModule();
-      mod.initializeAnalytics();
+      await mod.initializeAnalytics();
 
       expect(mockAmplitude.init.calledOnce).toBe(true);
       const initCall = mockAmplitude.init.getCall(0);
@@ -68,7 +84,7 @@ describe('analytics.svc', () => {
       process.env.TRACKING_OPT_OUT = 'true';
 
       const mod = await setupModule();
-      mod.initializeAnalytics();
+      await mod.initializeAnalytics();
 
       expect(mockAmplitude.setOptOut.calledOnce).toBe(true);
       expect(mockAmplitude.setOptOut.getCall(0).args[0]).toBe(true);
@@ -78,37 +94,91 @@ describe('analytics.svc', () => {
       process.env.TRACKING_OPT_OUT = 'false';
 
       const mod = await setupModule();
-      mod.initializeAnalytics();
+      await mod.initializeAnalytics();
 
       expect(mockAmplitude.setOptOut.calledOnce).toBe(true);
       expect(mockAmplitude.setOptOut.getCall(0).args[0]).toBe(false);
     });
 
-    it('should call identify with correct user properties', async () => {
+    it('should call identify with runtime metadata when no stored token exists', async () => {
       const mod = await setupModule();
-      mod.initializeAnalytics();
+      await mod.initializeAnalytics();
 
       expect(mockAmplitude.identify.calledOnce).toBe(true);
       const identifyCall = mockAmplitude.identify.getCall(0);
+      const metadata = identifyCall.args[1];
 
-      const userProperties = identifyCall.args[1];
-      expect(userProperties.device_id).toBe('test-machine-id');
-      expect(typeof userProperties.session_id).toBe('number');
-      expect(typeof userProperties.platform).toBe('string');
-      expect(typeof userProperties.os_name).toBe('string');
-      expect(typeof userProperties.os_version).toBe('string');
-      expect(typeof userProperties.app_version).toBe('string');
+      expect(metadata.device_id).toBe('test-machine-id');
+      expect(typeof metadata.platform).toBe('string');
+      expect(typeof metadata.os_name).toBe('string');
+      expect(typeof metadata.os_version).toBe('string');
+      expect(typeof metadata.session_id).toBe('number');
+      expect(typeof metadata.app_version).toBe('string');
+    });
+
+    it('should emit only one identify when stored token has identity claims', async () => {
+      mockAuthTokenService.getStoredTokens.resolves({
+        accessToken: createAccessToken({
+          sub: 'user-1',
+          email: 'dev@herodevs.com',
+          company: 'HeroDevs',
+          role: 'Software Engineer',
+        }),
+      });
+      const mod = await setupModule();
+      await mod.initializeAnalytics();
+
+      expect(mockAmplitude.identify.calledOnce).toBe(true);
+      expect(mockAmplitude.track.calledOnce).toBe(true);
+      expect(mockAmplitude.track.getCall(0).args[0]).toBe('Identify Call');
+
+      const metadata = mockAmplitude.identify.getCall(0).args[1];
+      expect(metadata.user_id).toBe('user-1');
+      expect(typeof metadata.platform).toBe('string');
+      expect(typeof metadata.os_name).toBe('string');
+      expect(typeof metadata.os_version).toBe('string');
+      expect(typeof metadata.app_version).toBe('string');
     });
 
     it('should handle case when npm_package_version is undefined', async () => {
       process.env.npm_package_version = undefined;
 
       const mod = await setupModule();
-      mod.initializeAnalytics();
+      await mod.initializeAnalytics();
 
       const identifyCall = mockAmplitude.identify.getCall(0);
-      const userProperties = identifyCall.args[1];
-      expect(userProperties.app_version).toBe('unknown');
+      const metadata = identifyCall.args[1];
+      expect(metadata.app_version).toBe('unknown');
+
+      const getProperties = sinon.stub().callsFake((context) => {
+        expect(context.cli_version).toBe('unknown');
+        return {};
+      });
+
+      mod.track('test-event', getProperties);
+      expect(getProperties.calledOnce).toBe(true);
+    });
+
+    it('should await identity refresh during initialization', async () => {
+      let resolveTokens: (value: unknown) => void = () => {};
+      mockAuthTokenService.getStoredTokens.returns(
+        new Promise((resolve) => {
+          resolveTokens = resolve;
+        }),
+      );
+      const mod = await setupModule();
+
+      let settled = false;
+      const pendingInitialize = mod.initializeAnalytics().then(() => {
+        settled = true;
+      });
+
+      await Promise.resolve();
+      expect(settled).toBe(false);
+
+      resolveTokens(undefined);
+      await pendingInitialize;
+      expect(settled).toBe(true);
     });
   });
 
@@ -120,7 +190,7 @@ describe('analytics.svc', () => {
       expect(mockAmplitude.track.calledOnce).toBe(true);
       const trackCall = mockAmplitude.track.getCall(0);
       expect(trackCall.args[0]).toBe('test-event');
-      expect(trackCall.args[1]).toBeUndefined();
+      expect(trackCall.args[1]).toEqual({ source: 'cli' });
       expect(typeof trackCall.args[2].device_id).toBe('string');
       expect(typeof trackCall.args[2].session_id).toBe('number');
     });
@@ -135,7 +205,7 @@ describe('analytics.svc', () => {
       expect(mockAmplitude.track.calledOnce).toBe(true);
       const trackCall = mockAmplitude.track.getCall(0);
       expect(trackCall.args[0]).toBe('test-event');
-      expect(trackCall.args[1]).toEqual(testProperties);
+      expect(trackCall.args[1]).toEqual({ source: 'cli', ...testProperties });
       expect(typeof trackCall.args[2].device_id).toBe('string');
       expect(typeof trackCall.args[2].session_id).toBe('number');
     });
@@ -174,9 +244,9 @@ describe('analytics.svc', () => {
       expect(getUndefinedProperties.calledOnce).toBe(true);
       expect(mockAmplitude.track.calledTwice).toBe(true);
 
-      // Second track call should have undefined properties
+      // Second track call should include source only.
       const secondTrackCall = mockAmplitude.track.getCall(1);
-      expect(secondTrackCall.args[1]).toBeUndefined();
+      expect(secondTrackCall.args[1]).toEqual({ source: 'cli' });
     });
 
     it('should pass correct device_id and session_id to amplitude track', async () => {
@@ -191,6 +261,82 @@ describe('analytics.svc', () => {
       expect(typeof eventOptions.session_id).toBe('number');
       expect(eventOptions.session_id).toBeGreaterThan(0);
     });
+
+    it('should include user_id in event options after identity refresh', async () => {
+      const mod = await setupModule();
+      mockAuthTokenService.getStoredTokens.resolves({
+        accessToken: createAccessToken({
+          sub: 'user-123',
+          email: 'dev@herodevs.com',
+          company: 'HeroDevs',
+          role: 'Software Engineer',
+        }),
+      });
+
+      await mod.refreshIdentityFromStoredToken();
+      mod.track('test-event');
+
+      expect(mockAmplitude.track.callCount).toBe(2);
+      const trackCall = mockAmplitude.track.getCall(1);
+      expect(trackCall.args[2].user_id).toBe('user-123');
+    });
+  });
+
+  describe('refreshIdentityFromStoredToken', () => {
+    it('should set identity user properties and emit Identify Call with source cli', async () => {
+      const mod = await setupModule();
+      mockAuthTokenService.getStoredTokens.resolves({
+        accessToken: createAccessToken({
+          sub: 'user-1',
+          email: 'dev@herodevs.com',
+          company: 'HeroDevs',
+          role: 'Software Engineer',
+        }),
+      });
+
+      await mod.refreshIdentityFromStoredToken();
+
+      expect(mockAmplitude.identify.calledOnce).toBe(true);
+      expect(mockAmplitude.track.calledOnce).toBe(true);
+      const identifyBuilder = mockAmplitude.Identify.getCall(0).returnValue as { set: sinon.SinonStub };
+      expect(identifyBuilder.set.calledWith('email', 'dev@herodevs.com')).toBe(true);
+      expect(identifyBuilder.set.calledWith('organization_name', 'HeroDevs')).toBe(true);
+      expect(identifyBuilder.set.calledWith('role', 'Software Engineer')).toBe(true);
+      expect(identifyBuilder.set.calledWith('user_id', 'user-1')).toBe(true);
+
+      const identifyEventCall = mockAmplitude.track.getCall(0);
+      expect(identifyEventCall.args[0]).toBe('Identify Call');
+      expect(identifyEventCall.args[1]).toEqual({ source: 'cli' });
+      expect(identifyEventCall.args[2].user_id).toBe('user-1');
+    });
+
+    it('should ignore non-canonical claim aliases for identity mapping', async () => {
+      const mod = await setupModule();
+      mockAuthTokenService.getStoredTokens.resolves({
+        accessToken: createAccessToken({
+          user_id: 'legacy-user-id',
+          organization_name: 'Legacy Org',
+          role_other: 'Legacy Role',
+        }),
+      });
+
+      await mod.refreshIdentityFromStoredToken();
+
+      expect(mockAmplitude.identify.called).toBe(false);
+      expect(mockAmplitude.track.called).toBe(false);
+    });
+
+    it('should skip identify when access token payload is malformed', async () => {
+      const mod = await setupModule();
+      mockAuthTokenService.getStoredTokens.resolves({
+        accessToken: 'not-a-jwt',
+      });
+
+      await mod.refreshIdentityFromStoredToken();
+
+      expect(mockAmplitude.identify.called).toBe(false);
+      expect(mockAmplitude.track.called).toBe(false);
+    });
   });
 
   describe('Module Initialization', () => {
@@ -204,12 +350,12 @@ describe('analytics.svc', () => {
     it('should initialize started_at as a Date object', async () => {
       const beforeImport = Date.now();
       const mod = await setupModule();
+      await mod.initializeAnalytics();
+      mod.track('test-event');
       const afterImport = Date.now();
 
-      mod.initializeAnalytics();
-
-      const identifyCall = mockAmplitude.identify.getCall(0);
-      const sessionId = identifyCall.args[1].session_id;
+      const trackCall = mockAmplitude.track.getCall(0);
+      const sessionId = trackCall.args[2].session_id;
 
       expect(sessionId).toBeGreaterThanOrEqual(beforeImport);
       expect(sessionId).toBeLessThanOrEqual(afterImport);
@@ -217,10 +363,11 @@ describe('analytics.svc', () => {
 
     it('should initialize session_id as timestamp from started_at', async () => {
       const mod = await setupModule();
-      mod.initializeAnalytics();
+      await mod.initializeAnalytics();
+      mod.track('test-event');
 
-      const identifyCall = mockAmplitude.identify.getCall(0);
-      const sessionId = identifyCall.args[1].session_id;
+      const trackCall = mockAmplitude.track.getCall(0);
+      const sessionId = trackCall.args[2].session_id;
 
       // Session ID should be a valid timestamp
       expect(typeof sessionId).toBe('number');

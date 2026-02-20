@@ -2,10 +2,15 @@ import os from 'node:os';
 import { track as _track, Identify, identify, init, setOptOut, Types } from '@amplitude/analytics-node';
 import NodeMachineId from 'node-machine-id';
 import { config } from '../config/constants.ts';
+import { getStoredTokens } from './auth-token.svc.ts';
+import { decodeJwtPayload } from './jwt.svc.ts';
+
+const SOURCE = 'cli';
 
 const device_id = NodeMachineId.machineIdSync(true);
 const started_at = new Date();
 const session_id = started_at.getTime();
+const IDENTITY_FIELDS: (keyof IdentityClaims)[] = ['email', 'organization_name', 'role', 'user_id'];
 
 interface AnalyticsContext {
   // Session & Identity
@@ -14,6 +19,10 @@ interface AnalyticsContext {
   os_release?: string;
   started_at?: Date;
   ended_at?: Date;
+  email?: string;
+  organization_name?: string;
+  role?: string;
+  user_id?: string;
 
   // CLI Context
   app_used?: string;
@@ -36,6 +45,8 @@ interface AnalyticsContext {
   web_report_link?: string;
 }
 
+type IdentityClaims = Pick<AnalyticsContext, 'email' | 'organization_name' | 'role' | 'user_id'>;
+
 const defaultAnalyticsContext: AnalyticsContext = {
   locale: Intl.DateTimeFormat().resolvedOptions().locale,
   os_platform: os.platform(),
@@ -47,8 +58,10 @@ const defaultAnalyticsContext: AnalyticsContext = {
 };
 
 let analyticsContext: AnalyticsContext = defaultAnalyticsContext;
+let identifiedUserId: string | undefined;
+let lastIdentitySignature = '';
 
-export function initializeAnalytics() {
+export async function initializeAnalytics(): Promise<void> {
   init('0', {
     flushQueueSize: 2,
     flushIntervalMillis: 250,
@@ -56,14 +69,38 @@ export function initializeAnalytics() {
     serverUrl: config.analyticsUrl,
   });
   setOptOut(process.env.TRACKING_OPT_OUT === 'true');
-  identify(new Identify(), {
-    device_id,
-    platform: analyticsContext.os_platform,
-    os_name: getOSName(analyticsContext.os_platform ?? ''),
-    os_version: analyticsContext.os_release,
-    session_id,
-    app_version: analyticsContext.cli_version,
-  });
+  const identifiedFromToken = await refreshIdentityFromStoredToken();
+  if (!identifiedFromToken) {
+    identify(new Identify(), buildIdentifyEventOptions());
+  }
+}
+
+export async function refreshIdentityFromStoredToken(): Promise<boolean> {
+  const tokens = await getStoredTokens();
+  const claims = extractIdentityClaims(tokens?.accessToken);
+  if (!claims) {
+    return false;
+  }
+
+  const entries = toIdentityEntries(claims);
+  const signature = entries.map(([field, value]) => `${field}:${value}`).join('|');
+  if (signature === lastIdentitySignature) {
+    return false;
+  }
+  lastIdentitySignature = signature;
+
+  identifiedUserId = claims.user_id;
+  analyticsContext = { ...analyticsContext, ...claims };
+
+  const amplitudeIdentify = new Identify();
+  for (const [field, value] of entries) {
+    amplitudeIdentify.set(field, value);
+  }
+
+  const eventOptions = buildIdentifyEventOptions(claims.user_id);
+  identify(amplitudeIdentify, eventOptions);
+  _track('Identify Call', { source: SOURCE }, eventOptions);
+  return true;
 }
 
 export function track(event: string, getProperties?: (context: AnalyticsContext) => Partial<AnalyticsContext>) {
@@ -71,7 +108,64 @@ export function track(event: string, getProperties?: (context: AnalyticsContext)
   if (localContext) {
     analyticsContext = { ...analyticsContext, ...localContext };
   }
-  return _track(event, localContext, { device_id, session_id });
+
+  const eventProperties = { source: SOURCE, ...(localContext ?? {}) };
+  return _track(event, eventProperties, buildEventOptions(identifiedUserId || analyticsContext.user_id));
+}
+
+function buildEventOptions(userId?: string) {
+  if (userId) {
+    return { device_id, session_id, user_id: userId };
+  }
+  return { device_id, session_id };
+}
+
+function buildIdentifyEventOptions(userId?: string) {
+  return {
+    ...buildEventOptions(userId),
+    platform: analyticsContext.os_platform,
+    os_name: getOSName(analyticsContext.os_platform ?? ''),
+    os_version: analyticsContext.os_release,
+    app_version: analyticsContext.cli_version,
+  };
+}
+
+function normalizeClaim(value: unknown): string {
+  if (typeof value !== 'string') {
+    return '';
+  }
+  return value.trim();
+}
+
+function extractIdentityClaims(accessToken: string | undefined): IdentityClaims | undefined {
+  const payload = decodeJwtPayload(accessToken);
+  if (!payload) {
+    return;
+  }
+
+  const identity: IdentityClaims = {
+    user_id: normalizeClaim(payload.sub) || undefined,
+    email: normalizeClaim(payload.email) || undefined,
+    organization_name: normalizeClaim(payload.company) || undefined,
+    role: normalizeClaim(payload.role) || undefined,
+  };
+
+  if (toIdentityEntries(identity).length === 0) {
+    return;
+  }
+
+  return identity;
+}
+
+function toIdentityEntries(identity: IdentityClaims): Array<[keyof IdentityClaims, string]> {
+  const entries: Array<[keyof IdentityClaims, string]> = [];
+  for (const field of IDENTITY_FIELDS) {
+    const value = identity[field];
+    if (value) {
+      entries.push([field, value]);
+    }
+  }
+  return entries;
 }
 
 function getCIProvider(env = process.env): string | undefined {

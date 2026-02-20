@@ -2,6 +2,7 @@ import type { Config } from '@oclif/core';
 import { type Mock, type MockedFunction, vi } from 'vitest';
 import { ensureUserSetup } from '../../../src/api/user-setup.client.ts';
 import AuthLogin from '../../../src/commands/auth/login.ts';
+import { refreshIdentityFromStoredToken } from '../../../src/service/analytics.svc.ts';
 import { persistTokenResponse } from '../../../src/service/auth.svc.ts';
 import { openInBrowser } from '../../../src/utils/open-in-browser.ts';
 
@@ -108,9 +109,15 @@ vi.mock('../../../src/service/auth.svc.ts', () => ({
   persistTokenResponse: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('../../../src/service/analytics.svc.ts', () => ({
+  __esModule: true,
+  refreshIdentityFromStoredToken: vi.fn().mockResolvedValue(undefined),
+}));
+
 const openMock = vi.mocked(openInBrowser) as MockedFunction<typeof openInBrowser>;
 const persistTokenResponseMock = vi.mocked(persistTokenResponse);
 const ensureUserSetupMock = vi.mocked(ensureUserSetup);
+const refreshIdentityFromStoredTokenMock = vi.mocked(refreshIdentityFromStoredToken);
 
 const flushAsync = () => new Promise((resolve) => setImmediate(resolve));
 
@@ -148,6 +155,7 @@ describe('AuthLogin', () => {
     closeMock.mockClear();
     openMock.mockResolvedValue(undefined);
     ensureUserSetupMock.mockResolvedValue(undefined);
+    refreshIdentityFromStoredTokenMock.mockResolvedValue(undefined);
   });
 
   afterEach(() => {
@@ -410,6 +418,7 @@ describe('AuthLogin', () => {
 
       expect(persistTokenResponseMock).toHaveBeenCalledWith(tokenResponse);
       expect(ensureUserSetupMock).toHaveBeenCalledTimes(1);
+      expect(refreshIdentityFromStoredTokenMock).toHaveBeenCalledTimes(1);
     });
 
     it('runs user setup after login', async () => {
@@ -425,6 +434,7 @@ describe('AuthLogin', () => {
       await command.run();
 
       expect(ensureUserSetupMock).toHaveBeenCalledTimes(1);
+      expect(refreshIdentityFromStoredTokenMock).toHaveBeenCalledTimes(1);
     });
 
     it('fails login when user setup fails', async () => {
@@ -439,6 +449,7 @@ describe('AuthLogin', () => {
       vi.spyOn(commandWithInternals, 'exchangeCodeForToken').mockResolvedValue(tokenResponse);
 
       await expect(command.run()).rejects.toThrow('User setup failed');
+      expect(refreshIdentityFromStoredTokenMock).not.toHaveBeenCalled();
     });
   });
 });
