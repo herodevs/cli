@@ -41,7 +41,10 @@ query GetEolReport($input: GetEolReportInput) {
 export const userSetupStatusQuery = gql`
 query Eol {
   eol {
-    userSetupStatus
+    userSetupStatus {
+      isComplete
+      orgId
+    }
   }
 }
 `;
@@ -49,7 +52,25 @@ query Eol {
 export const completeUserSetupMutation = gql`
 mutation Eol {
   eol {
-    completeUserSetup
+    completeUserSetup {
+      isComplete
+      orgId
+    }
+  }
+}
+`;
+
+export const getOrgAccessTokensMutation = gql`
+mutation GetOrgAccessTokens(
+  $input: IamAccessOrgTokensInput!
+) {
+  iamV2 {
+    access {
+      getOrgAccessTokens(input: $input) {
+        accessToken
+        refreshToken
+      }
+    }
   }
 }
 `;

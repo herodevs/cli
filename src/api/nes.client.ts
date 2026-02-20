@@ -1,4 +1,3 @@
-import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import type {
   CreateEolReportInput,
   EolReport,
@@ -8,47 +7,18 @@ import type {
 } from '@herodevs/eol-shared';
 import type { GraphQLFormattedError } from 'graphql';
 import { config } from '../config/constants.ts';
-import { requireAccessTokenForScan } from '../service/auth.svc.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { stripTypename } from '../utils/strip-typename.ts';
+import { createApollo } from './apollo.client.ts';
 import { ApiError, type ApiErrorCode, isApiErrorCode } from './errors.ts';
 import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
 import { getGraphQLErrors } from './graphql-errors.ts';
-
-type TokenProvider = () => Promise<string>;
-
-const createAuthorizedFetch =
-  (tokenProvider: TokenProvider): typeof fetch =>
-  async (input, init) => {
-    const headers = new Headers(init?.headers);
-
-    const token = await tokenProvider();
-    headers.set('Authorization', `Bearer ${token}`);
-
-    return fetch(input, { ...init, headers });
-  };
 
 function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErrorCode | undefined {
   const code = (errors[0]?.extensions as { code?: string })?.code;
   if (!code || !isApiErrorCode(code)) return;
   return code;
 }
-
-export const createApollo = (uri: string, tokenProvider: TokenProvider = requireAccessTokenForScan) =>
-  new ApolloClient({
-    cache: new InMemoryCache(),
-    defaultOptions: {
-      query: { fetchPolicy: 'no-cache', errorPolicy: 'all' },
-      mutate: { errorPolicy: 'all' },
-    },
-    link: new HttpLink({
-      uri,
-      fetch: createAuthorizedFetch(tokenProvider),
-      headers: {
-        'User-Agent': `hdcli/${process.env.npm_package_version ?? 'unknown'}`,
-      },
-    }),
-  });
 
 export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
   return async (input: CreateEolReportInput): Promise<EolReport> => {

@@ -276,7 +276,7 @@ describe('scan:eol e2e', () => {
   });
 
   it('warns and skips saving when --sbomOutput is provided without --saveSbom', async () => {
-    const customDir = path.join(fixturesDir, 'sbom-outputs');
+    const customDir = path.join(tmpdir(), 'scan-eol-sbom-output', randomUUID());
     const customPath = path.join(customDir, 'custom-sbom.json');
     await mkdir(customDir, { recursive: true });
 

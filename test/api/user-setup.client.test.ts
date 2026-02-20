@@ -19,21 +19,23 @@ describe('user-setup.client', () => {
     fetchMock.restore();
   });
 
-  it('returns true when user setup is already complete', async () => {
-    fetchMock.addGraphQL({ eol: { userSetupStatus: true } });
+  it('returns isComplete and orgId when user setup is already complete', async () => {
+    fetchMock.addGraphQL({ eol: { userSetupStatus: { isComplete: true, orgId: 42 } } });
 
-    await expect(getUserSetupStatus()).resolves.toBe(true);
+    await expect(getUserSetupStatus()).resolves.toEqual({ isComplete: true, orgId: 42 });
   });
 
-  it('completes user setup when status is false', async () => {
-    fetchMock.addGraphQL({ eol: { userSetupStatus: false } }).addGraphQL({ eol: { completeUserSetup: true } });
+  it('completes user setup when status is false and returns orgId', async () => {
+    fetchMock
+      .addGraphQL({ eol: { userSetupStatus: { isComplete: false } } })
+      .addGraphQL({ eol: { completeUserSetup: { isComplete: true, orgId: 42 } } });
 
-    await expect(ensureUserSetup()).resolves.toBeUndefined();
+    await expect(ensureUserSetup()).resolves.toBe(42);
     expect(fetchMock.getCalls()).toHaveLength(2);
   });
 
-  it('throws when completeUserSetup mutation returns false', async () => {
-    fetchMock.addGraphQL({ eol: { completeUserSetup: false } });
+  it('throws when completeUserSetup mutation returns isComplete false', async () => {
+    fetchMock.addGraphQL({ eol: { completeUserSetup: { isComplete: false } } });
 
     await expect(completeUserSetup()).rejects.toThrow('Failed to complete user setup');
   });

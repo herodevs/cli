@@ -1,7 +1,13 @@
+import { config } from '../config/constants.ts';
 import type { TokenResponse } from '../types/auth.ts';
 import { refreshTokens } from './auth-refresh.svc.ts';
 import { clearStoredTokens, getStoredTokens, isAccessTokenExpired, saveTokens } from './auth-token.svc.ts';
+import { requireCIAccessToken } from './ci-auth.svc.ts';
+import { getCIToken } from './ci-token.svc.ts';
 import { debugLogger } from './log.svc.ts';
+
+export type { CITokenErrorCode } from './ci-auth.svc.ts';
+export { CITokenError } from './ci-auth.svc.ts';
 
 export type AuthErrorCode = 'NOT_LOGGED_IN' | 'SESSION_EXPIRED';
 
@@ -55,6 +61,10 @@ export async function logoutLocally() {
 }
 
 export async function requireAccessTokenForScan(): Promise<string> {
+  if (getCIToken() || config.accessTokenFromEnv) {
+    return requireCIAccessToken();
+  }
+
   const tokens = await getStoredTokens();
 
   if (!tokens?.accessToken) {
@@ -71,7 +81,6 @@ export async function requireAccessTokenForScan(): Promise<string> {
       await persistTokenResponse(newTokens);
       return newTokens.access_token;
     } catch (error) {
-      // Refresh failed - fall through to session expired error
       debugLogger('Token refresh failed: %O', error);
     }
   }
