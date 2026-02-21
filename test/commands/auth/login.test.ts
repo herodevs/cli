@@ -207,8 +207,68 @@ describe('AuthLogin', () => {
       expect(server.close).toHaveBeenCalledTimes(1);
     });
 
-    it('rejects when the callback omits the authorization code', async () => {
+    it('rejects with guidance when callback returns already_logged_in', async () => {
       const command = createCommand(basePort + 3);
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
+      const server = getLatestServer();
+
+      await flushAsync();
+      const response = sendCallbackThroughStub({ error: 'already_logged_in', state: 'expected-state' });
+
+      expect(response.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'text/plain' });
+      expect(response.end).toHaveBeenCalledWith(
+        "You're already signed in. We'll continue for you. Return to the terminal.",
+      );
+      await expect(pendingCode).rejects.toThrow(`You're already signed in. Run "hd auth login" again to continue.`);
+      expect(server.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects when callback returns a generic OAuth error', async () => {
+      const command = createCommand(basePort + 4);
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
+      const server = getLatestServer();
+
+      await flushAsync();
+      const response = sendCallbackThroughStub({
+        error: 'access_denied',
+        error_description: 'User denied access',
+        state: 'expected-state',
+      });
+
+      expect(response.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'text/plain' });
+      expect(response.end).toHaveBeenCalledWith("We couldn't complete sign-in. Return to the terminal and try again.");
+      await expect(pendingCode).rejects.toThrow(`We couldn't complete sign-in. Please run "hd auth login" again.`);
+      expect(server.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects with guidance when callback returns different_user_authenticated', async () => {
+      const command = createCommand(basePort + 5);
+      const pendingCode = (
+        command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
+      ).startServerAndAwaitCode(authUrl, 'expected-state');
+      const server = getLatestServer();
+
+      await flushAsync();
+      const response = sendCallbackThroughStub({ error: 'different_user_authenticated', state: 'expected-state' });
+
+      expect(response.writeHead).toHaveBeenCalledWith(400, { 'Content-Type': 'text/plain' });
+      expect(response.end).toHaveBeenCalledWith(
+        "You're signed in with a different account than this sign-in attempt. Return to the terminal.",
+      );
+      await expect(pendingCode).rejects.toThrow(
+        `You're signed in with a different account than this sign-in attempt. ` +
+          `Choose another account, or reset this sign-in session and try again. ` +
+          `If needed, run "hd auth logout" and then "hd auth login".`,
+      );
+      expect(server.close).toHaveBeenCalledTimes(1);
+    });
+
+    it('rejects when the callback omits the authorization code', async () => {
+      const command = createCommand(basePort + 6);
       const pendingCode = (
         command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
       ).startServerAndAwaitCode(authUrl, 'expected-state');
@@ -222,7 +282,7 @@ describe('AuthLogin', () => {
     });
 
     it('rejects when the callback URL is invalid', async () => {
-      const command = createCommand(basePort + 4);
+      const command = createCommand(basePort + 7);
       const pendingCode = (
         command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
       ).startServerAndAwaitCode(authUrl, 'expected-state');
@@ -238,7 +298,7 @@ describe('AuthLogin', () => {
     });
 
     it('returns a 400 response when the incoming request is missing a URL', async () => {
-      const command = createCommand(basePort + 4);
+      const command = createCommand(basePort + 8);
       const pendingCode = (
         command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
       ).startServerAndAwaitCode(authUrl, 'expected-state');
@@ -257,7 +317,7 @@ describe('AuthLogin', () => {
     });
 
     it('responds with not found for unrelated paths', async () => {
-      const command = createCommand(basePort + 5);
+      const command = createCommand(basePort + 9);
       const pendingCode = (
         command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
       ).startServerAndAwaitCode(authUrl, 'expected-state');
@@ -276,7 +336,7 @@ describe('AuthLogin', () => {
     });
 
     it('rejects when the local HTTP server emits an error', async () => {
-      const command = createCommand(basePort + 6);
+      const command = createCommand(basePort + 10);
       const pendingCode = (
         command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
       ).startServerAndAwaitCode(authUrl, 'expected-state');
@@ -292,7 +352,7 @@ describe('AuthLogin', () => {
 
     it('warns and allows manual navigation when browser launch fails', async () => {
       openMock.mockRejectedValueOnce(new Error('browser unavailable'));
-      const command = createCommand(basePort + 7);
+      const command = createCommand(basePort + 11);
       const warnSpy = vi
         .spyOn(command as unknown as { warn: (...args: unknown[]) => unknown }, 'warn')
         .mockImplementation(() => {});
@@ -317,7 +377,7 @@ describe('AuthLogin', () => {
     });
 
     it('deduplicates shutdown when callback success and server error race', async () => {
-      const command = createCommand(basePort + 8);
+      const command = createCommand(basePort + 12);
       const state = 'expected-state';
       const pendingCode = (
         command as unknown as { startServerAndAwaitCode: (url: string, state: string) => Promise<string> }
