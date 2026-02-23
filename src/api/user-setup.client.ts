@@ -36,8 +36,17 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
   return code;
 }
 
-export async function getUserSetupStatus(): Promise<{ isComplete: boolean; orgId?: number | null }> {
-  const tokenProvider = getCIToken() || config.accessTokenFromEnv ? requireAccessTokenForScan : requireAccessToken;
+function getTokenProvider(preferOAuth?: boolean) {
+  if (preferOAuth) return requireAccessToken;
+  if (getCIToken() || config.accessTokenFromEnv) return requireAccessTokenForScan;
+  return requireAccessToken;
+}
+
+export async function getUserSetupStatus(options?: { preferOAuth?: boolean }): Promise<{
+  isComplete: boolean;
+  orgId?: number | null;
+}> {
+  const tokenProvider = getTokenProvider(options?.preferOAuth);
   const client = createApollo(getGraphqlUrl(), tokenProvider);
   const res = await client.query<UserSetupStatusResponse>({ query: userSetupStatusQuery });
 
@@ -68,8 +77,12 @@ export async function getUserSetupStatus(): Promise<{ isComplete: boolean; orgId
   return { isComplete: status.isComplete, orgId: status.orgId ?? undefined };
 }
 
-export async function completeUserSetup(): Promise<{ isComplete: boolean; orgId?: number | null }> {
-  const client = createApollo(getGraphqlUrl(), requireAccessTokenForScan);
+export async function completeUserSetup(options?: { preferOAuth?: boolean }): Promise<{
+  isComplete: boolean;
+  orgId?: number | null;
+}> {
+  const tokenProvider = options?.preferOAuth ? requireAccessToken : requireAccessTokenForScan;
+  const client = createApollo(getGraphqlUrl(), tokenProvider);
   const res = await client.mutate<CompleteUserSetupResponse>({ mutation: completeUserSetupMutation });
 
   const errors = getGraphQLErrors(res);
@@ -99,8 +112,8 @@ export async function completeUserSetup(): Promise<{ isComplete: boolean; orgId?
   return { isComplete: true, orgId: result.orgId ?? undefined };
 }
 
-export async function ensureUserSetup(): Promise<number> {
-  const status = await withRetries('user-setup-status', () => getUserSetupStatus(), {
+export async function ensureUserSetup(options?: { preferOAuth?: boolean }): Promise<number> {
+  const status = await withRetries('user-setup-status', () => getUserSetupStatus(options), {
     attempts: USER_SETUP_MAX_ATTEMPTS,
     baseDelayMs: USER_SETUP_RETRY_DELAY_MS,
   });
@@ -108,7 +121,7 @@ export async function ensureUserSetup(): Promise<number> {
     return status.orgId;
   }
 
-  const result = await withRetries('user-setup-complete', () => completeUserSetup(), {
+  const result = await withRetries('user-setup-complete', () => completeUserSetup(options), {
     attempts: USER_SETUP_MAX_ATTEMPTS,
     baseDelayMs: USER_SETUP_RETRY_DELAY_MS,
   });

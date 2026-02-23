@@ -19,7 +19,7 @@ export default class AuthProvisionCiToken extends Command {
 
     let orgId: number;
     try {
-      orgId = await ensureUserSetup();
+      orgId = await ensureUserSetup({ preferOAuth: true });
     } catch (error) {
       this.error(`User setup failed. ${getErrorMessage(error)}`);
     }

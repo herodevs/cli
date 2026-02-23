@@ -25,6 +25,15 @@ describe('user-setup.client', () => {
     await expect(getUserSetupStatus()).resolves.toEqual({ isComplete: true, orgId: 42 });
   });
 
+  it('uses keyring when preferOAuth true', async () => {
+    fetchMock.addGraphQL({ eol: { userSetupStatus: { isComplete: true, orgId: 99 } } });
+
+    await expect(getUserSetupStatus({ preferOAuth: true })).resolves.toEqual({
+      isComplete: true,
+      orgId: 99,
+    });
+  });
+
   it('completes user setup when status is false and returns orgId', async () => {
     fetchMock
       .addGraphQL({ eol: { userSetupStatus: { isComplete: false } } })
