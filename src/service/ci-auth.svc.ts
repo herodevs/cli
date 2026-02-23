@@ -1,6 +1,5 @@
 import { exchangeCITokenForAccess } from '../api/ci-token.client.ts';
 import { config } from '../config/constants.ts';
-import { isAccessTokenExpired } from './auth-token.svc.ts';
 import { getCIOrgId, getCIToken, saveCIToken } from './ci-token.svc.ts';
 import { debugLogger } from './log.svc.ts';
 
@@ -23,10 +22,6 @@ export class CITokenError extends Error {
 }
 
 export async function requireCIAccessToken(): Promise<string> {
-  if (config.accessTokenFromEnv && !isAccessTokenExpired(config.accessTokenFromEnv)) {
-    return config.accessTokenFromEnv;
-  }
-
   const ciToken = getCIToken();
   if (!ciToken) {
     throw new CITokenError(CITOKEN_ERROR_MESSAGE, 'CI_TOKEN_INVALID');
@@ -41,7 +36,6 @@ export async function requireCIAccessToken(): Promise<string> {
     const result = await exchangeCITokenForAccess({
       refreshToken: ciToken,
       orgId,
-      optionalAccessToken: config.accessTokenFromEnv,
     });
     if (result.refreshToken && config.ciTokenFromEnv === undefined) {
       saveCIToken(result.refreshToken);

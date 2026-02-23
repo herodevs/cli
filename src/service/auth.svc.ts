@@ -1,4 +1,3 @@
-import { config } from '../config/constants.ts';
 import type { TokenResponse } from '../types/auth.ts';
 import { refreshTokens } from './auth-refresh.svc.ts';
 import { clearStoredTokens, getStoredTokens, isAccessTokenExpired, saveTokens } from './auth-token.svc.ts';
@@ -61,7 +60,7 @@ export async function logoutLocally() {
 }
 
 export async function requireAccessTokenForScan(): Promise<string> {
-  if (getCIToken() || config.accessTokenFromEnv) {
+  if (getCIToken()) {
     return requireCIAccessToken();
   }
 

@@ -53,7 +53,6 @@ export const config = {
   enableUserSetup,
   ciTokenFromEnv: process.env.HD_AUTH_TOKEN?.trim() || undefined,
   orgIdFromEnv,
-  accessTokenFromEnv: process.env.HD_ACCESS_TOKEN?.trim() || undefined,
 };
 
 export const filenamePrefix = 'herodevs';

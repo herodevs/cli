@@ -128,15 +128,6 @@ describe('auth.svc', () => {
       expect(requireCIAccessToken).toHaveBeenCalled();
     });
 
-    it('delegates to requireCIAccessToken when HD_ACCESS_TOKEN present', async () => {
-      mockConfig.accessTokenFromEnv = 'env-access-token';
-      (requireCIAccessToken as Mock).mockResolvedValue('env-access-token');
-
-      const token = await requireAccessTokenForScan();
-      expect(token).toBe('env-access-token');
-      expect(requireCIAccessToken).toHaveBeenCalled();
-    });
-
     it('uses CI path before keyring when both CI token and keyring tokens exist', async () => {
       (getCIToken as Mock).mockReturnValue('ci-refresh-token');
       (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'keyring-token', refreshToken: 'keyring-refresh' });

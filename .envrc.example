@@ -23,10 +23,8 @@ export OAUTH_CLIENT_ID='';
 # CI token (for headless flows)
 # HD_ORG_ID: required when using HD_AUTH_TOKEN; also stored when provisioning
 # HD_AUTH_TOKEN: refresh token from provision; exchanged for access token
-# HD_ACCESS_TOKEN: direct access token (skips exchange)
 # export HD_ORG_ID='1234';
 # export HD_AUTH_TOKEN='<long-lived-refresh-token>';
-# export HD_ACCESS_TOKEN='<access-token>';
 
 # Performance (optional)
 # export CONCURRENT_PAGE_REQUESTS='3';

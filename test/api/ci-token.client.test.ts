@@ -264,31 +264,5 @@ describe('ci-token.client', () => {
         previousToken: 'ci-refresh',
       });
     });
-
-    it('sends Bearer header when optionalAccessToken is valid JWT', async () => {
-      const validJwt = 'eyJhbGciOiJIUzI1NiJ9.eyJleHAiOjk5OTk5OTk5OTl9.xxx';
-
-      fetchMock.push(
-        mockGraphQLResponse({
-          iamV2: {
-            access: {
-              getOrgAccessTokens: {
-                accessToken: 'access',
-                refreshToken: 'refresh',
-              },
-            },
-          },
-        }),
-      );
-
-      await exchangeCITokenForAccess({
-        refreshToken: 'ci-refresh',
-        orgId: 1,
-        optionalAccessToken: validJwt,
-      });
-
-      const headers = fetchMock.getCalls()[0].init?.headers as Headers | undefined;
-      expect(headers?.get?.('Authorization')).toBe(`Bearer ${validJwt}`);
-    });
   });
 });

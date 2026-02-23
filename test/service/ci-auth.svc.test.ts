@@ -30,7 +30,6 @@ vi.mock('../../src/service/ci-token.svc.ts', () => ({
 }));
 
 import { exchangeCITokenForAccess } from '../../src/api/ci-token.client.ts';
-import { isAccessTokenExpired } from '../../src/service/auth-token.svc.ts';
 import { requireCIAccessToken } from '../../src/service/ci-auth.svc.ts';
 import { getCIOrgId, getCIToken, saveCIToken } from '../../src/service/ci-token.svc.ts';
 
@@ -42,33 +41,6 @@ describe('ci-auth.svc', () => {
     mockConfig.ciTokenFromEnv = undefined;
     mockConfig.orgIdFromEnv = undefined;
     mockConfig.accessTokenFromEnv = undefined;
-  });
-
-  it('returns HD_ACCESS_TOKEN when set and not expired', async () => {
-    mockConfig.accessTokenFromEnv = 'env-access-token';
-    (isAccessTokenExpired as Mock).mockReturnValue(false);
-
-    const token = await requireCIAccessToken();
-    expect(token).toBe('env-access-token');
-    expect(exchangeCITokenForAccess).not.toHaveBeenCalled();
-  });
-
-  it('exchanges CI token when HD_ACCESS_TOKEN not set', async () => {
-    (getCIToken as Mock).mockReturnValue('ci-refresh-token');
-    (getCIOrgId as Mock).mockReturnValue(42);
-    (exchangeCITokenForAccess as Mock).mockResolvedValue({
-      accessToken: 'new-access-token',
-      refreshToken: 'new-refresh-token',
-    });
-
-    const token = await requireCIAccessToken();
-    expect(token).toBe('new-access-token');
-    expect(exchangeCITokenForAccess).toHaveBeenCalledWith({
-      refreshToken: 'ci-refresh-token',
-      orgId: 42,
-      optionalAccessToken: undefined,
-    });
-    expect(saveCIToken).toHaveBeenCalledWith('new-refresh-token');
   });
 
   it('uses orgIdFromEnv when ciTokenFromEnv is set', async () => {
