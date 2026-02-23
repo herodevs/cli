@@ -65,8 +65,7 @@ describe('AuthProvisionCiToken command', () => {
     expect(saveCIToken).toHaveBeenCalledWith('new-ci-refresh-token');
     expect(saveCIOrgId).toHaveBeenCalledWith(123);
     expect(logSpy).toHaveBeenCalledWith('CI token provisioned and saved locally.');
-    expect(logSpy).toHaveBeenCalledWith('  HD_ORG_ID=123');
-    expect(logSpy).toHaveBeenCalledWith('  HD_AUTH_TOKEN=new-ci-refresh-token');
+    expect(logSpy).toHaveBeenCalledWith('  HD_CI_CREDENTIAL=123:new-ci-refresh-token');
   });
 
   it('provisions for different org when logged in', async () => {

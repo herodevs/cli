@@ -91,7 +91,7 @@ describe('ci-auth.svc', () => {
     await expect(requireCIAccessToken()).rejects.toMatchObject({
       name: 'CITokenError',
       code: 'CI_ORG_ID_REQUIRED',
-      message: expect.stringContaining('HD_ORG_ID'),
+      message: expect.stringContaining('HD_CI_CREDENTIAL'),
     });
     expect(exchangeCITokenForAccess).not.toHaveBeenCalled();
   });

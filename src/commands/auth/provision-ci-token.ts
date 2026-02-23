@@ -31,9 +31,8 @@ export default class AuthProvisionCiToken extends Command {
       saveCIOrgId(orgId);
       this.log('CI token provisioned and saved locally.');
       this.log('');
-      this.log('For CI/CD, set these environment variables:');
-      this.log(`  HD_ORG_ID=${orgId}`);
-      this.log(`  HD_AUTH_TOKEN=${refreshToken}`);
+      this.log('For CI/CD, set this environment variable:');
+      this.log(`  HD_CI_CREDENTIAL=${orgId}:${refreshToken}`);
     } catch (error) {
       this.error(`CI token provisioning failed. ${getErrorMessage(error)}`);
     }

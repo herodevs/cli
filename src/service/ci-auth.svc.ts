@@ -9,7 +9,7 @@ const CITOKEN_ERROR_MESSAGE =
   "CI token is invalid or expired. To provision a new CI token, run 'hd auth provision-ci-token' (after logging in with 'hd auth login').";
 
 const CI_ORG_ID_ERROR_MESSAGE =
-  'Organization ID is required for CI token. When using HD_AUTH_TOKEN, set HD_ORG_ID to your organization ID (e.g. HD_ORG_ID=123). When using a locally stored CI token, re-provision with: hd auth provision-ci-token';
+  'Organization ID is required for CI token. Set HD_CI_CREDENTIAL to <orgId>:<refreshToken> (e.g. HD_CI_CREDENTIAL=123:eyJ...). When using a locally stored CI token, re-provision with: hd auth provision-ci-token';
 
 export class CITokenError extends Error {
   readonly code: CITokenErrorCode;
