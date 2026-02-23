@@ -35,6 +35,6 @@ export async function withRetries<T>(operation: string, fn: () => Promise<T>, op
   const message =
     finalErrorMessage ??
     (lastError instanceof Error ? lastError.message : null) ??
-    'Please contact your administrator.';
+    'Please contact support@herodevs.com.';
   throw new Error(message);
 }

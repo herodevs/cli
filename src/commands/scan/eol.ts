@@ -231,9 +231,9 @@ export default class ScanEol extends Command {
         }));
 
         const errorMessages: Record<string, string> = {
-          SESSION_EXPIRED: 'Your session is no longer valid. To re-authenticate, run "hd auth login".',
-          INVALID_TOKEN: 'Your session is no longer valid. To re-authenticate, run "hd auth login".',
-          UNAUTHENTICATED: 'Please log in to perform a scan. To authenticate, run "hd auth login".',
+          SESSION_EXPIRED: 'Your session is no longer valid. To re-authenticate, please run an "auth login" command.',
+          INVALID_TOKEN: 'Your session is no longer valid. To re-authenticate, please run an "auth login" command.',
+          UNAUTHENTICATED: 'Please log in to perform a scan. To authenticate, please run an "auth login" command.',
           FORBIDDEN: 'You do not have permission to perform this action.',
         };
         const message = errorMessages[error.code] ?? error.message?.trim();

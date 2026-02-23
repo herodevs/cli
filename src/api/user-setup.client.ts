@@ -11,7 +11,7 @@ import { getGraphQLErrors } from './graphql-errors.ts';
 
 const USER_SETUP_MAX_ATTEMPTS = 3;
 const USER_SETUP_RETRY_DELAY_MS = 500;
-const USER_FACING_SERVER_ERROR = 'Please contact your administrator.';
+const USER_FACING_SERVER_ERROR = 'Please contact support@herodevs.com.';
 const SERVER_ERROR_CODES = ['INTERNAL_SERVER_ERROR', 'SERVER_ERROR', 'SERVICE_UNAVAILABLE'];
 
 type UserSetupStatusData = { isComplete: boolean; orgId?: number | null };
@@ -116,5 +116,5 @@ export async function ensureUserSetup(): Promise<number> {
     return result.orgId;
   }
 
-  throw new Error('User setup did not return an organization ID. Please contact your administrator.');
+  throw new Error(`User setup did not return an organization ID. ${USER_FACING_SERVER_ERROR}`);
 }

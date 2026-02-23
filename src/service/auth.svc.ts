@@ -50,7 +50,7 @@ export async function getAccessToken(): Promise<string | undefined> {
 export async function requireAccessToken(): Promise<string> {
   const token = await getAccessToken();
   if (!token) {
-    throw new Error('You are not logged in. Run "hd auth login" to authenticate.');
+    throw new Error('You are not logged in. Please run an "auth login" command to authenticate.');
   }
 
   return token;
@@ -68,7 +68,10 @@ export async function requireAccessTokenForScan(): Promise<string> {
   const tokens = await getStoredTokens();
 
   if (!tokens?.accessToken) {
-    throw new AuthError('Please log in to perform a scan. To authenticate, run "hd auth login".', 'NOT_LOGGED_IN');
+    throw new AuthError(
+      'Please log in to perform a scan. To authenticate, please run an "auth login" command.',
+      'NOT_LOGGED_IN',
+    );
   }
 
   if (!isAccessTokenExpired(tokens.accessToken)) {
@@ -85,5 +88,8 @@ export async function requireAccessTokenForScan(): Promise<string> {
     }
   }
 
-  throw new AuthError('Your session is no longer valid. To re-authenticate, run "hd auth login".', 'SESSION_EXPIRED');
+  throw new AuthError(
+    'Your session is no longer valid. To re-authenticate, please run an "auth login" command.',
+    'SESSION_EXPIRED',
+  );
 }
