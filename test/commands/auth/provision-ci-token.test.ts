@@ -60,7 +60,7 @@ describe('AuthProvisionCiToken command', () => {
     await command.run();
 
     expect(requireAccessToken).toHaveBeenCalled();
-    expect(ensureUserSetup).toHaveBeenCalled();
+    expect(ensureUserSetup).toHaveBeenCalledWith({ preferOAuth: true });
     expect(provisionCIToken).toHaveBeenCalledWith({ orgId: 123 });
     expect(saveCIToken).toHaveBeenCalledWith('new-ci-refresh-token');
     expect(saveCIOrgId).toHaveBeenCalledWith(123);
@@ -81,6 +81,7 @@ describe('AuthProvisionCiToken command', () => {
 
     await command.run();
 
+    expect(ensureUserSetup).toHaveBeenCalledWith({ preferOAuth: true });
     expect(provisionCIToken).toHaveBeenCalledWith({ orgId: 456 });
     expect(saveCIOrgId).toHaveBeenCalledWith(456);
   });

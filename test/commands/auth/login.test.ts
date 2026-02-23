@@ -87,6 +87,14 @@ vi.mock('../../../src/api/user-setup.client.ts', () => ({
   ensureUserSetup: vi.fn(),
 }));
 
+vi.mock('../../../src/config/constants.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/config/constants')>();
+  return {
+    ...actual,
+    config: { ...actual.config, enableUserSetup: true },
+  };
+});
+
 vi.mock('../../../src/utils/open-in-browser.ts', () => ({
   __esModule: true,
   openInBrowser: vi.fn(),
@@ -410,6 +418,7 @@ describe('AuthLogin', () => {
 
       expect(persistTokenResponseMock).toHaveBeenCalledWith(tokenResponse);
       expect(ensureUserSetupMock).toHaveBeenCalledTimes(1);
+      expect(ensureUserSetupMock).toHaveBeenCalledWith({ preferOAuth: true });
     });
 
     it('runs user setup after login', async () => {
@@ -425,6 +434,7 @@ describe('AuthLogin', () => {
       await command.run();
 
       expect(ensureUserSetupMock).toHaveBeenCalledTimes(1);
+      expect(ensureUserSetupMock).toHaveBeenCalledWith({ preferOAuth: true });
     });
 
     it('fails login when user setup fails', async () => {
