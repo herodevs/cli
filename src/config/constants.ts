@@ -16,6 +16,12 @@ export const DEFAULT_DATE_COMMIT_MONTH_FORMAT = 'MMMM yyyy';
 // Trackers - Constants
 export const DEFAULT_TRACKER_RUN_DATA_FILE = 'data.json';
 export const TRACKER_GIT_OUTPUT_FORMAT = `"${['%H', '%an', '%ad'].join('|')}"`;
+export const OAUTH_CALLBACK_ERROR_CODES = {
+  ALREADY_LOGGED_IN: 'already_logged_in',
+  DIFFERENT_USER_AUTHENTICATED: 'different_user_authenticated',
+} as const;
+
+export type OAuthCallbackErrorCode = (typeof OAUTH_CALLBACK_ERROR_CODES)[keyof typeof OAUTH_CALLBACK_ERROR_CODES];
 
 let concurrentPageRequests = CONCURRENT_PAGE_REQUESTS;
 const parsed = Number.parseInt(process.env.CONCURRENT_PAGE_REQUESTS ?? '0', 10);

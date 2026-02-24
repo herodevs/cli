@@ -4,6 +4,7 @@ import { createInterface } from 'node:readline';
 import { URL } from 'node:url';
 import { Command } from '@oclif/core';
 import { ensureUserSetup } from '../../api/user-setup.client.ts';
+import { OAUTH_CALLBACK_ERROR_CODES } from '../../config/constants.ts';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
 import { getClientId, getRealmUrl } from '../../service/auth-config.svc.ts';
 import { debugLogger, getErrorMessage } from '../../service/log.svc.ts';
@@ -80,6 +81,8 @@ export default class AuthLogin extends Command {
         if (parsedUrl.pathname === '/oauth2/callback') {
           const code = parsedUrl.searchParams.get('code');
           const state = parsedUrl.searchParams.get('state');
+          const oauthError = parsedUrl.searchParams.get('error');
+          const oauthErrorDescription = parsedUrl.searchParams.get('error_description');
 
           if (!state) {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
@@ -93,6 +96,38 @@ export default class AuthLogin extends Command {
             res.end('State verification failed. Please restart the login flow.');
             this.stopServer();
             return reject(new Error('State verification failed'));
+          }
+
+          if (oauthError) {
+            const isAlreadyLoggedIn = oauthError === OAUTH_CALLBACK_ERROR_CODES.ALREADY_LOGGED_IN;
+            const isDifferentUserAuthenticated = oauthError === OAUTH_CALLBACK_ERROR_CODES.DIFFERENT_USER_AUTHENTICATED;
+            debugLogger(
+              'OAuth callback returned error: %s (%s)',
+              oauthError,
+              oauthErrorDescription ?? 'no description',
+            );
+            let browserMessage: string;
+            let cliErrorMessage: string;
+
+            if (isAlreadyLoggedIn) {
+              browserMessage = "You're already signed in. We'll continue for you. Return to the terminal.";
+              cliErrorMessage = `You're already signed in. Run "hd auth login" again to continue.`;
+            } else if (isDifferentUserAuthenticated) {
+              browserMessage =
+                "You're signed in with a different account than this sign-in attempt. Return to the terminal.";
+              cliErrorMessage =
+                `You're signed in with a different account than this sign-in attempt. ` +
+                `Choose another account, or reset this sign-in session and try again. ` +
+                `If needed, run "hd auth logout" and then "hd auth login".`;
+            } else {
+              browserMessage = "We couldn't complete sign-in. Return to the terminal and try again.";
+              cliErrorMessage = `We couldn't complete sign-in. Please run "hd auth login" again.`;
+            }
+
+            res.writeHead(400, { 'Content-Type': 'text/plain' });
+            res.end(browserMessage);
+            this.stopServer();
+            return reject(new Error(cliErrorMessage));
           }
 
           if (code) {
