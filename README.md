@@ -357,32 +357,31 @@ hd auth login
 hd auth provision-ci-token
 ```
 
-Copy the token output, add as CI secrets: `HD_AUTH_TOKEN` and `HD_ORG_ID` (orgId is obtained from user setup and stored at provision time when using locally).
+Copy the token output, add as CI secret: `HD_CI_CREDENTIAL`
 
-**CI pipeline (headless):** Run `hd scan eol` directly with `HD_AUTH_TOKEN` and `HD_ORG_ID` set. The CLI exchanges the token for an access token automatically:
+**CI pipeline (headless):** Run `hd scan eol` directly with `HD_CI_CREDENTIAL` set. The CLI exchanges the token for an access token automatically:
 
 ```bash
-export HD_ORG_ID=<id> HD_AUTH_TOKEN="<token>"
+export HD_CI_CREDENTIAL="<token>"
 hd scan eol --dir .
 ```
 
 | Secret / Env Var | Purpose |
 |------------------|---------|
-| `HD_AUTH_TOKEN` | Long-lived refresh token from provision |
-| `HD_ORG_ID` | Organization ID (required when using HD_AUTH_TOKEN; also stored at provision time when using local file) |
+| `HD_CI_CREDENTIAL` | Refresh token from provision; exchanged for access token |
 
 #### Local testing
 
 Reproduce the CI flow locally:
 
 ```bash
-export HD_ORG_ID=1234 HD_AUTH_TOKEN="eyJ..."
+export HD_CI_CREDENTIAL="<token-from-provision>"
 hd scan eol --dir /path/to/project
 ```
 
 #### GitHub Actions (authenticated scan)
 
-Add secrets `HD_AUTH_TOKEN` and `HD_ORG_ID` in your repository or organization, then:
+Add secret `HD_CI_CREDENTIAL` in your repository or organization, then:
 
 ```yaml
 - uses: actions/checkout@v5
@@ -391,21 +390,19 @@ Add secrets `HD_AUTH_TOKEN` and `HD_ORG_ID` in your repository or organization, 
     node-version: '24'
 - name: Run EOL Scan
   env:
-    HD_ORG_ID: ${{ secrets.HD_ORG_ID }}
-    HD_AUTH_TOKEN: ${{ secrets.HD_AUTH_TOKEN }}
+    HD_CI_CREDENTIAL: ${{ secrets.HD_CI_CREDENTIAL }}
   run: npx @herodevs/cli@beta scan eol -s
 ```
 
 #### GitLab CI (authenticated scan)
 
-Add CI/CD variables `HD_AUTH_TOKEN` and `HD_ORG_ID` (masked) in your project:
+Add CI/CD variable `HD_CI_CREDENTIAL` (masked) in your project:
 
 ```yaml
 eol-scan:
   image: node:24
   variables:
-    HD_ORG_ID: $HD_ORG_ID
-    HD_AUTH_TOKEN: $HD_AUTH_TOKEN
+    HD_CI_CREDENTIAL: $HD_CI_CREDENTIAL
   script:
     - npx @herodevs/cli@beta scan eol -s
   artifacts:

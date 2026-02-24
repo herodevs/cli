@@ -38,7 +38,7 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
 
 function getTokenProvider(preferOAuth?: boolean) {
   if (preferOAuth) return requireAccessToken;
-  if (getCIToken() || config.accessTokenFromEnv) return requireAccessTokenForScan;
+  if (getCIToken()) return requireAccessTokenForScan;
   return requireAccessToken;
 }
 

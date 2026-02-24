@@ -16,17 +16,8 @@ export OAUTH_CLIENT_ID='';
 # export IAM_HOST='https://apps.herodevs.io/api/iam';
 # export IAM_PATH='/graphql';
 
-# Auth toggles (optional; both default false)
-# export ENABLE_AUTH='true';
-# export ENABLE_USER_SETUP='true';
-
-# CI token (for headless flows)
-# HD_ORG_ID: required when using HD_AUTH_TOKEN; also stored when provisioning
-# HD_AUTH_TOKEN: refresh token from provision; exchanged for access token
-# HD_ACCESS_TOKEN: direct access token (skips exchange)
-# export HD_ORG_ID='1234';
-# export HD_AUTH_TOKEN='<long-lived-refresh-token>';
-# export HD_ACCESS_TOKEN='<access-token>';
+# CI credential (for headless flows):
+# export HD_CI_CREDENTIAL='<long-lived-refresh-token>';
 
 # Performance (optional)
 # export CONCURRENT_PAGE_REQUESTS='3';

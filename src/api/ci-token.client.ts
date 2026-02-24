@@ -1,7 +1,6 @@
 import type { GraphQLFormattedError } from 'graphql';
 import { config } from '../config/constants.ts';
 import { requireAccessToken } from '../service/auth.svc.ts';
-import { isAccessTokenExpired } from '../service/auth-token.svc.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { createApollo } from './apollo.client.ts';
 import { ApiError, type ApiErrorCode, isApiErrorCode } from './errors.ts';
@@ -12,26 +11,16 @@ const graphqlUrl = `${config.iamHost}${config.iamPath}`;
 
 const noAuthTokenProvider = async (): Promise<string> => '';
 
-function createOptionalTokenProvider(token?: string) {
-  return async (): Promise<string> => {
-    if (token && !isAccessTokenExpired(token)) {
-      return token;
-    }
-    return '';
-  };
-}
-
-export interface IamAccessOrgTokensInput {
-  orgId: number | null;
-  previousToken: string | null;
-}
+export type IamAccessOrgTokensInput =
+  | { orgId: number; previousToken?: never }
+  | { orgId?: never; previousToken: string };
 
 export interface ProvisionCITokenResponse {
   refresh_token: string;
 }
 
 export interface ProvisionCITokenOptions {
-  orgId?: number | null;
+  orgId?: number;
   previousToken?: string | null;
 }
 
@@ -130,23 +119,25 @@ async function callGetOrgAccessTokensInternal(
 
 export interface ExchangeCITokenOptions {
   refreshToken: string;
-  orgId: number;
-  optionalAccessToken?: string;
 }
 
 export async function exchangeCITokenForAccess(
   options: ExchangeCITokenOptions,
 ): Promise<{ accessToken: string; refreshToken: string }> {
-  const { refreshToken, orgId, optionalAccessToken } = options;
-  const tokenProvider = createOptionalTokenProvider(optionalAccessToken);
-  return callGetOrgAccessTokensInternal({ orgId, previousToken: refreshToken }, tokenProvider);
+  const { refreshToken } = options;
+  return callGetOrgAccessTokensInternal({ previousToken: refreshToken }, noAuthTokenProvider);
 }
 
 export async function provisionCIToken(options: ProvisionCITokenOptions = {}): Promise<ProvisionCITokenResponse> {
-  const { orgId = null, previousToken = null } = options;
-  const result = await getOrgAccessTokens({
-    orgId,
-    previousToken,
-  });
+  const { orgId, previousToken } = options;
+  let input: IamAccessOrgTokensInput;
+  if (previousToken != null && previousToken !== '') {
+    input = { previousToken };
+  } else if (orgId != null) {
+    input = { orgId };
+  } else {
+    throw new Error('Either orgId or previousToken is required to provision a CI token');
+  }
+  const result = await getOrgAccessTokens(input);
   return { refresh_token: result.refreshToken };
 }

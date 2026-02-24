@@ -34,14 +34,11 @@ vi.mock('conf', () => ({
 }));
 
 import {
-  clearCIOrgId,
   clearCIToken,
   decryptToken,
   encryptToken,
-  getCIOrgId,
   getCIToken,
   getCITokenFromStorage,
-  saveCIOrgId,
   saveCIToken,
 } from '../../src/service/ci-token.svc.ts';
 
@@ -87,40 +84,6 @@ describe('ci-token.svc', () => {
       saveCIToken('token');
       clearCIToken();
       expect(getCITokenFromStorage()).toBeUndefined();
-    });
-  });
-
-  describe('getCIOrgId / saveCIOrgId / clearCIOrgId', () => {
-    it('returns undefined when orgId is not stored', () => {
-      expect(getCIOrgId()).toBeUndefined();
-    });
-
-    it('saves and retrieves orgId', () => {
-      saveCIOrgId(123);
-      expect(getCIOrgId()).toBe(123);
-    });
-
-    it('returns undefined for invalid stored values', () => {
-      store.set('ciOrgId', 0);
-      expect(getCIOrgId()).toBeUndefined();
-      store.set('ciOrgId', -1);
-      expect(getCIOrgId()).toBeUndefined();
-      store.set('ciOrgId', 'not-a-number');
-      expect(getCIOrgId()).toBeUndefined();
-    });
-
-    it('clearCIOrgId removes stored orgId', () => {
-      saveCIOrgId(42);
-      clearCIOrgId();
-      expect(getCIOrgId()).toBeUndefined();
-    });
-
-    it('clearCIToken also removes stored orgId', () => {
-      saveCIToken('token');
-      saveCIOrgId(99);
-      clearCIToken();
-      expect(getCITokenFromStorage()).toBeUndefined();
-      expect(getCIOrgId()).toBeUndefined();
     });
   });
 
