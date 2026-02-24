@@ -6,7 +6,7 @@ import { ApiError } from '../../api/errors.ts';
 import { submitScan } from '../../api/nes.client.ts';
 import { config, filenamePrefix, SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../config/constants.ts';
 import { track } from '../../service/analytics.svc.ts';
-import { requireAccessTokenForScan } from '../../service/auth.svc.ts';
+import { AUTH_ERROR_MESSAGES, getTokenForScanWithSource } from '../../service/auth.svc.ts';
 import { createSbom } from '../../service/cdx.svc.ts';
 import {
   countComponentsByStatus,
@@ -88,7 +88,11 @@ export default class ScanEol extends Command {
   public async run(): Promise<EolReport | undefined> {
     const { flags } = await this.parse(ScanEol);
 
-    await requireAccessTokenForScan();
+    const { source } = await getTokenForScanWithSource();
+    if (source === 'ci') {
+      this.log('CI credentials found');
+      this.log('Using CI credentials');
+    }
 
     track('CLI EOL Scan Started', (context) => ({
       command: context.command,
@@ -230,13 +234,7 @@ export default class ScanEol extends Command {
           number_of_packages: numberOfPackages,
         }));
 
-        const errorMessages: Record<string, string> = {
-          SESSION_EXPIRED: 'Your session is no longer valid. To re-authenticate, please run an "auth login" command.',
-          INVALID_TOKEN: 'Your session is no longer valid. To re-authenticate, please run an "auth login" command.',
-          UNAUTHENTICATED: 'Please log in to perform a scan. To authenticate, please run an "auth login" command.',
-          FORBIDDEN: 'You do not have permission to perform this action.',
-        };
-        const message = errorMessages[error.code] ?? error.message?.trim();
+        const message = AUTH_ERROR_MESSAGES[error.code] ?? error.message?.trim();
         this.error(message);
       }
 

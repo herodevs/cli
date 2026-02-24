@@ -2,8 +2,15 @@ import type { CdxBom, EolReport } from '@herodevs/eol-shared';
 import { ApiError } from '../../../src/api/errors.ts';
 import ScanEol from '../../../src/commands/scan/eol.ts';
 
-const { trackMock, requireAccessTokenForScanMock, submitScanMock, countComponentsByStatusMock } = vi.hoisted(() => ({
+const {
+  trackMock,
+  getTokenForScanWithSourceMock,
+  requireAccessTokenForScanMock,
+  submitScanMock,
+  countComponentsByStatusMock,
+} = vi.hoisted(() => ({
   trackMock: vi.fn(),
+  getTokenForScanWithSourceMock: vi.fn(),
   requireAccessTokenForScanMock: vi.fn(),
   submitScanMock: vi.fn(),
   countComponentsByStatusMock: vi.fn(),
@@ -17,9 +24,14 @@ vi.mock('../../../src/service/analytics.svc.ts', () => ({
   track: trackMock,
 }));
 
-vi.mock('../../../src/service/auth.svc.ts', () => ({
-  requireAccessTokenForScan: requireAccessTokenForScanMock,
-}));
+vi.mock('../../../src/service/auth.svc.ts', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../src/service/auth.svc.ts')>();
+  return {
+    ...actual,
+    getTokenForScanWithSource: getTokenForScanWithSourceMock,
+    requireAccessTokenForScan: requireAccessTokenForScanMock,
+  };
+});
 
 vi.mock('../../../src/api/nes.client.ts', () => ({
   submitScan: submitScanMock,
@@ -104,7 +116,8 @@ describe('scan:eol analytics timing', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    requireAccessTokenForScanMock.mockResolvedValue(undefined);
+    getTokenForScanWithSourceMock.mockResolvedValue({ token: 'test-token', source: 'oauth' });
+    requireAccessTokenForScanMock.mockResolvedValue('test-token');
     countComponentsByStatusMock.mockReturnValue({
       EOL: 1,
       EOL_UPCOMING: 0,

@@ -1,7 +1,6 @@
 import type { GraphQLFormattedError } from 'graphql';
 import { config } from '../config/constants.ts';
-import { requireAccessToken, requireAccessTokenForScan } from '../service/auth.svc.ts';
-import { getCIToken } from '../service/ci-token.svc.ts';
+import { getTokenProvider } from '../service/auth.svc.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { withRetries } from '../utils/retry.ts';
 import { createApollo } from './apollo.client.ts';
@@ -34,12 +33,6 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
   const code = (errors[0]?.extensions as { code?: string })?.code;
   if (!code || !isApiErrorCode(code)) return;
   return code;
-}
-
-function getTokenProvider(preferOAuth?: boolean) {
-  if (preferOAuth) return requireAccessToken;
-  if (getCIToken()) return requireAccessTokenForScan;
-  return requireAccessToken;
 }
 
 export async function getUserSetupStatus(options?: { preferOAuth?: boolean }): Promise<{
@@ -81,7 +74,7 @@ export async function completeUserSetup(options?: { preferOAuth?: boolean }): Pr
   isComplete: boolean;
   orgId?: number | null;
 }> {
-  const tokenProvider = options?.preferOAuth ? requireAccessToken : requireAccessTokenForScan;
+  const tokenProvider = getTokenProvider(options?.preferOAuth);
   const client = createApollo(getGraphqlUrl(), tokenProvider);
   const res = await client.mutate<CompleteUserSetupResponse>({ mutation: completeUserSetupMutation });
 
