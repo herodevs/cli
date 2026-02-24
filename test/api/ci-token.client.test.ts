@@ -12,7 +12,6 @@ vi.mock('../../src/config/constants.ts', async (importOriginal) => {
       ...actual.config,
       iamHost: 'https://iam.test',
       iamPath: '/graphql',
-      enableAuth: true,
     },
   };
 });

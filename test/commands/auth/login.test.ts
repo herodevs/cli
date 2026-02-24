@@ -87,13 +87,7 @@ vi.mock('../../../src/api/user-setup.client.ts', () => ({
   ensureUserSetup: vi.fn(),
 }));
 
-vi.mock('../../../src/config/constants.ts', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('../../../src/config/constants')>();
-  return {
-    ...actual,
-    config: { ...actual.config, enableUserSetup: true },
-  };
-});
+vi.mock('../../../src/config/constants.ts', async (importOriginal) => importOriginal());
 
 vi.mock('../../../src/utils/open-in-browser.ts', () => ({
   __esModule: true,

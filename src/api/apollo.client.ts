@@ -1,5 +1,4 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
-import { config } from '../config/constants.ts';
 import { requireAccessTokenForScan } from '../service/auth.svc.ts';
 
 export type TokenProvider = (forceRefresh?: boolean) => Promise<string>;
@@ -28,17 +27,14 @@ const createAuthorizedFetch =
   async (input, init) => {
     const headers = new Headers(init?.headers);
 
-    if (config.enableAuth) {
-      const token = await tokenProvider();
-      if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
-      }
+    const token = await tokenProvider();
+    if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
     }
 
     const response = await fetch(input, { ...init, headers });
 
     if (
-      config.enableAuth &&
       response.status === 401 &&
       !isTokenEndpoint(input) &&
       (init?.method === 'GET' || init?.method === undefined || init?.method === 'POST')

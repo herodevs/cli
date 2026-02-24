@@ -12,8 +12,6 @@ export const GIT_OUTPUT_FORMAT = `"${['%h', '%an', '%ad'].join('|')}"`;
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
 export const DEFAULT_DATE_COMMIT_FORMAT = 'MM/dd/yyyy, h:mm:ss a';
 export const DEFAULT_DATE_COMMIT_MONTH_FORMAT = 'MMMM yyyy';
-export const ENABLE_AUTH = false;
-export const ENABLE_USER_SETUP = false;
 
 // Trackers - Constants
 export const DEFAULT_TRACKER_RUN_DATA_FILE = 'data.json';
@@ -31,12 +29,6 @@ if (parsedPageSize > 0) {
   pageSize = parsedPageSize;
 }
 
-const enableAuthEnv = process.env.ENABLE_AUTH;
-const enableAuth = enableAuthEnv === 'true' ? true : enableAuthEnv === 'false' ? false : ENABLE_AUTH;
-const enableUserSetupEnv = process.env.ENABLE_USER_SETUP;
-const enableUserSetup =
-  enableUserSetupEnv === 'true' ? true : enableUserSetupEnv === 'false' ? false : ENABLE_USER_SETUP;
-
 export const config = {
   eolReportUrl: process.env.EOL_REPORT_URL || EOL_REPORT_URL,
   graphqlHost: process.env.GRAPHQL_HOST || GRAPHQL_HOST,
@@ -46,8 +38,6 @@ export const config = {
   analyticsUrl: process.env.ANALYTICS_URL || ANALYTICS_URL,
   concurrentPageRequests,
   pageSize,
-  enableAuth,
-  enableUserSetup,
   ciTokenFromEnv: process.env.HD_CI_CREDENTIAL?.trim() || undefined,
 };
 

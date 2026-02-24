@@ -16,10 +16,6 @@ export OAUTH_CLIENT_ID='';
 # export IAM_HOST='https://apps.herodevs.io/api/iam';
 # export IAM_PATH='/graphql';
 
-# Auth toggles (optional; both default false)
-# export ENABLE_AUTH='true';
-# export ENABLE_USER_SETUP='true';
-
 # CI credential (for headless flows):
 # export HD_CI_CREDENTIAL='<long-lived-refresh-token>';
 
