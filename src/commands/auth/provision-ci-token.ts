@@ -2,7 +2,7 @@ import { Command } from '@oclif/core';
 import { provisionCIToken } from '../../api/ci-token.client.ts';
 import { ensureUserSetup } from '../../api/user-setup.client.ts';
 import { requireAccessToken } from '../../service/auth.svc.ts';
-import { saveCIOrgId, saveCIToken } from '../../service/ci-token.svc.ts';
+import { saveCIToken } from '../../service/ci-token.svc.ts';
 import { getErrorMessage } from '../../service/log.svc.ts';
 
 export default class AuthProvisionCiToken extends Command {
@@ -28,11 +28,10 @@ export default class AuthProvisionCiToken extends Command {
       const result = await provisionCIToken({ orgId });
       const refreshToken = result.refresh_token;
       saveCIToken(refreshToken);
-      saveCIOrgId(orgId);
       this.log('CI token provisioned and saved locally.');
       this.log('');
       this.log('For CI/CD, set this environment variable:');
-      this.log(`  HD_CI_CREDENTIAL=${orgId}:${refreshToken}`);
+      this.log(`  HD_CI_CREDENTIAL=${refreshToken}`);
     } catch (error) {
       this.error(`CI token provisioning failed. ${getErrorMessage(error)}`);
     }

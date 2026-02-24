@@ -3,7 +3,6 @@ import { type Mock, vi } from 'vitest';
 const { mockConfig } = vi.hoisted(() => ({
   mockConfig: {
     ciTokenFromEnv: undefined as string | undefined,
-    orgIdFromEnv: undefined as number | undefined,
     accessTokenFromEnv: undefined as string | undefined,
   },
 }));
@@ -28,7 +27,6 @@ vi.mock('../../src/service/auth-refresh.svc.ts', () => ({
 vi.mock('../../src/service/ci-token.svc.ts', () => ({
   __esModule: true,
   getCIToken: vi.fn(),
-  getCIOrgId: vi.fn(),
   saveCIToken: vi.fn(),
 }));
 
@@ -63,7 +61,6 @@ describe('auth.svc', () => {
     vi.resetAllMocks();
     (getCIToken as Mock).mockReturnValue(undefined);
     mockConfig.ciTokenFromEnv = undefined;
-    mockConfig.orgIdFromEnv = undefined;
     mockConfig.accessTokenFromEnv = undefined;
   });
 

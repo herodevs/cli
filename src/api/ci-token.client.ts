@@ -11,17 +11,16 @@ const graphqlUrl = `${config.iamHost}${config.iamPath}`;
 
 const noAuthTokenProvider = async (): Promise<string> => '';
 
-export interface IamAccessOrgTokensInput {
-  orgId: number | null;
-  previousToken: string | null;
-}
+export type IamAccessOrgTokensInput =
+  | { orgId: number; previousToken?: never }
+  | { orgId?: never; previousToken: string };
 
 export interface ProvisionCITokenResponse {
   refresh_token: string;
 }
 
 export interface ProvisionCITokenOptions {
-  orgId?: number | null;
+  orgId?: number;
   previousToken?: string | null;
 }
 
@@ -120,21 +119,25 @@ async function callGetOrgAccessTokensInternal(
 
 export interface ExchangeCITokenOptions {
   refreshToken: string;
-  orgId: number;
 }
 
 export async function exchangeCITokenForAccess(
   options: ExchangeCITokenOptions,
 ): Promise<{ accessToken: string; refreshToken: string }> {
-  const { refreshToken, orgId } = options;
-  return callGetOrgAccessTokensInternal({ orgId, previousToken: refreshToken }, noAuthTokenProvider);
+  const { refreshToken } = options;
+  return callGetOrgAccessTokensInternal({ previousToken: refreshToken }, noAuthTokenProvider);
 }
 
 export async function provisionCIToken(options: ProvisionCITokenOptions = {}): Promise<ProvisionCITokenResponse> {
-  const { orgId = null, previousToken = null } = options;
-  const result = await getOrgAccessTokens({
-    orgId,
-    previousToken,
-  });
+  const { orgId, previousToken } = options;
+  let input: IamAccessOrgTokensInput;
+  if (previousToken != null && previousToken !== '') {
+    input = { previousToken };
+  } else if (orgId != null) {
+    input = { orgId };
+  } else {
+    throw new Error('Either orgId or previousToken is required to provision a CI token');
+  }
+  const result = await getOrgAccessTokens(input);
   return { refresh_token: result.refreshToken };
 }

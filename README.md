@@ -357,25 +357,25 @@ hd auth login
 hd auth provision-ci-token
 ```
 
-Copy the token output, add as CI secret: `HD_CI_CREDENTIAL` (format `<orgId>:<orgRefreshToken>`; orgId is obtained from user setup and stored at provision time when using locally).
+Copy the token output, add as CI secret: `HD_CI_CREDENTIAL`
 
 **CI pipeline (headless):** Run `hd scan eol` directly with `HD_CI_CREDENTIAL` set. The CLI exchanges the token for an access token automatically:
 
 ```bash
-export HD_CI_CREDENTIAL="<orgId>:<token>"
+export HD_CI_CREDENTIAL="<token>"
 hd scan eol --dir .
 ```
 
 | Secret / Env Var | Purpose |
 |------------------|---------|
-| `HD_CI_CREDENTIAL` | `<orgId>:<orgRefreshToken>` from provision; exchanged for access token |
+| `HD_CI_CREDENTIAL` | Refresh token from provision; exchanged for access token |
 
 #### Local testing
 
 Reproduce the CI flow locally:
 
 ```bash
-export HD_CI_CREDENTIAL="1234:eyJ..."
+export HD_CI_CREDENTIAL="<token-from-provision>"
 hd scan eol --dir /path/to/project
 ```
 

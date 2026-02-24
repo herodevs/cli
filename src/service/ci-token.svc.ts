@@ -5,7 +5,6 @@ import Conf from 'conf';
 import { config } from '../config/constants.ts';
 
 const CI_TOKEN_STORAGE_KEY = 'ciRefreshToken';
-const CI_ORG_ID_STORAGE_KEY = 'ciOrgId';
 const ENCRYPTION_SALT = 'hdcli-ci-token-v1';
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 12;
@@ -81,24 +80,4 @@ export function saveCIToken(token: string): void {
 export function clearCIToken(): void {
   const store = getConfStore();
   store.delete(CI_TOKEN_STORAGE_KEY);
-  store.delete(CI_ORG_ID_STORAGE_KEY);
-}
-
-export function getCIOrgId(): number | undefined {
-  const store = getConfStore();
-  const value = store.get(CI_ORG_ID_STORAGE_KEY);
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
-    return undefined;
-  }
-  return value;
-}
-
-export function saveCIOrgId(orgId: number): void {
-  const store = getConfStore();
-  store.set(CI_ORG_ID_STORAGE_KEY, orgId);
-}
-
-export function clearCIOrgId(): void {
-  const store = getConfStore();
-  store.delete(CI_ORG_ID_STORAGE_KEY);
 }

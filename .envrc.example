@@ -20,8 +20,8 @@ export OAUTH_CLIENT_ID='';
 # export ENABLE_AUTH='true';
 # export ENABLE_USER_SETUP='true';
 
-# CI credential (for headless flows): format <orgId>:<refreshToken>
-# export HD_CI_CREDENTIAL='1234:<long-lived-refresh-token>';
+# CI credential (for headless flows):
+# export HD_CI_CREDENTIAL='<long-lived-refresh-token>';
 
 # Performance (optional)
 # export CONCURRENT_PAGE_REQUESTS='3';

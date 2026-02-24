@@ -1,5 +1,3 @@
-import { parseCiCredential } from '../utils/ci-credential.ts';
-
 export const EOL_REPORT_URL = 'https://apps.herodevs.com/eol/reports';
 export const GRAPHQL_HOST = 'https://gateway.prod.apps.herodevs.io';
 export const GRAPHQL_PATH = '/graphql';
@@ -39,8 +37,6 @@ const enableUserSetupEnv = process.env.ENABLE_USER_SETUP;
 const enableUserSetup =
   enableUserSetupEnv === 'true' ? true : enableUserSetupEnv === 'false' ? false : ENABLE_USER_SETUP;
 
-const { ciTokenFromEnv, orgIdFromEnv } = parseCiCredential(process.env.HD_CI_CREDENTIAL);
-
 export const config = {
   eolReportUrl: process.env.EOL_REPORT_URL || EOL_REPORT_URL,
   graphqlHost: process.env.GRAPHQL_HOST || GRAPHQL_HOST,
@@ -52,8 +48,7 @@ export const config = {
   pageSize,
   enableAuth,
   enableUserSetup,
-  ciTokenFromEnv,
-  orgIdFromEnv,
+  ciTokenFromEnv: process.env.HD_CI_CREDENTIAL?.trim() || undefined,
 };
 
 export const filenamePrefix = 'herodevs';

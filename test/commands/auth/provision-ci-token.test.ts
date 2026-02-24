@@ -18,7 +18,6 @@ vi.mock('../../../src/api/ci-token.client.ts', () => ({
 vi.mock('../../../src/service/ci-token.svc.ts', () => ({
   __esModule: true,
   getCIToken: vi.fn(),
-  saveCIOrgId: vi.fn(),
   saveCIToken: vi.fn(),
 }));
 
@@ -26,7 +25,7 @@ import { provisionCIToken } from '../../../src/api/ci-token.client.ts';
 import { ensureUserSetup } from '../../../src/api/user-setup.client.ts';
 import AuthProvisionCiToken from '../../../src/commands/auth/provision-ci-token.ts';
 import { requireAccessToken } from '../../../src/service/auth.svc.ts';
-import { getCIToken, saveCIOrgId, saveCIToken } from '../../../src/service/ci-token.svc.ts';
+import { getCIToken, saveCIToken } from '../../../src/service/ci-token.svc.ts';
 
 describe('AuthProvisionCiToken command', () => {
   beforeEach(() => {
@@ -63,9 +62,8 @@ describe('AuthProvisionCiToken command', () => {
     expect(ensureUserSetup).toHaveBeenCalled();
     expect(provisionCIToken).toHaveBeenCalledWith({ orgId: 123 });
     expect(saveCIToken).toHaveBeenCalledWith('new-ci-refresh-token');
-    expect(saveCIOrgId).toHaveBeenCalledWith(123);
     expect(logSpy).toHaveBeenCalledWith('CI token provisioned and saved locally.');
-    expect(logSpy).toHaveBeenCalledWith('  HD_CI_CREDENTIAL=123:new-ci-refresh-token');
+    expect(logSpy).toHaveBeenCalledWith('  HD_CI_CREDENTIAL=new-ci-refresh-token');
   });
 
   it('provisions for different org when logged in', async () => {
@@ -82,7 +80,6 @@ describe('AuthProvisionCiToken command', () => {
 
     expect(ensureUserSetup).toHaveBeenCalled();
     expect(provisionCIToken).toHaveBeenCalledWith({ orgId: 456 });
-    expect(saveCIOrgId).toHaveBeenCalledWith(456);
   });
 
   it('errors when user setup fails', async () => {
@@ -100,7 +97,7 @@ describe('AuthProvisionCiToken command', () => {
 
   it('errors when provisioning fails', async () => {
     (requireAccessToken as Mock).mockResolvedValue('access-token');
-    (ensureUserSetup as Mock).mockResolvedValue(1);
+    (ensureUserSetup as Mock).mockResolvedValue(99);
     (provisionCIToken as Mock).mockRejectedValue(new Error('Provisioning failed'));
     const command = new AuthProvisionCiToken([], {} as Record<string, unknown>);
     vi.spyOn(command, 'parse').mockResolvedValue({ flags: {}, args: {} } as never);
