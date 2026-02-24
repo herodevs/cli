@@ -5,6 +5,7 @@ import { URL } from 'node:url';
 import { Command } from '@oclif/core';
 import { ensureUserSetup } from '../../api/user-setup.client.ts';
 import { OAUTH_CALLBACK_ERROR_CODES } from '../../config/constants.ts';
+import { refreshIdentityFromStoredToken } from '../../service/analytics.svc.ts';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
 import { getClientId, getRealmUrl } from '../../service/auth-config.svc.ts';
 import { debugLogger, getErrorMessage } from '../../service/log.svc.ts';
@@ -53,6 +54,12 @@ export default class AuthLogin extends Command {
       await ensureUserSetup({ preferOAuth: true });
     } catch (error) {
       this.error(`User setup failed. ${getErrorMessage(error)}`);
+    }
+
+    try {
+      await refreshIdentityFromStoredToken();
+    } catch (error) {
+      this.warn(`Failed to refresh analytics identity: ${getErrorMessage(error)}`);
     }
 
     this.log('\nLogin completed successfully.');

@@ -3,7 +3,6 @@ import { type Mock, vi } from 'vitest';
 const { mockConfig } = vi.hoisted(() => ({
   mockConfig: {
     ciTokenFromEnv: undefined as string | undefined,
-    accessTokenFromEnv: undefined as string | undefined,
   },
 }));
 
@@ -36,7 +35,6 @@ describe('ci-auth.svc', () => {
     vi.resetAllMocks();
     (getCIToken as Mock).mockReturnValue(undefined);
     mockConfig.ciTokenFromEnv = undefined;
-    mockConfig.accessTokenFromEnv = undefined;
   });
 
   it('does not saveCIToken when token comes from env', async () => {

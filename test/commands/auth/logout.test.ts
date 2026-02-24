@@ -11,7 +11,13 @@ vi.mock('../../../src/service/auth-refresh.svc.ts', () => ({
   logoutFromProvider: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('../../../src/service/analytics.svc.ts', () => ({
+  __esModule: true,
+  clearTrackedIdentity: vi.fn(),
+}));
+
 import AuthLogout from '../../../src/commands/auth/logout.ts';
+import { clearTrackedIdentity } from '../../../src/service/analytics.svc.ts';
 import { logoutFromProvider } from '../../../src/service/auth-refresh.svc.ts';
 import { clearStoredTokens, getStoredTokens } from '../../../src/service/auth-token.svc.ts';
 
@@ -29,6 +35,7 @@ describe('AuthLogout command', () => {
 
     expect(logSpy).toHaveBeenCalledWith('No stored authentication tokens found.');
     expect(clearStoredTokens).not.toHaveBeenCalled();
+    expect(clearTrackedIdentity).not.toHaveBeenCalled();
   });
 
   it('revokes tokens and clears local storage', async () => {
@@ -39,6 +46,7 @@ describe('AuthLogout command', () => {
     await command.run();
 
     expect(logoutFromProvider).toHaveBeenCalledWith('refresh');
+    expect(clearTrackedIdentity).toHaveBeenCalledTimes(1);
     expect(clearStoredTokens).toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith('Local authentication tokens removed from your system.');
   });
@@ -52,6 +60,7 @@ describe('AuthLogout command', () => {
     await command.run();
 
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('network fail'));
+    expect(clearTrackedIdentity).toHaveBeenCalledTimes(1);
     expect(clearStoredTokens).toHaveBeenCalled();
   });
 });

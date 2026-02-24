@@ -1,4 +1,5 @@
 import { Command } from '@oclif/core';
+import { clearTrackedIdentity } from '../../service/analytics.svc.ts';
 import { logoutFromProvider } from '../../service/auth-refresh.svc.ts';
 import { clearStoredTokens, getStoredTokens } from '../../service/auth-token.svc.ts';
 
@@ -23,6 +24,7 @@ export default class AuthLogout extends Command {
       this.warn(`Failed to revoke tokens remotely: ${error instanceof Error ? error.message : error}`);
     }
 
+    clearTrackedIdentity();
     await clearStoredTokens();
     this.log('Local authentication tokens removed from your system.');
   }
