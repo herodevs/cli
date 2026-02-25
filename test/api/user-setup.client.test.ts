@@ -4,8 +4,7 @@ import { completeUserSetup, ensureUserSetup, getUserSetupStatus } from '../../sr
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
 
 vi.mock('../../src/service/auth.svc.ts', () => ({
-  requireAccessTokenForScan: vi.fn().mockResolvedValue('test-token'),
-  requireAccessToken: vi.fn().mockResolvedValue('test-token'),
+  getTokenProvider: vi.fn(() => vi.fn().mockResolvedValue('test-token')),
 }));
 
 describe('user-setup.client', () => {

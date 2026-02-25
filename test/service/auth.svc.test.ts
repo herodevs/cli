@@ -37,9 +37,21 @@ vi.mock('../../src/service/ci-auth.svc.ts', async (importOriginal) => {
   };
 });
 
+const { debugLoggerMock } = vi.hoisted(() => ({
+  debugLoggerMock: vi.fn(),
+}));
+
+vi.mock('../../src/service/log.svc.ts', () => ({
+  debugLogger: debugLoggerMock,
+  getErrorMessage: (e: unknown) => (e instanceof Error ? e.message : String(e)),
+}));
+
 import {
+  AUTH_ERROR_MESSAGES,
   AuthError,
   getAccessToken,
+  getTokenForScanWithSource,
+  getTokenProvider,
   logoutLocally,
   persistTokenResponse,
   requireAccessToken,
@@ -114,8 +126,9 @@ describe('auth.svc', () => {
   });
 
   describe('requireAccessTokenForScan', () => {
-    it('delegates to requireCIAccessToken when CI token present', async () => {
+    it('delegates to requireCIAccessToken when only CI token present', async () => {
       (getCIToken as Mock).mockReturnValue('ci-refresh-token');
+      (getStoredTokens as Mock).mockResolvedValue(undefined);
       (requireCIAccessToken as Mock).mockResolvedValue('ci-access-token');
 
       const token = await requireAccessTokenForScan();
@@ -123,16 +136,15 @@ describe('auth.svc', () => {
       expect(requireCIAccessToken).toHaveBeenCalled();
     });
 
-    it('uses CI path before keyring when both CI token and keyring tokens exist', async () => {
+    it('uses keyring (OAuth) before CI when both CI token and keyring tokens exist', async () => {
       (getCIToken as Mock).mockReturnValue('ci-refresh-token');
       (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'keyring-token', refreshToken: 'keyring-refresh' });
-      (requireCIAccessToken as Mock).mockResolvedValue('ci-access-token');
+      (isAccessTokenExpired as Mock).mockReturnValue(false);
 
       const token = await requireAccessTokenForScan();
 
-      expect(token).toBe('ci-access-token');
-      expect(requireCIAccessToken).toHaveBeenCalled();
-      expect(refreshTokens).not.toHaveBeenCalled();
+      expect(token).toBe('keyring-token');
+      expect(requireCIAccessToken).not.toHaveBeenCalled();
     });
 
     it('propagates CITokenError when requireCIAccessToken throws', async () => {
@@ -171,7 +183,7 @@ describe('auth.svc', () => {
       await expect(requireAccessTokenForScan()).rejects.toMatchObject({
         name: 'AuthError',
         code: 'NOT_LOGGED_IN',
-        message: 'Please log in to perform a scan. To authenticate, please run an "auth login" command.',
+        message: AUTH_ERROR_MESSAGES.UNAUTHENTICATED,
       });
     });
 
@@ -189,10 +201,10 @@ describe('auth.svc', () => {
       (isAccessTokenExpired as Mock).mockReturnValue(true);
       (refreshTokens as Mock).mockRejectedValue(new Error('refresh failed'));
 
-      await expect(requireAccessTokenForScan()).rejects.toThrow(AuthError);
+      await expect(getTokenProvider()()).rejects.toThrow(AuthError);
       await expect(requireAccessTokenForScan()).rejects.toMatchObject({
         code: 'SESSION_EXPIRED',
-        message: 'Your session is no longer valid. To re-authenticate, please run an "auth login" command.',
+        message: AUTH_ERROR_MESSAGES.SESSION_EXPIRED,
       });
     });
 
@@ -200,10 +212,71 @@ describe('auth.svc', () => {
       (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'expired' });
       (isAccessTokenExpired as Mock).mockReturnValue(true);
 
-      await expect(requireAccessTokenForScan()).rejects.toThrow(AuthError);
+      await expect(getTokenProvider()()).rejects.toThrow(AuthError);
       await expect(requireAccessTokenForScan()).rejects.toMatchObject({
         code: 'SESSION_EXPIRED',
       });
+    });
+  });
+
+  describe('getTokenProvider', () => {
+    it('preferOAuth=true uses only requireAccessToken, never CI', async () => {
+      (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'oauth-token' });
+      (isAccessTokenExpired as Mock).mockReturnValue(false);
+      (getCIToken as Mock).mockReturnValue('ci-token');
+
+      const provider = getTokenProvider(true);
+      const token = await provider();
+
+      expect(token).toBe('oauth-token');
+      expect(requireCIAccessToken).not.toHaveBeenCalled();
+    });
+
+    it('preferOAuth=false with OAuth tokens present returns OAuth token, does not call requireCIAccessToken', async () => {
+      (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'oauth-token' });
+      (isAccessTokenExpired as Mock).mockReturnValue(false);
+      (getCIToken as Mock).mockReturnValue('ci-token');
+
+      const provider = getTokenProvider(false);
+      const token = await provider();
+
+      expect(token).toBe('oauth-token');
+      expect(requireCIAccessToken).not.toHaveBeenCalled();
+    });
+
+    it('preferOAuth=false with only CI token calls requireCIAccessToken and returns CI access token', async () => {
+      (getStoredTokens as Mock).mockResolvedValue(undefined);
+      (getCIToken as Mock).mockReturnValue('ci-refresh-token');
+      (requireCIAccessToken as Mock).mockResolvedValue('ci-access-token');
+
+      const provider = getTokenProvider(false);
+      const token = await provider();
+
+      expect(token).toBe('ci-access-token');
+      expect(requireCIAccessToken).toHaveBeenCalled();
+    });
+
+    it('preferOAuth=false when CI path used, getTokenForScanWithSource returns source ci', async () => {
+      (getStoredTokens as Mock).mockResolvedValue(undefined);
+      (getCIToken as Mock).mockReturnValue('ci-refresh-token');
+      (requireCIAccessToken as Mock).mockResolvedValue('ci-access-token');
+
+      const result = await getTokenForScanWithSource();
+
+      expect(result.token).toBe('ci-access-token');
+      expect(result.source).toBe('ci');
+    });
+  });
+
+  describe('getTokenForScanWithSource', () => {
+    it('returns source oauth when OAuth path is used', async () => {
+      (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'oauth-token' });
+      (isAccessTokenExpired as Mock).mockReturnValue(false);
+
+      const result = await getTokenForScanWithSource();
+
+      expect(result.token).toBe('oauth-token');
+      expect(result.source).toBe('oauth');
     });
   });
 });
