@@ -10,8 +10,8 @@ vi.mock('../../src/config/constants.ts', async (importOriginal) => {
     ...actual,
     config: {
       ...actual.config,
-      iamHost: 'https://iam.test',
-      iamPath: '/graphql',
+      graphqlHost: 'https://gateway.test',
+      graphqlPath: '/graphql',
     },
   };
 });
