@@ -7,7 +7,7 @@ import { ApiError, type ApiErrorCode, isApiErrorCode } from './errors.ts';
 import { getOrgAccessTokensMutation } from './gql-operations.ts';
 import { getGraphQLErrors } from './graphql-errors.ts';
 
-const graphqlUrl = `${config.iamHost}${config.iamPath}`;
+const graphqlUrl = `${config.graphqlHost}${config.graphqlPath}`;
 
 const noAuthTokenProvider = async (): Promise<string> => '';
 

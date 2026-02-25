@@ -12,10 +12,6 @@ export OAUTH_CLIENT_ID='';
 # export OAUTH_CALLBACK_PORT='4000';
 # export OAUTH_CALLBACK_REDIRECT='http://localhost:4000/oauth2/callback';
 
-# IAM (for CI token provisioning via hd auth provision-ci-token)
-# export IAM_HOST='https://apps.herodevs.io/api/iam';
-# export IAM_PATH='/graphql';
-
 # CI credential (for headless flows):
 # export HD_CI_CREDENTIAL='<long-lived-refresh-token>';
 
