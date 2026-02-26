@@ -22,6 +22,7 @@ set -o pipefail # Catch errors in piped commands
 # - Error handling for failed operations
 #
 # Usage: curl -sSfL https://raw.githubusercontent.com/herodevs/cli/refs/heads/main/scripts/install.sh | bash
+# To install the beta version instead of stable: USE_BETA=true curl -sSfL ... | bash
 #=============================================================================
 
 # Configuration
@@ -32,7 +33,11 @@ INSTALL_DIR="$HOME/.herodevs"
 BIN_DIR="$INSTALL_DIR/bin"
 GITHUB_API_URL="https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/releases"
 TMP_DIR=""
-LATEST_VERSION="v2.0.0-beta.14"
+# Stable version (default).
+LATEST_VERSION="v2.0.0"
+# Beta version. Only used when USE_BETA=true. Update when cutting a beta release.
+LATEST_BETA_VERSION="v2.0.0-beta.14"
+USE_BETA=${USE_BETA:-false}
 DEBUG=${DEBUG:-}
 
 # Colors for output
@@ -88,10 +93,28 @@ cleanup() {
 
 trap cleanup EXIT INT TERM
 
+# Normalize USE_BETA: default is false (stable). Only use beta when explicitly requested.
+# Accept "true", "1", "yes" (case-insensitive) as true.
+normalize_use_beta() {
+  case "$(echo "$USE_BETA" | tr '[:upper:]' '[:lower:]')" in
+    true|1|yes) USE_BETA=true ;;
+    *)          USE_BETA=false ;;
+  esac
+}
+normalize_use_beta
+
 log "INFO" "Installing HeroDevs CLI"
 
 # Download and install
 install() {
+  local version_tag
+  if [ "$USE_BETA" = true ]; then
+    version_tag="$LATEST_BETA_VERSION"
+    log "INFO" "Installing beta version (USE_BETA=true)"
+  else
+    version_tag="$LATEST_VERSION"
+  fi
+
   # Fetch releases from GitHub
   releases=$(curl --silent --connect-timeout 10 --max-time 30 "$GITHUB_API_URL" 2>&1)
   curl_exit=$?
@@ -104,8 +127,6 @@ install() {
   if [ -z "$releases" ]; then
     error_exit "Empty response from GitHub API. Please try again later."
   fi
-
-  local version_tag="$LATEST_VERSION"
   
   # Remove 'v' prefix if present
   local version
@@ -133,7 +154,7 @@ install() {
   pattern="${os}-${arch}"
 
   # Extract all browser_download_url values for the matching release
-  release_block=$(echo "$releases" | awk -v tag="\"$LATEST_VERSION\"" '
+  release_block=$(echo "$releases" | awk -v tag="\"$version_tag\"" '
     BEGIN {found=0; block=""}
     $0 ~ tag {found=1}
     found {
@@ -153,7 +174,7 @@ install() {
 
   # Ensure we found a matching asset
   if [ -z "$download_url" ]; then
-    error_exit "No release found system $pattern for release $LATEST_VERSION"
+    error_exit "No release found system $pattern for release $version_tag"
   fi
 
   log "DEBUG" "Download URL: $download_url"

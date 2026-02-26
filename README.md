@@ -29,13 +29,13 @@ The HeroDevs CLI
 With Node installed, you can run the CLI directly from the npm registry without installing it globally or locally on your system
 
 ```sh
-npx @herodevs/cli@beta
+npx @herodevs/cli
 ```
 
 #### Global NPM Installation
 
 ```sh
-npm install -g @herodevs/cli@beta
+npm install -g @herodevs/cli
 ```
 
 #### Binary Installation
@@ -43,11 +43,11 @@ npm install -g @herodevs/cli@beta
 HeroDevs CLI is available as a binary installation, without requiring `npm`. To do that, you may either download and run the script manually, or use the following cURL or Wget command:
 
 ```sh
-curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.14/scripts/install.sh | bash
+curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.0/scripts/install.sh | bash
 ```
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.14/scripts/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.0/scripts/install.sh | bash
 ```
 
 ## Scanning Behavior
@@ -68,11 +68,11 @@ Maven and Gradle projects should run an install and build before scanning
 ## Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @herodevs/cli@beta
+$ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.14 darwin-arm64 node-v24.10.0
+@herodevs/cli/2.0.0 darwin-arm64 node-v24.13.1
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -90,7 +90,6 @@ USAGE
 * [`hd tracker init`](#hd-tracker-init)
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
-* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ## `hd auth login`
 
@@ -104,7 +103,7 @@ DESCRIPTION
   OAuth CLI login
 ```
 
-_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth/login.ts)_
+_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/auth/login.ts)_
 
 ## `hd auth logout`
 
@@ -118,7 +117,7 @@ DESCRIPTION
   Logs out of HeroDevs OAuth and clears stored tokens
 ```
 
-_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth/logout.ts)_
+_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/auth/logout.ts)_
 
 ## `hd auth provision-ci-token`
 
@@ -132,7 +131,7 @@ DESCRIPTION
   Provision a CI/CD long-lived refresh token for headless auth
 ```
 
-_See code: [src/commands/auth/provision-ci-token.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/auth/provision-ci-token.ts)_
+_See code: [src/commands/auth/provision-ci-token.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/auth/provision-ci-token.ts)_
 
 ## `hd help [COMMAND]`
 
@@ -166,10 +165,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2025-02-18] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-02-26] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2026-02-18] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-02-26] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
@@ -188,7 +187,7 @@ EXAMPLES
   $ hd report committers --csv
 ```
 
-_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/report/committers.ts)_
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/report/committers.ts)_
 
 ## `hd scan eol`
 
@@ -240,7 +239,7 @@ EXAMPLES
     $ hd scan eol --json
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/scan/eol.ts)_
 
 ## `hd tracker init`
 
@@ -274,7 +273,7 @@ EXAMPLES
   $ hd tracker init -o
 ```
 
-_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.14/src/commands/tracker/init.ts)_
+_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/tracker/init.ts)_
 
 ## `hd tracker run`
 
@@ -299,13 +298,11 @@ EXAMPLES
   $ hd tracker run -d tracker -f settings.json
 ```
 
-_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/main/src/commands/tracker/run.ts)_
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.0/src/commands/tracker/run.ts)_
 
 ## `hd update [CHANNEL]`
 
 update the hd CLI
-
-* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ```
 USAGE
@@ -391,7 +388,7 @@ Add secret `HD_CI_CREDENTIAL` in your repository or organization, then:
 - name: Run EOL Scan
   env:
     HD_CI_CREDENTIAL: ${{ secrets.HD_CI_CREDENTIAL }}
-  run: npx @herodevs/cli@beta scan eol -s
+  run: npx @herodevs/cli scan eol -s
 ```
 
 #### GitLab CI (authenticated scan)
@@ -404,7 +401,7 @@ eol-scan:
   variables:
     HD_CI_CREDENTIAL: $HD_CI_CREDENTIAL
   script:
-    - npx @herodevs/cli@beta scan eol -s
+    - npx @herodevs/cli scan eol -s
   artifacts:
     paths:
       - herodevs.report.json
@@ -462,7 +459,7 @@ eol-scan:
     # Entrypoint or base command must be disabled due 
     # to GitLab's execution mechanism and run manually
     entrypoint: [""] 
-  script: "npx @herodevs/cli@beta scan eol -s"
+  script: "npx @herodevs/cli scan eol -s"
   artifacts:
     paths:
       - herodevs.report.json
@@ -502,7 +499,7 @@ jobs:
       - run: echo # Prepare environment, install tooling, perform setup, etc.
 
       - name: Run EOL Scan
-        run: npx @herodevs/cli@beta scan eol
+        run: npx @herodevs/cli scan eol
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
@@ -519,7 +516,7 @@ image: alpine
 eol-scan:
   script:
     - echo # Prepare environment, install tooling, perform setup, etc.
-    - npx @herodevs/cli@beta scan eol -s
+    - npx @herodevs/cli scan eol -s
   artifacts:
     paths:
       - herodevs.report.json
