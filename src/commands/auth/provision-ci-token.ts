@@ -45,6 +45,15 @@ export default class AuthProvisionCiToken extends Command {
 
     try {
       const result = await provisionCIToken({ orgId });
+      try {
+        await ensureUserSetup({ orgAccessToken: result.access_token });
+      } catch (error) {
+        track('CLI CI Token Provision Failed', () => ({
+          command: 'auth provision-ci-token',
+          error: `user_setup_failed:${getErrorMessage(error)}`,
+        }));
+        this.error(`User Org setup failed. ${getErrorMessage(error)}`);
+      }
       const refreshToken = result.refresh_token;
       saveCIToken(refreshToken);
       this.log('CI token provisioned and saved locally.');

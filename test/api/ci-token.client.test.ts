@@ -107,7 +107,7 @@ describe('ci-token.client', () => {
     );
 
     const result = await provisionCIToken({ orgId: 42 });
-    expect(result).toEqual({ refresh_token: 'ci-refresh-token-123' });
+    expect(result).toEqual({ refresh_token: 'ci-refresh-token-123', access_token: 'new-access' });
 
     const calls = fetchMock.getCalls();
     expect(calls).toHaveLength(1);
