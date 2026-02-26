@@ -1,5 +1,5 @@
 const DEFAULT_REALM_URL = 'https://idp.prod.apps.herodevs.io/realms/universe/protocol/openid-connect';
-const DEFAULT_CLIENT_ID = 'default-public';
+const DEFAULT_CLIENT_ID = 'eol-ds';
 const DEFAULT_SERVICE_NAME = '@herodevs/cli';
 const DEFAULT_ACCESS_KEY = 'access-token';
 const DEFAULT_REFRESH_KEY = 'refresh-token';
