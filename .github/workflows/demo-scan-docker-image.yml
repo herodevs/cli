@@ -53,7 +53,7 @@ jobs:
           path: .
 
       - name: Run EOL scan
-        run: npx @herodevs/cli@beta scan eol --file=sbom.json --save
+        run: npx @herodevs/cli scan eol --file=sbom.json --save
 
       - name: Upload HD report
         uses: actions/upload-artifact@v6

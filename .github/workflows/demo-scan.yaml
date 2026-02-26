@@ -19,7 +19,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Run EOL Scan
-        run: npx @herodevs/cli@beta scan eol --save
+        run: npx @herodevs/cli scan eol --save
 
       - name: Upload artifact
         uses: actions/upload-artifact@v6
