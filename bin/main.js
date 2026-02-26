@@ -7,13 +7,9 @@ async function main(isProduction = false) {
     strict: false, // Don't validate flags
   });
 
-  // If no arguments at all, default to scan:eol
+  // If no arguments at all, default to help
   if (positionals.length === 0) {
-    process.argv.splice(2, 0, 'scan:eol');
-  }
-  // If only flags are provided, set scan:eol as the command for those flags
-  else if (positionals.length === 1 && positionals[0].startsWith('-')) {
-    process.argv.splice(2, 0, 'scan:eol');
+    process.argv.splice(2, 0, 'help');
   }
 
   try {

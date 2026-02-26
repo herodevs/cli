@@ -92,6 +92,13 @@ describe('scan:eol e2e', () => {
   });
 
   describe('default arguments', () => {
+    it('runs help as default command', async () => {
+      const { stdout } = await execAsync('node bin/run.js');
+      match(stdout, /VERSION/, 'Should show version section');
+      match(stdout, /USAGE/, 'Should show usage section');
+      match(stdout, /TOPICS/, 'Should show topics section');
+      match(stdout, /COMMANDS/, 'Should show commands section');
+    });
     it('runs scan:eol with file flag and shows results', async () => {
       const { stdout } = await run(`scan:eol --file ${simpleSbom}`);
       match(stdout, /Scan results:/, 'Should show results header');
@@ -106,7 +113,7 @@ describe('scan:eol e2e', () => {
     });
 
     it('shows help for scan:eol when --help is passed in', async () => {
-      const { stdout } = await execAsync('node bin/run.js --help');
+      const { stdout } = await execAsync('node bin/run.js scan:eol --help');
       match(stdout, /USAGE/, 'Should show usage section');
       match(stdout, /FLAGS/, 'Should show flags section');
       match(stdout, /EXAMPLES/, 'Should show examples section');
