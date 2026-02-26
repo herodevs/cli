@@ -1,6 +1,6 @@
 {
   "name": "@herodevs/cli",
-  "version": "2.0.0-beta.14",
+  "version": "2.0.0-beta.15",
   "author": "HeroDevs, Inc",
   "bin": {
     "hd": "./bin/run.js"
@@ -11,7 +11,7 @@
     "url": "https://github.com/herodevs/cli"
   },
   "homepage": "https://github.com/herodevs/cli",
-  "bugs": "https://github.com/@herodevs/cli/issues",
+  "bugs": "https://github.com/herodevs/cli/issues",
   "scripts": {
     "build": "shx rm -rf dist && tsc -b",
     "ci": "biome ci",
