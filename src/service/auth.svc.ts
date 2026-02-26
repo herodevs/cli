@@ -24,7 +24,11 @@ export const AUTH_ERROR_MESSAGES = {
 
 export async function getTokenForScanWithSource(
   preferOAuth?: boolean,
+  orgAccessToken?: string,
 ): Promise<{ token: string; source: TokenSource }> {
+  if (orgAccessToken) {
+    return { token: orgAccessToken, source: 'ci' };
+  }
   if (preferOAuth) {
     const token = await requireAccessToken();
     return { token, source: 'oauth' };
@@ -94,9 +98,9 @@ export async function getAccessToken(): Promise<string | undefined> {
   return refreshed.access_token;
 }
 
-export function getTokenProvider(preferOAuth?: boolean): TokenProvider {
+export function getTokenProvider(preferOAuth?: boolean, orgAccessToken?: string): TokenProvider {
   return async (_forceRefresh?: boolean): Promise<string> => {
-    const { token } = await getTokenForScanWithSource(preferOAuth);
+    const { token } = await getTokenForScanWithSource(preferOAuth, orgAccessToken);
     return token;
   };
 }

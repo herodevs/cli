@@ -35,11 +35,11 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
   return code;
 }
 
-export async function getUserSetupStatus(options?: { preferOAuth?: boolean }): Promise<{
+export async function getUserSetupStatus(options?: { preferOAuth?: boolean; orgAccessToken?: string }): Promise<{
   isComplete: boolean;
   orgId?: number | null;
 }> {
-  const tokenProvider = getTokenProvider(options?.preferOAuth);
+  const tokenProvider = getTokenProvider(options?.preferOAuth, options?.orgAccessToken);
   const client = createApollo(getGraphqlUrl(), tokenProvider);
   const res = await client.query<UserSetupStatusResponse>({ query: userSetupStatusQuery });
 
@@ -70,11 +70,11 @@ export async function getUserSetupStatus(options?: { preferOAuth?: boolean }): P
   return { isComplete: status.isComplete, orgId: status.orgId ?? undefined };
 }
 
-export async function completeUserSetup(options?: { preferOAuth?: boolean }): Promise<{
+export async function completeUserSetup(options?: { preferOAuth?: boolean; orgAccessToken?: string }): Promise<{
   isComplete: boolean;
   orgId?: number | null;
 }> {
-  const tokenProvider = getTokenProvider(options?.preferOAuth);
+  const tokenProvider = getTokenProvider(options?.preferOAuth, options?.orgAccessToken);
   const client = createApollo(getGraphqlUrl(), tokenProvider);
   const res = await client.mutate<CompleteUserSetupResponse>({ mutation: completeUserSetupMutation });
 
@@ -105,7 +105,7 @@ export async function completeUserSetup(options?: { preferOAuth?: boolean }): Pr
   return { isComplete: true, orgId: result.orgId ?? undefined };
 }
 
-export async function ensureUserSetup(options?: { preferOAuth?: boolean }): Promise<number> {
+export async function ensureUserSetup(options?: { preferOAuth?: boolean; orgAccessToken?: string }): Promise<number> {
   const status = await withRetries('user-setup-status', () => getUserSetupStatus(options), {
     attempts: USER_SETUP_MAX_ATTEMPTS,
     baseDelayMs: USER_SETUP_RETRY_DELAY_MS,

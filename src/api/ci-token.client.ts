@@ -17,6 +17,7 @@ export type IamAccessOrgTokensInput =
 
 export interface ProvisionCITokenResponse {
   refresh_token: string;
+  access_token: string;
 }
 
 export interface ProvisionCITokenOptions {
@@ -139,5 +140,5 @@ export async function provisionCIToken(options: ProvisionCITokenOptions = {}): P
     throw new Error('Either orgId or previousToken is required to provision a CI token');
   }
   const result = await getOrgAccessTokens(input);
-  return { refresh_token: result.refreshToken };
+  return { access_token: result.accessToken, refresh_token: result.refreshToken };
 }
