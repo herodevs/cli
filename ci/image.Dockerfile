@@ -1,4 +1,4 @@
-FROM ghcr.io/cyclonedx/cdxgen:v12.0.0
+FROM ghcr.io/cyclonedx/cdxgen:v12.1.1
 ENV NODE_NO_WARNINGS=1 \
     NPM_CONFIG_UPDATE_NOTIFIER=false \
     NPM_CONFIG_LOGLEVEL=error
