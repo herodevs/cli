@@ -40,7 +40,7 @@ jobs:
           elif [[ "$VERSION" == *"-next"* ]]; then
             echo "oclif_channel=next" >> $GITHUB_OUTPUT
           else
-            echo "oclif_channel=latest" >> $GITHUB_OUTPUT
+            echo "oclif_channel=stable" >> $GITHUB_OUTPUT
           fi
     outputs:
       version: ${{ steps.verify-version.outputs.version }}
@@ -62,12 +62,21 @@ jobs:
       - run: npm test
       - run: npm run test:e2e
 
-  upload-assets:
-    runs-on: ubuntu-latest
+  build-standalone:
+    name: Build Standalone (${{ matrix.target }})
     needs: [check-version, test]
-    permissions:
-      contents: write
-      id-token: write
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux-x64
+          - os: macos-latest
+            target: darwin-arm64
+          - os: windows-latest
+            target: win32-x64
+
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -79,29 +88,52 @@ jobs:
       - run: npm ci
       - run: npm run build
 
-      # Build platform-specific tarballs
-      - name: Install linux toolchain
+      - name: Pack standalone
+        shell: bash
         run: |
-          sudo apt update
-          sudo apt install nsis p7zip-full p7zip-rar -y
+          npx oclif pack tarballs \
+            --targets=${{ matrix.target }} \
+            --no-xz
 
-      - name: Build all tarballs in parallel
+      - uses: actions/upload-artifact@v4
+        with:
+          name: standalone-${{ matrix.target }}
+          path: dist/*.tar.gz
+
+  upload-and-promote:
+    runs-on: ubuntu-latest
+    needs: [check-version, build-standalone]
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+
+      - name: Flatten artifacts
         run: |
-          npx oclif pack tarballs --targets=linux-x64,win32-x64,darwin-arm64 --no-xz --parallel
+          mkdir final-dist
+          find dist -name "*.tar.gz" -exec mv {} final-dist/ \;
 
-      # Create GitHub Release (draft - will be published manually from GitHub UI or CLI)
-      - name: Create GitHub Release
+      - name: Create GitHub Release (draft)
         run: |
           gh release create v${{ needs.check-version.outputs.version }} \
-            --title "Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel == 'latest' && 'Latest' || needs.check-version.outputs.oclif_channel }}" \
+            --title "Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel }}" \
             --generate-notes \
             --draft \
-            --prerelease=${{ needs.check-version.outputs.oclif_channel != 'latest' }} \
-            dist/*.tar.gz
+            --prerelease=${{ needs.check-version.outputs.oclif_channel != 'stable' }} \
+            final-dist/*.tar.gz
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # S3 Distribution
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
@@ -109,33 +141,51 @@ jobs:
           role-session-name: herodevs_cli_upload
           aws-region: ${{ vars.AWS_REGION }}
 
-
-      - name: Upload and promote to S3
+      - name: Upload tarballs
         run: |
-          # Enable oclif debug logging
-          export DEBUG=oclif:*
-
-          # Upload tarballs
           npx oclif upload tarballs \
             --targets=linux-x64,win32-x64,darwin-arm64 \
             --no-xz
 
-          # Get shortened SHA (first 7 characters)
-          SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
-          echo "Using shortened SHA: $SHORT_SHA"
+      - name: Promote channel
+        run: |
+          CHANNEL=${{ needs.check-version.outputs.oclif_channel }}
+          VERSION=${{ needs.check-version.outputs.version }}
 
-          # Promote to channel
           npx oclif promote \
-            --channel=${{ needs.check-version.outputs.oclif_channel }} \
-            --version=${{ needs.check-version.outputs.version }} \
-            --sha=$SHORT_SHA \
+            --channel=$CHANNEL \
+            --version=$VERSION \
             --indexes \
-            --targets=linux-x64,win32-x64,darwin-arm64 \
-            --ignore-missing
+            --targets=linux-x64,win32-x64,darwin-arm64
+
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
+      - name: Verify channel pointer moved
+        run: |
+          CHANNEL=${{ needs.check-version.outputs.oclif_channel }}
+          VERSION=${{ needs.check-version.outputs.version }}
+
+          echo "Verifying channel: $CHANNEL"
+          echo "Expecting version: $VERSION"
+
+          MANIFEST_URL="https://end-of-life-dataset-cli-releases.s3.amazonaws.com/channels/${CHANNEL}/hd-linux-x64-buildmanifest"
+
+          RESOLVED_VERSION=$(curl -s $MANIFEST_URL | jq -r .version)
+
+          echo "Channel currently points to: $RESOLVED_VERSION"
+
+          if [ "$RESOLVED_VERSION" != "$VERSION" ]; then
+            echo "Channel promotion failed."
+            echo "Expected $VERSION but channel points to $RESOLVED_VERSION"
+            exit 1
+          fi
+
+          echo "Channel promotion verified."
 
   npm-publish:
     runs-on: ubuntu-latest
-    needs: [check-version, test, upload-assets]
+    needs: [check-version, test, upload-and-promote]
     permissions:
       id-token: write
     steps:
@@ -177,9 +227,8 @@ jobs:
           haskell: false
           docker-images: false
           swap-storage: false
-      
-      - name: Set up Node
-        uses: actions/setup-node@v6.1.0
+
+      - uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
 
@@ -205,7 +254,7 @@ jobs:
       - uses: docker/setup-buildx-action@v3
       - uses: docker/build-push-action@v6
         with:
-          context: . 
+          context: .
           file: ./ci/image.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
