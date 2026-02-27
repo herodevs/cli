@@ -75,6 +75,12 @@ jobs:
         with:
           node-version-file: '.nvmrc'
           registry-url: 'https://registry.npmjs.org'
+      
+      - run: |
+          echo "Node arch:"
+          node -p "process.arch"
+          echo "Machine arch:"
+          uname -m
 
       # Build
       - run: npm ci
