@@ -1,5 +1,6 @@
 import { config } from '../config/constants.ts';
 import { createConfStore, decryptValue, encryptValue } from './encrypted-store.svc.ts';
+import { debugLogger } from './log.svc.ts';
 
 const CI_TOKEN_STORAGE_KEY = 'ciRefreshToken';
 const CI_TOKEN_SALT = 'hdcli-ci-token-v1';
@@ -24,7 +25,8 @@ export function getCITokenFromStorage(): string | undefined {
   }
   try {
     return decryptToken(encoded);
-  } catch {
+  } catch (error) {
+    debugLogger('Failed to decrypt CI token: %O', error);
     return undefined;
   }
 }

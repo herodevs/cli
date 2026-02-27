@@ -1,5 +1,6 @@
 import { createConfStore, decryptValue, encryptValue } from './encrypted-store.svc.ts';
 import { decodeJwtPayload } from './jwt.svc.ts';
+import { debugLogger } from './log.svc.ts';
 
 export interface StoredTokens {
   accessToken?: string;
@@ -38,7 +39,8 @@ export async function getStoredTokens(): Promise<StoredTokens | undefined> {
     if (encodedAccess && typeof encodedAccess === 'string') {
       accessToken = decryptValue(encodedAccess, AUTH_TOKEN_SALT);
     }
-  } catch {
+  } catch (error) {
+    debugLogger('Failed to decrypt access token: %O', error);
     accessToken = undefined;
   }
 
@@ -46,7 +48,8 @@ export async function getStoredTokens(): Promise<StoredTokens | undefined> {
     if (encodedRefresh && typeof encodedRefresh === 'string') {
       refreshToken = decryptValue(encodedRefresh, AUTH_TOKEN_SALT);
     }
-  } catch {
+  } catch (error) {
+    debugLogger('Failed to decrypt refresh token: %O', error);
     refreshToken = undefined;
   }
 
