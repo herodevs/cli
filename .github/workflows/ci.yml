@@ -2,8 +2,11 @@ name: CI
 
 on:
   pull_request:
-    paths-ignore:
-      - '*.md'
+    paths:
+      - '**'                          # include everything by default
+      - '!**/*.md'                    # ignore markdown files
+      - '!.github/workflows/**'       # ignore all workflow files
+      - '.github/workflows/ci.yml'    # except changes to ci.yml itself
 
 jobs:
   commit-lint:
