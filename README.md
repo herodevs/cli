@@ -29,13 +29,13 @@ The HeroDevs CLI
 With Node installed, you can run the CLI directly from the npm registry without installing it globally or locally on your system
 
 ```sh
-npx @herodevs/cli@beta
+npx @herodevs/cli
 ```
 
 #### Global NPM Installation
 
 ```sh
-npm install -g @herodevs/cli@beta
+npm install -g @herodevs/cli
 ```
 
 #### Binary Installation
@@ -68,11 +68,11 @@ Maven and Gradle projects should run an install and build before scanning
 ## Usage
 <!-- usage -->
 ```sh-session
-$ npm install -g @herodevs/cli@beta
+$ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version)
-@herodevs/cli/2.0.0-beta.16 darwin-arm64 node-v24.10.0
+@herodevs/cli/2.0.0 darwin-arm64 node-v24.10.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -357,27 +357,18 @@ hd auth login
 hd auth provision-ci-token
 ```
 
-Copy the token output, add as CI secret: `HD_CI_CREDENTIAL`
+Copy the token output, add as an environment variable: `HD_CI_CREDENTIAL`
 
-**CI pipeline (headless):** Run `hd scan eol` directly with `HD_CI_CREDENTIAL` set. The CLI exchanges the token for an access token automatically:
+**CI pipeline (headless):** Run `hd scan eol` directly with `HD_CI_CREDENTIAL` set. The CLI exchanges the token for an access token automatically. An explicit `auth login` command is not required when using the CI token.
 
 ```bash
 export HD_CI_CREDENTIAL="<token>"
-hd scan eol --dir .
+hd scan eol
 ```
 
 | Secret / Env Var | Purpose |
 |------------------|---------|
 | `HD_CI_CREDENTIAL` | Refresh token from provision; exchanged for access token |
-
-#### Local testing
-
-Reproduce the CI flow locally:
-
-```bash
-export HD_CI_CREDENTIAL="<token-from-provision>"
-hd scan eol --dir /path/to/project
-```
 
 #### GitHub Actions (authenticated scan)
 
@@ -391,7 +382,7 @@ Add secret `HD_CI_CREDENTIAL` in your repository or organization, then:
 - name: Run EOL Scan
   env:
     HD_CI_CREDENTIAL: ${{ secrets.HD_CI_CREDENTIAL }}
-  run: npx @herodevs/cli@beta scan eol -s
+  run: npx @herodevs/cli scan eol -s
 ```
 
 #### GitLab CI (authenticated scan)
@@ -404,7 +395,7 @@ eol-scan:
   variables:
     HD_CI_CREDENTIAL: $HD_CI_CREDENTIAL
   script:
-    - npx @herodevs/cli@beta scan eol -s
+    - npx @herodevs/cli scan eol -s
   artifacts:
     paths:
       - herodevs.report.json
@@ -462,7 +453,7 @@ eol-scan:
     # Entrypoint or base command must be disabled due 
     # to GitLab's execution mechanism and run manually
     entrypoint: [""] 
-  script: "npx @herodevs/cli@beta scan eol -s"
+  script: "npx @herodevs/cli scan eol -s"
   artifacts:
     paths:
       - herodevs.report.json
@@ -502,7 +493,7 @@ jobs:
       - run: echo # Prepare environment, install tooling, perform setup, etc.
 
       - name: Run EOL Scan
-        run: npx @herodevs/cli@beta scan eol
+        run: npx @herodevs/cli scan eol
 
       - name: Upload artifact
         uses: actions/upload-artifact@v5
@@ -519,7 +510,7 @@ image: alpine
 eol-scan:
   script:
     - echo # Prepare environment, install tooling, perform setup, etc.
-    - npx @herodevs/cli@beta scan eol -s
+    - npx @herodevs/cli scan eol -s
   artifacts:
     paths:
       - herodevs.report.json
