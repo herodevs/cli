@@ -1,53 +1,19 @@
-import crypto from 'node:crypto';
-import os from 'node:os';
-import path from 'node:path';
-import Conf from 'conf';
 import { config } from '../config/constants.ts';
+import { createConfStore, decryptValue, encryptValue } from './encrypted-store.svc.ts';
 
 const CI_TOKEN_STORAGE_KEY = 'ciRefreshToken';
-const ENCRYPTION_SALT = 'hdcli-ci-token-v1';
-const ALGORITHM = 'aes-256-gcm';
-const IV_LENGTH = 12;
-const AUTH_TAG_LENGTH = 16;
+const CI_TOKEN_SALT = 'hdcli-ci-token-v1';
 
-function getConfStore(): Conf<Record<string, unknown>> {
-  const cwd = path.join(os.homedir(), '.hdcli');
-  return new Conf<Record<string, unknown>>({
-    projectName: 'hdcli',
-    cwd,
-    configName: 'ci-token',
-  });
-}
-
-function getMachineKey(): Buffer {
-  const hostname = os.hostname();
-  const username = os.userInfo().username;
-  const raw = `${hostname}:${username}:${ENCRYPTION_SALT}`;
-  return crypto.createHash('sha256').update(raw, 'utf8').digest();
+function getConfStore() {
+  return createConfStore('ci-token');
 }
 
 export function encryptToken(plaintext: string): string {
-  const key = getMachineKey();
-  const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
-  const encrypted = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
-  const authTag = cipher.getAuthTag();
-  const combined = Buffer.concat([iv, authTag, encrypted]);
-  return combined.toString('base64url');
+  return encryptValue(plaintext, CI_TOKEN_SALT);
 }
 
 export function decryptToken(encoded: string): string {
-  const key = getMachineKey();
-  const combined = Buffer.from(encoded, 'base64url');
-  if (combined.length < IV_LENGTH + AUTH_TAG_LENGTH) {
-    throw new Error('Invalid encrypted token format');
-  }
-  const iv = combined.subarray(0, IV_LENGTH);
-  const authTag = combined.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
-  const ciphertext = combined.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
-  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
-  decipher.setAuthTag(authTag);
-  return decipher.update(ciphertext).toString('utf8') + decipher.final('utf8');
+  return decryptValue(encoded, CI_TOKEN_SALT);
 }
 
 export function getCITokenFromStorage(): string | undefined {
