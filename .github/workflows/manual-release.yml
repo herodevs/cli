@@ -103,7 +103,7 @@ jobs:
 
       # S3 Distribution
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ vars.aws_oidc_role_arn }}
           role-session-name: herodevs_cli_upload
