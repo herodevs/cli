@@ -38,18 +38,6 @@ npx @herodevs/cli@beta
 npm install -g @herodevs/cli@beta
 ```
 
-#### Binary Installation
-
-HeroDevs CLI is available as a binary installation, without requiring `npm`. To do that, you may either download and run the script manually, or use the following cURL or Wget command:
-
-```sh
-curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.16/scripts/install.sh | bash
-```
-
-```sh
-wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.0-beta.16/scripts/install.sh | bash
-```
-
 ## Scanning Behavior
 
 The CLI is designed to be non-invasive:
