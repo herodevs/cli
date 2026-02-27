@@ -1,47 +1,27 @@
 import { vi } from 'vitest';
 
-vi.mock('@napi-rs/keyring', () => {
-  const store = new Map<string, string>();
-  const setPasswordMock = vi.fn(async (service: string, account: string, password: string) => {
-    store.set(`${service}:${account}`, password);
-  });
-  const getPasswordMock = vi.fn(async (service: string, account: string) => store.get(`${service}:${account}`));
-  const deletePasswordMock = vi.fn(async (service: string, account: string) => {
-    store.delete(`${service}:${account}`);
-    return true;
-  });
+const store = new Map<string, unknown>();
 
-  class AsyncEntry {
-    service: string;
-    username: string;
-    constructor(service: string, username: string) {
-      this.service = service;
-      this.username = username;
+vi.mock('conf', () => ({
+  default: class MockConf {
+    get(key: string): unknown {
+      return store.get(key);
     }
 
-    async setPassword(password: string) {
-      return setPasswordMock(this.service, this.username, password);
+    set(key: string, value: unknown): void {
+      store.set(key, value);
     }
 
-    async getPassword() {
-      return getPasswordMock(this.service, this.username);
+    delete(key: string): void {
+      store.delete(key);
     }
 
-    async deletePassword() {
-      return deletePasswordMock(this.service, this.username);
+    has(key: string): boolean {
+      return store.has(key);
     }
-  }
+  },
+}));
 
-  return {
-    __esModule: true,
-    AsyncEntry,
-    __store: store,
-    __mocks: { setPasswordMock, getPasswordMock, deletePasswordMock },
-  };
-});
-
-// @ts-expect-error - __mocks is exposed only via the test double above
-import { __mocks as keyringMocks } from '@napi-rs/keyring';
 import {
   clearStoredTokens,
   getStoredTokens,
@@ -52,7 +32,7 @@ import { createTokenWithExp } from '../utils/token.ts';
 
 describe('auth-token.svc', () => {
   beforeEach(async () => {
-    await clearStoredTokens();
+    store.clear();
   });
 
   it('saves and retrieves access and refresh tokens', async () => {
@@ -83,7 +63,6 @@ describe('auth-token.svc', () => {
     const tokens = await getStoredTokens();
     expect(tokens?.accessToken).toBe('access-4');
     expect(tokens?.refreshToken).toBeUndefined();
-    expect(keyringMocks.deletePasswordMock).toHaveBeenCalled();
   });
 
   it('computes access token expiry from JWT payload', () => {

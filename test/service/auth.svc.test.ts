@@ -74,7 +74,7 @@ describe('auth.svc', () => {
     mockConfig.ciTokenFromEnv = undefined;
   });
 
-  it('persists token responses via keyring service', async () => {
+  it('persists token responses', async () => {
     await persistTokenResponse({ access_token: 'access', refresh_token: 'refresh' });
     expect(saveTokens).toHaveBeenCalledWith({ accessToken: 'access', refreshToken: 'refresh' });
   });
@@ -136,14 +136,14 @@ describe('auth.svc', () => {
       expect(requireCIAccessToken).toHaveBeenCalled();
     });
 
-    it('uses keyring (OAuth) before CI when both CI token and keyring tokens exist', async () => {
+    it('uses OAuth before CI when both CI token and OAuth tokens exist', async () => {
       (getCIToken as Mock).mockReturnValue('ci-refresh-token');
-      (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'keyring-token', refreshToken: 'keyring-refresh' });
+      (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'oauth-stored-token', refreshToken: 'oauth-refresh' });
       (isAccessTokenExpired as Mock).mockReturnValue(false);
 
       const token = await requireAccessTokenForScan();
 
-      expect(token).toBe('keyring-token');
+      expect(token).toBe('oauth-stored-token');
       expect(requireCIAccessToken).not.toHaveBeenCalled();
     });
 

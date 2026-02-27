@@ -1,6 +1,6 @@
 /**
  * ESM loader hooks that replace auth.svc.ts with a mock during E2E tests.
- * This avoids hitting the system keyring (unavailable in CI).
+ * This avoids writing encrypted token files during E2E tests.
  */
 export async function load(url, context, nextLoad) {
   if (url.endsWith('/service/auth.svc.ts') || url.endsWith('/service/auth.svc.js')) {
