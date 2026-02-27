@@ -6,8 +6,8 @@ env:
 
 on:
   push:
-    tags:
-      - v*
+    branches:
+      - fix/manual_release_per_platform
 permissions:
   contents: read
 
@@ -21,14 +21,6 @@ jobs:
           node-version-file: '.nvmrc'
       - uses: ./.github/actions/verify-version
         id: verify-version
-      - name: Verify tag matches version
-        run: |
-          VERSION=${{ steps.verify-version.outputs.version }}
-          TAG_VERSION=${GITHUB_REF#refs/tags/v}
-          if [ "$VERSION" != "$TAG_VERSION" ]; then
-            echo "Error: Package version ($VERSION) does not match tag version ($TAG_VERSION)"
-            exit 1
-          fi
       - name: Determine Oclif channel
         id: determine-oclif-channel
         run: |
@@ -103,17 +95,8 @@ jobs:
   upload-and-promote:
     runs-on: ubuntu-latest
     needs: [check-version, build-standalone]
-    permissions:
-      contents: write
-      id-token: write
 
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-
       - uses: actions/download-artifact@v4
         with:
           path: dist
@@ -123,144 +106,36 @@ jobs:
           mkdir final-dist
           find dist -name "*.tar.gz" -exec mv {} final-dist/ \;
 
-      - name: Create GitHub Release (draft)
+      - name: '[STUB] Create GitHub Release (draft)'
         run: |
-          gh release create v${{ needs.check-version.outputs.version }} \
-            --title "Release v${{ needs.check-version.outputs.version }} ${{ needs.check-version.outputs.oclif_channel }}" \
-            --generate-notes \
-            --draft \
-            --prerelease=${{ needs.check-version.outputs.oclif_channel != 'stable' }} \
-            final-dist/*.tar.gz
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          echo "STUB: Would create GH release v${{ needs.check-version.outputs.version }}"
+          ls -lh final-dist/
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v5
-        with:
-          role-to-assume: ${{ vars.aws_oidc_role_arn }}
-          role-session-name: herodevs_cli_upload
-          aws-region: ${{ vars.AWS_REGION }}
-
-      - name: Upload tarballs
+      - name: '[STUB] Upload tarballs to S3'
         run: |
-          npx oclif upload tarballs \
-            --targets=linux-x64,win32-x64,darwin-arm64 \
-            --no-xz
+          echo "STUB: Would upload tarballs to S3 for targets linux-x64,win32-x64,darwin-arm64"
 
-      - name: Promote channel
+      - name: '[STUB] Promote channel'
         run: |
-          CHANNEL=${{ needs.check-version.outputs.oclif_channel }}
-          VERSION=${{ needs.check-version.outputs.version }}
+          echo "STUB: Would promote channel=${{ needs.check-version.outputs.oclif_channel }} version=${{ needs.check-version.outputs.version }}"
 
-          npx oclif promote \
-            --channel=$CHANNEL \
-            --version=$VERSION \
-            --indexes \
-            --targets=linux-x64,win32-x64,darwin-arm64
-
-      - name: Install jq
-        run: sudo apt-get update && sudo apt-get install -y jq
-
-      - name: Verify channel pointer moved
+      - name: '[STUB] Verify channel pointer'
         run: |
-          CHANNEL=${{ needs.check-version.outputs.oclif_channel }}
-          VERSION=${{ needs.check-version.outputs.version }}
-
-          echo "Verifying channel: $CHANNEL"
-          echo "Expecting version: $VERSION"
-
-          MANIFEST_URL="https://end-of-life-dataset-cli-releases.s3.amazonaws.com/channels/${CHANNEL}/hd-linux-x64-buildmanifest"
-
-          RESOLVED_VERSION=$(curl -s $MANIFEST_URL | jq -r .version)
-
-          echo "Channel currently points to: $RESOLVED_VERSION"
-
-          if [ "$RESOLVED_VERSION" != "$VERSION" ]; then
-            echo "Channel promotion failed."
-            echo "Expected $VERSION but channel points to $RESOLVED_VERSION"
-            exit 1
-          fi
-
-          echo "Channel promotion verified."
+          echo "STUB: Would verify channel pointer for ${{ needs.check-version.outputs.oclif_channel }}"
 
   npm-publish:
     runs-on: ubuntu-latest
     needs: [check-version, test, upload-and-promote]
-    permissions:
-      id-token: write
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-          registry-url: 'https://registry.npmjs.org'
-
-      # Clean build for npm publishing
-      - run: npm ci
-      - run: npm run build
-
-      # Dry run NPM publish
-      - name: Dry run NPM publish
-        run: npm publish --tag ${{ needs.check-version.outputs.oclif_channel }} --provenance --access public --dry-run
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
-
-      # NPM Release
-      - name: Create NPM release
-        run: npm publish --tag ${{ needs.check-version.outputs.oclif_channel }} --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.HD_CLI_NPM_TOKEN }}
+      - name: '[STUB] NPM publish'
+        run: |
+          echo "STUB: Would publish to npm with tag=${{ needs.check-version.outputs.oclif_channel }}"
 
   publish-images:
     name: Publish Images
     needs: [npm-publish]
     runs-on: ubuntu-latest
-    permissions:
-      packages: write
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: jlumbroso/free-disk-space@main
-        with:
-          tool-cache: true
-          large-packages: true
-          haskell: false
-          docker-images: false
-          swap-storage: false
-
-      - uses: actions/setup-node@v6
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: Parse tag
-        run: echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
-
-      - uses: docker/metadata-action@v5
-        id: meta
-        with:
-          images: |
-            name=${{ env.IMAGE_NAME }}
-          tags: |
-            type=sha,format=long
-            type=raw,value=latest
-            type=raw,value=${{ env.VERSION }}
-
-      - uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: docker/setup-buildx-action@v3
-      - uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: ./ci/image.Dockerfile
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            VERSION=${{ needs.check-version.outputs.version }}
+      - name: '[STUB] Publish Docker images'
+        run: |
+          echo "STUB: Would build and push Docker images to ghcr.io"
