@@ -197,7 +197,7 @@ Scan a given SBOM for EOL data
 ```
 USAGE
   $ hd scan eol [--json] [-f <value> | -d <value>] [-s] [-o <value>] [--saveSbom] [--sbomOutput <value>]
-    [--saveTrimmedSbom] [--hideReportUrl] [--automated] [--version]
+    [--saveTrimmedSbom] [--hideReportUrl] [--automated]
 
 FLAGS
   -d, --dir=<value>         [default: <current directory>] The directory to scan in order to create a cyclonedx SBOM
@@ -210,7 +210,6 @@ FLAGS
       --saveSbom            Save the generated SBOM as herodevs.sbom.json in the scanned directory
       --saveTrimmedSbom     Save the trimmed SBOM as herodevs.sbom-trimmed.json in the scanned directory
       --sbomOutput=<value>  Save the generated SBOM to a custom path (defaults to herodevs.sbom.json when not provided)
-      --version             Show CLI version.
 
 GLOBAL FLAGS
   --json  Format output as json.

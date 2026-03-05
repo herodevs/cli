@@ -97,6 +97,7 @@
   "license": "MIT",
   "main": "dist/index.js",
   "oclif": {
+    "additionalVersionFlags": ["-v"],
     "bin": "hd",
     "dirname": "hd",
     "commands": "./dist/commands",
