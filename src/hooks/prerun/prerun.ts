@@ -12,7 +12,7 @@ const hook: Hook<'prerun'> = async function (this: Hook.Context, { Command }) {
 
     if (isNpm) {
       this.warn('The update command is not supported for npm installations.');
-      this.log('\nTo update, run:\n');
+      this.log('\nTo update to the latest, run:\n');
       this.log('  npm install -g @herodevs/cli@latest\n');
       this.log('\nTo update to a specific version, run:\n');
       this.log('  npm install -g @herodevs/cli@<version>\n');
