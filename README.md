@@ -43,11 +43,11 @@ npm install -g @herodevs/cli
 HeroDevs CLI is available as a binary installation, without requiring `npm`. To do that, you may either download and run the script manually, or use the following cURL or Wget command:
 
 ```sh
-curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.1/scripts/install.sh | bash
+curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.2/scripts/install.sh | bash
 ```
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.1/scripts/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.2/scripts/install.sh | bash
 ```
 
 ## Scanning Behavior
@@ -71,8 +71,8 @@ Maven and Gradle projects should run an install and build before scanning
 $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
-$ hd (--version)
-@herodevs/cli/2.0.0 darwin-arm64 node-v24.10.0
+$ hd (--version|-v)
+@herodevs/cli/2.0.2 darwin-arm64 node-v24.14.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -104,7 +104,7 @@ DESCRIPTION
   OAuth CLI login
 ```
 
-_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.16/src/commands/auth/login.ts)_
+_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/auth/login.ts)_
 
 ## `hd auth logout`
 
@@ -118,7 +118,7 @@ DESCRIPTION
   Logs out of HeroDevs OAuth and clears stored tokens
 ```
 
-_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.16/src/commands/auth/logout.ts)_
+_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/auth/logout.ts)_
 
 ## `hd auth provision-ci-token`
 
@@ -132,7 +132,7 @@ DESCRIPTION
   Provision a CI/CD long-lived refresh token for headless auth
 ```
 
-_See code: [src/commands/auth/provision-ci-token.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.16/src/commands/auth/provision-ci-token.ts)_
+_See code: [src/commands/auth/provision-ci-token.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/auth/provision-ci-token.ts)_
 
 ## `hd help [COMMAND]`
 
@@ -166,10 +166,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2025-02-26] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-03-06] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2026-02-26] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-03-06] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
@@ -188,7 +188,7 @@ EXAMPLES
   $ hd report committers --csv
 ```
 
-_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.16/src/commands/report/committers.ts)_
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/report/committers.ts)_
 
 ## `hd scan eol`
 
@@ -239,7 +239,7 @@ EXAMPLES
     $ hd scan eol --json
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.16/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/scan/eol.ts)_
 
 ## `hd tracker init`
 
@@ -273,7 +273,7 @@ EXAMPLES
   $ hd tracker init -o
 ```
 
-_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.16/src/commands/tracker/init.ts)_
+_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/tracker/init.ts)_
 
 ## `hd tracker run`
 
@@ -298,7 +298,7 @@ EXAMPLES
   $ hd tracker run -d tracker -f settings.json
 ```
 
-_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.0-beta.16/src/commands/tracker/run.ts)_
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/tracker/run.ts)_
 
 ## `hd update [CHANNEL]`
 
@@ -327,7 +327,7 @@ EXAMPLES
 
   Update to a specific version:
 
-    $ hd update --version 1.0.0
+    $ hd update --version 2.0.0
 
   Interactively select version:
 
@@ -400,7 +400,7 @@ eol-scan:
       - herodevs.report.json
 ```
 
-### Using the Docker Image (Recommended)
+### Using the Docker Image
 
 We provide a Docker image that's pre-configured to run EOL scans. Based on [`cdxgen`](https://github.com/CycloneDX/cdxgen),
 it contains build tools for most project types and will provide best results when generating an SBOM. Use these templates to generate a report and save it to your CI job artifact for analysis and processing after your scan runs.
