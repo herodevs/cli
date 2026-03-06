@@ -1,6 +1,6 @@
 {
   "name": "@herodevs/cli",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "author": "HeroDevs, Inc",
   "bin": {
     "hd": "./bin/run.js"
@@ -97,7 +97,9 @@
   "license": "MIT",
   "main": "dist/index.js",
   "oclif": {
-    "additionalVersionFlags": ["-v"],
+    "additionalVersionFlags": [
+      "-v"
+    ],
     "bin": "hd",
     "dirname": "hd",
     "commands": "./dist/commands",

@@ -82,7 +82,6 @@ export default class ScanEol extends Command {
       default: false,
       description: 'Mark scan as automated (for CI/CD pipelines)',
     }),
-    version: Flags.version(),
   };
 
   public async run(): Promise<EolReport | undefined> {
