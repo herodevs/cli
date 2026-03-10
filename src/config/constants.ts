@@ -1,7 +1,7 @@
-export const EOL_REPORT_URL = 'https://apps.herodevs.com/eol/reports';
-export const GRAPHQL_HOST = 'https://gateway.prod.apps.herodevs.io';
-export const GRAPHQL_PATH = '/graphql';
-export const ANALYTICS_URL = 'https://apps.herodevs.com/api/eol/track';
+export const EOL_REPORT_URL = process.env.EOL_REPORT_URL || 'https://apps.herodevs.com/eol/reports';
+export const GRAPHQL_HOST = process.env.GRAPHQL_HOST || 'https://gateway.prod.apps.herodevs.io';
+export const GRAPHQL_PATH = process.env.GRAPHQL_PATH || '/graphql';
+export const ANALYTICS_URL = process.env.ANALYTICS_URL || 'https://apps.herodevs.com/api/eol/track';
 export const CONCURRENT_PAGE_REQUESTS = 3;
 export const PAGE_SIZE = 500;
 export const GIT_OUTPUT_FORMAT = `"${['%h', '%an', '%ad'].join('|')}"`;
