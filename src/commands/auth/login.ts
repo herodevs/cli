@@ -143,11 +143,10 @@ export default class AuthLogin extends Command {
           if (code) {
             this.exchangeCodeForToken(code, codeVerifier)
               .then(async (token) => {
-                res
-                  .writeHead(302, {
-                    Location: `${EOL_LOG_IN_URL}`,
-                  })
-                  .end();
+                res.writeHead(302, {
+                  Location: `${EOL_LOG_IN_URL}`,
+                });
+                res.end();
                 resolve(token);
               })
               .catch((error) => reject(error))
