@@ -66,14 +66,14 @@ jobs:
             type=raw,value=latest
             type=raw,value=${{ env.VERSION }}
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         # Enable when we have Docker Hub set up
         if: ${{ false }}
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - uses: docker/login-action@v3
+      - uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
