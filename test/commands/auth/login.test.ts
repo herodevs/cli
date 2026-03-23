@@ -4,7 +4,7 @@ import { ensureUserSetup } from '../../../src/api/user-setup.client.ts';
 import AuthLogin from '../../../src/commands/auth/login.ts';
 import { refreshIdentityFromStoredToken } from '../../../src/service/analytics.svc.ts';
 import { persistTokenResponse } from '../../../src/service/auth.svc.ts';
-import type { TokenResponse } from '../../../src/types/auth.js';
+import type { TokenResponse } from '../../../src/types/auth.ts';
 import { openInBrowser } from '../../../src/utils/open-in-browser.ts';
 
 type ServerRequest = { url?: string };
