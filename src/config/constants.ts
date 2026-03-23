@@ -1,8 +1,3 @@
-export const EOL_REPORT_URL = process.env.EOL_REPORT_URL || 'https://apps.herodevs.com/eol/reports';
-export const GRAPHQL_HOST = process.env.GRAPHQL_HOST || 'https://gateway.prod.apps.herodevs.io';
-export const GRAPHQL_PATH = process.env.GRAPHQL_PATH || '/graphql';
-export const ANALYTICS_URL = process.env.ANALYTICS_URL || 'https://apps.herodevs.com/api/eol/track';
-export const EOL_LOG_IN_URL = process.env.EOL_LOG_IN_URL || 'https://apps.herodevs.com/eol/api/auth/cli-log-in';
 export const CONCURRENT_PAGE_REQUESTS = 3;
 export const PAGE_SIZE = 500;
 export const GIT_OUTPUT_FORMAT = `"${['%h', '%an', '%ad'].join('|')}"`;
@@ -35,10 +30,11 @@ if (parsedPageSize > 0) {
 }
 
 export const config = {
-  eolReportUrl: process.env.EOL_REPORT_URL || EOL_REPORT_URL,
-  graphqlHost: process.env.GRAPHQL_HOST || GRAPHQL_HOST,
-  graphqlPath: process.env.GRAPHQL_PATH || GRAPHQL_PATH,
-  analyticsUrl: process.env.ANALYTICS_URL || ANALYTICS_URL,
+  eolReportUrl: process.env.EOL_REPORT_URL || 'https://apps.herodevs.com/eol/reports',
+  graphqlHost: process.env.GRAPHQL_HOST || 'https://gateway.prod.apps.herodevs.io',
+  graphqlPath: process.env.GRAPHQL_PATH || '/graphql',
+  analyticsUrl: process.env.ANALYTICS_URL || 'https://apps.herodevs.com/api/eol/track',
+  eolLogInUrl: process.env.EOL_LOG_IN_URL || 'https://apps.herodevs.com/eol/api/auth/cli-log-in',
   concurrentPageRequests,
   pageSize,
   ciTokenFromEnv: process.env.HD_CI_CREDENTIAL?.trim() || undefined,

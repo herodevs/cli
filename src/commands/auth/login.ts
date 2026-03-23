@@ -4,7 +4,7 @@ import { createInterface } from 'node:readline';
 import { URL } from 'node:url';
 import { Command } from '@oclif/core';
 import { ensureUserSetup } from '../../api/user-setup.client.ts';
-import { EOL_LOG_IN_URL, OAUTH_CALLBACK_ERROR_CODES } from '../../config/constants.ts';
+import { config, OAUTH_CALLBACK_ERROR_CODES } from '../../config/constants.ts';
 import { refreshIdentityFromStoredToken } from '../../service/analytics.svc.ts';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
 import { getClientId, getRealmUrl } from '../../service/auth-config.svc.ts';
@@ -144,7 +144,7 @@ export default class AuthLogin extends Command {
             this.exchangeCodeForToken(code, codeVerifier)
               .then((token) => {
                 res.writeHead(302, {
-                  Location: `${EOL_LOG_IN_URL}`,
+                  Location: `${config.eolLogInUrl}`,
                 });
                 res.end();
                 resolve(token);
