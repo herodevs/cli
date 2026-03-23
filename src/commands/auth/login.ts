@@ -4,7 +4,7 @@ import { createInterface } from 'node:readline';
 import { URL } from 'node:url';
 import { Command } from '@oclif/core';
 import { ensureUserSetup } from '../../api/user-setup.client.ts';
-import { OAUTH_CALLBACK_ERROR_CODES } from '../../config/constants.ts';
+import { config, OAUTH_CALLBACK_ERROR_CODES } from '../../config/constants.ts';
 import { refreshIdentityFromStoredToken } from '../../service/analytics.svc.ts';
 import { persistTokenResponse } from '../../service/auth.svc.ts';
 import { getClientId, getRealmUrl } from '../../service/auth-config.svc.ts';
@@ -40,8 +40,7 @@ export default class AuthLogin extends Command {
       `&code_challenge_method=S256` +
       `&state=${state}`;
 
-    const code = await this.startServerAndAwaitCode(authUrl, state);
-    const token = await this.exchangeCodeForToken(code, codeVerifier);
+    const token = await this.startServerAndAwaitToken(authUrl, state, codeVerifier);
 
     try {
       await persistTokenResponse(token);
@@ -65,7 +64,11 @@ export default class AuthLogin extends Command {
     this.log('\nLogin completed successfully.');
   }
 
-  private startServerAndAwaitCode(authUrl: string, expectedState: string): Promise<string> {
+  private startServerAndAwaitToken(
+    authUrl: string,
+    expectedState: string,
+    codeVerifier: string,
+  ): Promise<TokenResponse> {
     return new Promise((resolve, reject) => {
       this.server = http.createServer((req, res) => {
         if (!req.url) {
@@ -138,10 +141,18 @@ export default class AuthLogin extends Command {
           }
 
           if (code) {
-            res.writeHead(200, { 'Content-Type': 'text/plain' });
-            res.end('Login successful. You can close this window.');
-            this.stopServer();
-            resolve(code);
+            this.exchangeCodeForToken(code, codeVerifier)
+              .then((token) => {
+                res.writeHead(302, {
+                  Location: `${config.eolLogInUrl}`,
+                });
+                res.end();
+                resolve(token);
+              })
+              .catch((error) => reject(error))
+              .finally(() => {
+                this.stopServer();
+              });
           } else {
             res.writeHead(400, { 'Content-Type': 'text/plain' });
             res.end('No authorization code returned. Please try again.');
