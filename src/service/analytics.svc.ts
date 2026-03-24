@@ -95,13 +95,12 @@ export async function refreshIdentityFromStoredToken(): Promise<boolean> {
       return false;
     }
 
-    const entries = toIdentityEntries(claims);
-    const signature = buildIdentitySignature(entries);
+    const signature = buildIdentitySignature(claims);
     if (signature === lastIdentitySignature) {
       return false;
     }
     applyIdentityClaims(claims, signature);
-    emitIdentify(entries, claims.user_id);
+    emitIdentify(claims);
     return true;
   } catch (error) {
     logAnalyticsError('refreshIdentityFromStoredToken', error);
@@ -151,10 +150,15 @@ function buildIdentifyEventOptions(userId?: string) {
 }
 
 function normalizeClaim(value: unknown): string {
-  if (typeof value !== 'string') {
-    return '';
+  if (typeof value === 'string') {
+    return value.trim();
   }
-  return value.trim();
+
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return String(value);
+  }
+
+  return '';
 }
 
 function extractIdentityClaims(accessToken: string | undefined): IdentityClaims | undefined {
@@ -163,8 +167,10 @@ function extractIdentityClaims(accessToken: string | undefined): IdentityClaims 
     return;
   }
 
+  const nesClaims = payload.nes as { identity?: unknown } | undefined;
+
   const identity: IdentityClaims = {
-    user_id: normalizeClaim(payload.sub) || undefined,
+    user_id: normalizeClaim(nesClaims?.identity) || undefined,
     email: normalizeClaim(payload.email) || undefined,
     organization_name: normalizeClaim(payload.company) || undefined,
     role: normalizeClaim(payload.role) || undefined,
@@ -203,8 +209,10 @@ function toIdentityEntries(identity: IdentityClaims): Array<[keyof IdentityClaim
   return entries;
 }
 
-function buildIdentitySignature(entries: Array<[keyof IdentityClaims, string]>): string {
-  return entries.map(([field, value]) => `${field}:${value}`).join('|');
+function buildIdentitySignature(identity: IdentityClaims): string {
+  return toIdentityEntries(identity)
+    .map(([field, value]) => `${field}:${value}`)
+    .join('|');
 }
 
 function applyIdentityClaims(claims: IdentityClaims, signature: string): void {
@@ -213,13 +221,16 @@ function applyIdentityClaims(claims: IdentityClaims, signature: string): void {
   analyticsContext = { ...analyticsContext, ...claims };
 }
 
-function emitIdentify(entries: Array<[keyof IdentityClaims, string]>, userId?: string): void {
+function emitIdentify(claims: IdentityClaims): void {
   const amplitudeIdentify = new Identify();
-  for (const [field, value] of entries) {
-    amplitudeIdentify.set(field, value);
+  for (const field of IDENTITY_FIELDS) {
+    const value = claims[field];
+    if (value) {
+      amplitudeIdentify.set(field, value);
+    }
   }
 
-  const eventOptions = buildIdentifyEventOptions(userId);
+  const eventOptions = buildIdentifyEventOptions(claims.user_id);
   void toSafeAnalyticsResult(identify(amplitudeIdentify, eventOptions), 'identify').promise;
   void toSafeAnalyticsResult(_track('Identify Call', { source: SOURCE }, eventOptions), 'track:Identify Call').promise;
 }

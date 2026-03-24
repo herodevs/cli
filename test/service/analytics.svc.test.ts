@@ -125,6 +125,7 @@ describe('analytics.svc', () => {
       mockAuthTokenService.getStoredTokens.resolves({
         accessToken: createAccessToken({
           sub: 'user-1',
+          nes: { identity: 'nes-user-1' },
           email: 'dev@herodevs.com',
           company: 'HeroDevs',
           role: 'Software Engineer',
@@ -138,7 +139,7 @@ describe('analytics.svc', () => {
       expect(mockAmplitude.track.getCall(0).args[0]).toBe('Identify Call');
 
       const metadata = mockAmplitude.identify.getCall(0).args[1];
-      expect(metadata.user_id).toBe('user-1');
+      expect(metadata.user_id).toBe('nes-user-1');
       expect(typeof metadata.platform).toBe('string');
       expect(typeof metadata.os_name).toBe('string');
       expect(typeof metadata.os_version).toBe('string');
@@ -148,6 +149,7 @@ describe('analytics.svc', () => {
     it('should use env CI token identity when stored token is unavailable', async () => {
       mockConfig.ciTokenFromEnv = createAccessToken({
         sub: 'env-user-1',
+        nes: { identity: 'nes-env-user-1' },
         email: 'env@herodevs.com',
         company: 'HeroDevs',
         role: 'Platform Engineer',
@@ -159,8 +161,8 @@ describe('analytics.svc', () => {
       expect(mockAmplitude.identify.calledOnce).toBe(true);
       expect(mockAmplitude.track.calledOnce).toBe(true);
       expect(mockAmplitude.track.getCall(0).args[0]).toBe('Identify Call');
-      expect(mockAmplitude.identify.getCall(0).args[1].user_id).toBe('env-user-1');
-      expect(mockAmplitude.track.getCall(0).args[2].user_id).toBe('env-user-1');
+      expect(mockAmplitude.identify.getCall(0).args[1].user_id).toBe('nes-env-user-1');
+      expect(mockAmplitude.track.getCall(0).args[2].user_id).toBe('nes-env-user-1');
     });
 
     it('should handle case when npm_package_version is undefined', async () => {
@@ -302,6 +304,7 @@ describe('analytics.svc', () => {
       mockAuthTokenService.getStoredTokens.resolves({
         accessToken: createAccessToken({
           sub: 'user-123',
+          nes: { identity: 'nes-user-123' },
           email: 'dev@herodevs.com',
           company: 'HeroDevs',
           role: 'Software Engineer',
@@ -313,7 +316,7 @@ describe('analytics.svc', () => {
 
       expect(mockAmplitude.track.callCount).toBe(2);
       const trackCall = mockAmplitude.track.getCall(1);
-      expect(trackCall.args[2].user_id).toBe('user-123');
+      expect(trackCall.args[2].user_id).toBe('nes-user-123');
     });
 
     it('should not throw when amplitude track throws synchronously', async () => {
@@ -351,6 +354,7 @@ describe('analytics.svc', () => {
       mockAuthTokenService.getStoredTokens.resolves({
         accessToken: createAccessToken({
           sub: 'user-1',
+          nes: { identity: 'nes-user-1' },
           email: 'dev@herodevs.com',
           company: 'HeroDevs',
           role: 'Software Engineer',
@@ -365,12 +369,30 @@ describe('analytics.svc', () => {
       expect(identifyBuilder.set.calledWith('email', 'dev@herodevs.com')).toBe(true);
       expect(identifyBuilder.set.calledWith('organization_name', 'HeroDevs')).toBe(true);
       expect(identifyBuilder.set.calledWith('role', 'Software Engineer')).toBe(true);
-      expect(identifyBuilder.set.calledWith('user_id', 'user-1')).toBe(true);
+      expect(identifyBuilder.set.calledWith('user_id', 'nes-user-1')).toBe(true);
 
       const identifyEventCall = mockAmplitude.track.getCall(0);
       expect(identifyEventCall.args[0]).toBe('Identify Call');
       expect(identifyEventCall.args[1]).toEqual({ source: 'cli' });
-      expect(identifyEventCall.args[2].user_id).toBe('user-1');
+      expect(identifyEventCall.args[2].user_id).toBe('nes-user-1');
+    });
+
+    it('should prefer nes.identity over sub when both are present', async () => {
+      const mod = await setupModule();
+      mockAuthTokenService.getStoredTokens.resolves({
+        accessToken: createAccessToken({
+          sub: 'keycloak-user-1',
+          nes: { identity: 'nes-user-1' },
+          email: 'dev@herodevs.com',
+        }),
+      });
+
+      await mod.refreshIdentityFromStoredToken();
+
+      expect(mockAmplitude.identify.calledOnce).toBe(true);
+      expect(mockAmplitude.track.calledOnce).toBe(true);
+      expect(mockAmplitude.identify.getCall(0).args[1].user_id).toBe('nes-user-1');
+      expect(mockAmplitude.track.getCall(0).args[2].user_id).toBe('nes-user-1');
     });
 
     it('should ignore non-canonical claim aliases for identity mapping', async () => {
@@ -401,9 +423,34 @@ describe('analytics.svc', () => {
       expect(mockAmplitude.track.called).toBe(false);
     });
 
+    it('should not fall back to sub when nes.identity is missing', async () => {
+      const mod = await setupModule();
+      mockAuthTokenService.getStoredTokens.resolves({
+        accessToken: createAccessToken({
+          sub: 'keycloak-user-1',
+          email: 'dev@herodevs.com',
+          company: 'HeroDevs',
+          role: 'Software Engineer',
+        }),
+      });
+
+      await mod.refreshIdentityFromStoredToken();
+
+      expect(mockAmplitude.identify.calledOnce).toBe(true);
+      expect(mockAmplitude.track.calledOnce).toBe(true);
+      expect(mockAmplitude.identify.getCall(0).args[1].user_id).toBeUndefined();
+      expect(mockAmplitude.track.getCall(0).args[2].user_id).toBeUndefined();
+      const identifyBuilder = mockAmplitude.Identify.getCall(0).returnValue as { set: sinon.SinonStub };
+      expect(identifyBuilder.set.calledWith('email', 'dev@herodevs.com')).toBe(true);
+      expect(identifyBuilder.set.calledWith('organization_name', 'HeroDevs')).toBe(true);
+      expect(identifyBuilder.set.calledWith('role', 'Software Engineer')).toBe(true);
+      expect(mockAmplitude.track.getCall(0).args[1]).toEqual({ source: 'cli' });
+    });
+
     it('should fall back to env CI token when stored token payload is malformed', async () => {
       mockConfig.ciTokenFromEnv = createAccessToken({
         sub: 'env-fallback-user',
+        nes: { identity: 'nes-env-fallback-user' },
         email: 'env-fallback@herodevs.com',
         company: 'HeroDevs',
         role: 'Engineer',
@@ -417,18 +464,20 @@ describe('analytics.svc', () => {
 
       expect(mockAmplitude.identify.calledOnce).toBe(true);
       expect(mockAmplitude.track.calledOnce).toBe(true);
-      expect(mockAmplitude.identify.getCall(0).args[1].user_id).toBe('env-fallback-user');
+      expect(mockAmplitude.identify.getCall(0).args[1].user_id).toBe('nes-env-fallback-user');
     });
 
     it('should prefer stored token identity over env CI token identity', async () => {
       mockConfig.ciTokenFromEnv = createAccessToken({
         sub: 'env-user',
+        nes: { identity: 'nes-env-user' },
         email: 'env@herodevs.com',
       });
       const mod = await setupModule();
       mockAuthTokenService.getStoredTokens.resolves({
         accessToken: createAccessToken({
           sub: 'stored-user',
+          nes: { identity: 'nes-stored-user' },
           email: 'stored@herodevs.com',
           company: 'HeroDevs',
         }),
@@ -438,8 +487,8 @@ describe('analytics.svc', () => {
 
       expect(mockAmplitude.identify.calledOnce).toBe(true);
       expect(mockAmplitude.track.calledOnce).toBe(true);
-      expect(mockAmplitude.identify.getCall(0).args[1].user_id).toBe('stored-user');
-      expect(mockAmplitude.track.getCall(0).args[2].user_id).toBe('stored-user');
+      expect(mockAmplitude.identify.getCall(0).args[1].user_id).toBe('nes-stored-user');
+      expect(mockAmplitude.track.getCall(0).args[2].user_id).toBe('nes-stored-user');
     });
 
     it('should clear cached identity when no claims are available', async () => {
@@ -447,6 +496,7 @@ describe('analytics.svc', () => {
       mockAuthTokenService.getStoredTokens.resolves({
         accessToken: createAccessToken({
           sub: 'user-1',
+          nes: { identity: 'nes-user-1' },
           email: 'dev@herodevs.com',
           company: 'HeroDevs',
           role: 'Software Engineer',
@@ -455,7 +505,7 @@ describe('analytics.svc', () => {
 
       await mod.refreshIdentityFromStoredToken();
       mod.track('authenticated-event');
-      expect(mockAmplitude.track.getCall(1).args[2].user_id).toBe('user-1');
+      expect(mockAmplitude.track.getCall(1).args[2].user_id).toBe('nes-user-1');
 
       mockAuthTokenService.getStoredTokens.resolves(undefined);
       await mod.refreshIdentityFromStoredToken();
