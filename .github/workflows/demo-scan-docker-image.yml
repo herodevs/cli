@@ -31,7 +31,7 @@ jobs:
         run: cdxgen -t docker -o sbom.json -r mcr.microsoft.com/playwright:v1.50.0-noble
       
       - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: cdxgen-sbom-json
           path: sbom.json
@@ -56,7 +56,7 @@ jobs:
         run: npx @herodevs/cli scan eol --file=sbom.json --save
 
       - name: Upload HD report
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: herodevs-report
           path: herodevs.report.json
