@@ -336,7 +336,7 @@ EXAMPLES
 
   Update to a specific version:
 
-    $ hd update --version 1.0.0
+    $ hd update --version 2.0.0
 
   Interactively select version:
 
