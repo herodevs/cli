@@ -81,13 +81,13 @@ export function createSbomFactory({
   postProcess: postProcessDependency = postProcess,
 }: Partial<CreateSbomDependencies> = {}) {
   return async function createSbom(directory: string): Promise<CdxBom> {
-    const sbom = await createBomDependency(directory, SBOM_DEFAULT__OPTIONS);
+    const sbom: any = await createBomDependency(directory, SBOM_DEFAULT__OPTIONS);
 
     if (!sbom) {
       throw new Error('SBOM not generated');
     }
 
-    const postProcessedSbom = postProcessDependency(sbom, SBOM_DEFAULT__OPTIONS);
+    const postProcessedSbom: any = postProcessDependency(sbom, SBOM_DEFAULT__OPTIONS);
 
     if (!postProcessedSbom) {
       throw new Error('SBOM not generated');
