@@ -6,25 +6,37 @@ The HeroDevs CLI
 [![Version](https://img.shields.io/npm/v/@herodevs/cli.svg)](https://npmjs.org/package/@herodevs/cli)
 [![Downloads/week](https://img.shields.io/npm/dw/@herodevs/cli.svg)](https://npmjs.org/package/@herodevs/cli)
 
+## Table of Contents
+
 <!-- toc -->
-* [@herodevs/cli](#herodevscli)
+
+- [Terms and Data Security](#terms-and-data-security)
+- [Prerequisites](#prerequisites)
+- [Installation methods](#installation-methods)
+- [Scanning Behavior](#scanning-behavior)
+- [Installing Dependencies Before Use](#installing-dependencies-before-use)
+- [Usage](#usage)
+- [Commands](#commands)
+- [CI/CD Usage](#cicd-usage)
+- [Local Docker image scans](#local-docker-image-scans)
+
 <!-- tocstop -->
 
-### Terms and Data Security
+## Terms and Data Security
 
 - [HeroDevs End of Life Dataset Terms of Service and Data Policy](https://docs.herodevs.com/legal/end-of-life-dataset-terms)
 - [HeroDevs End of Life Dataset Data Privacy and Security](https://docs.herodevs.com/eol-ds/data-privacy-and-security)
 
-### Prerequisites
+## Prerequisites
 
 - Install node v20 or higher: [Download Node](https://nodejs.org/en/download)
 - The HeroDevs CLI expects that you have all required technology installed for the project that you are running the CLI against
   - For example, if you are running the CLI against a Gradle project, the CLI expects you to have Java installed.
 
 
-### Installation methods
+## Installation methods
 
-#### Node Package Execute (NPX)
+### Node Package Execute (NPX)
 
 With Node installed, you can run the CLI directly from the npm registry without installing it globally or locally on your system
 
@@ -32,13 +44,13 @@ With Node installed, you can run the CLI directly from the npm registry without 
 npx @herodevs/cli
 ```
 
-#### Global NPM Installation
+### Global NPM Installation
 
 ```sh
 npm install -g @herodevs/cli
 ```
 
-#### Binary Installation
+### Binary Installation
 
 HeroDevs CLI is available as a binary installation, without requiring `npm`. To do that, you may either download and run the script manually, or use the following cURL or Wget command:
 
@@ -72,7 +84,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version|-v)
-@herodevs/cli/2.0.2 darwin-arm64 node-v24.14.0
+@herodevs/cli/2.0.4 darwin-arm64 node-v24.14.1
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -90,9 +102,8 @@ USAGE
 * [`hd tracker init`](#hd-tracker-init)
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
-* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
-## `hd auth login`
+### `hd auth login`
 
 OAuth CLI login
 
@@ -104,9 +115,9 @@ DESCRIPTION
   OAuth CLI login
 ```
 
-_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/auth/login.ts)_
+_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.4/src/commands/auth/login.ts)_
 
-## `hd auth logout`
+### `hd auth logout`
 
 Logs out of HeroDevs OAuth and clears stored tokens
 
@@ -118,9 +129,9 @@ DESCRIPTION
   Logs out of HeroDevs OAuth and clears stored tokens
 ```
 
-_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/auth/logout.ts)_
+_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.4/src/commands/auth/logout.ts)_
 
-## `hd auth provision-ci-token`
+### `hd auth provision-ci-token`
 
 Provision a CI/CD long-lived refresh token for headless auth
 
@@ -132,9 +143,9 @@ DESCRIPTION
   Provision a CI/CD long-lived refresh token for headless auth
 ```
 
-_See code: [src/commands/auth/provision-ci-token.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/auth/provision-ci-token.ts)_
+_See code: [src/commands/auth/provision-ci-token.ts](https://github.com/herodevs/cli/blob/v2.0.4/src/commands/auth/provision-ci-token.ts)_
 
-## `hd help [COMMAND]`
+### `hd help [COMMAND]`
 
 Display help for hd.
 
@@ -152,9 +163,9 @@ DESCRIPTION
   Display help for hd.
 ```
 
-_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/6.2.37/src/commands/help.ts)_
+_See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/6.2.44/src/commands/help.ts)_
 
-## `hd report committers`
+### `hd report committers`
 
 Generate report of committers to a git repository
 
@@ -166,10 +177,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2025-03-06] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-04-13] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2026-03-06] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-04-13] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
@@ -188,9 +199,9 @@ EXAMPLES
   $ hd report committers --csv
 ```
 
-_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/report/committers.ts)_
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.4/src/commands/report/committers.ts)_
 
-## `hd scan eol`
+### `hd scan eol`
 
 Scan a given SBOM for EOL data
 
@@ -239,9 +250,9 @@ EXAMPLES
     $ hd scan eol --json
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.4/src/commands/scan/eol.ts)_
 
-## `hd tracker init`
+### `hd tracker init`
 
 Initialize the tracker configuration
 
@@ -273,9 +284,9 @@ EXAMPLES
   $ hd tracker init -o
 ```
 
-_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/tracker/init.ts)_
+_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.4/src/commands/tracker/init.ts)_
 
-## `hd tracker run`
+### `hd tracker run`
 
 Run the tracker
 
@@ -298,13 +309,11 @@ EXAMPLES
   $ hd tracker run -d tracker -f settings.json
 ```
 
-_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.2/src/commands/tracker/run.ts)_
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.4/src/commands/tracker/run.ts)_
 
-## `hd update [CHANNEL]`
+### `hd update [CHANNEL]`
 
 update the hd CLI
-
-* **NOTE:** Only applies to [binary installation method](#binary-installation). NPM users should use [`npm install`](#global-npm-installation) to update to the latest version.
 
 ```
 USAGE
