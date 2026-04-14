@@ -5,7 +5,7 @@ on:
     paths:
       - '**'                          # include everything by default
       - '!**/*.md'                    # ignore markdown files
-      - '!.github/workflows/**'       # ignore all workflow files
+      - '!.github/**'                 # ignore all .github/ files
       - '.github/workflows/ci.yml'    # except changes to ci.yml itself
 
 jobs:
