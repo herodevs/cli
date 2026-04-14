@@ -55,7 +55,7 @@
     "conf": "^15.1.0",
     "date-fns": "^4.1.0",
     "glob": "^13.0.0",
-    "graphql": "^16.11.0",
+    "graphql": "^16.13.2",
     "node-machine-id": "^1.1.12",
     "ora": "^9.0.0",
     "packageurl-js": "^2.0.1",
