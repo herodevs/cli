@@ -1,5 +1,6 @@
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { requireAccessTokenForScan } from '../service/auth.svc.ts';
+import { ApiError, PAYLOAD_TOO_LARGE_ERROR_CODE } from './errors.ts';
 
 export type TokenProvider = (forceRefresh?: boolean) => Promise<string>;
 
@@ -42,7 +43,15 @@ const createAuthorizedFetch =
       const refreshed = await tokenProvider(true);
       const retryHeaders = new Headers(init?.headers);
       retryHeaders.set('Authorization', `Bearer ${refreshed}`);
-      return fetch(input, { ...init, headers: retryHeaders });
+      const retryResponse = await fetch(input, { ...init, headers: retryHeaders });
+      if (retryResponse.status === 413) {
+        throw new ApiError('Payload too large', PAYLOAD_TOO_LARGE_ERROR_CODE);
+      }
+      return retryResponse;
+    }
+
+    if (response.status === 413) {
+      throw new ApiError('Payload too large', PAYLOAD_TOO_LARGE_ERROR_CODE);
     }
 
     return response;

@@ -1,5 +1,6 @@
 import type { CdxBom, EolReport } from '@herodevs/eol-shared';
-import { ApiError } from '../../../src/api/errors.ts';
+import type { Config } from '@oclif/core';
+import { ApiError, FORBIDDEN_ERROR_CODE, PAYLOAD_TOO_LARGE_ERROR_CODE } from '../../../src/api/errors.ts';
 import ScanEol from '../../../src/commands/scan/eol.ts';
 
 const {
@@ -86,7 +87,7 @@ type ScanCommandInternals = {
 };
 
 function createCommand(): ScanCommandInternals {
-  return new ScanEol([], {} as Record<string, unknown>) as unknown as ScanCommandInternals;
+  return new ScanEol([], {} as Config) as unknown as ScanCommandInternals;
 }
 
 function getTrackProperties(eventName: string): Record<string, unknown> {
@@ -152,7 +153,7 @@ describe('scan:eol analytics timing', () => {
   });
 
   it('tracks scan_load_time on ApiError scan failures', async () => {
-    submitScanMock.mockRejectedValue(new ApiError('forbidden', 'FORBIDDEN'));
+    submitScanMock.mockRejectedValue(new ApiError('forbidden', FORBIDDEN_ERROR_CODE));
 
     const command = createCommand();
     vi.spyOn(command, 'parse').mockResolvedValue({
@@ -165,10 +166,50 @@ describe('scan:eol analytics timing', () => {
     await expect(command.scanSbom(sampleSbom)).rejects.toThrow('You do not have permission to perform this action.');
 
     const properties = getTrackProperties('CLI EOL Scan Failed');
-    expect(properties.scan_failure_reason).toBe('FORBIDDEN');
+    expect(properties.scan_failure_reason).toBe(FORBIDDEN_ERROR_CODE);
     expect(properties.scan_load_time).toEqual(expect.any(Number));
     expect(properties.scan_load_time as number).toBeGreaterThanOrEqual(0);
     expect(properties.number_of_packages).toBe(1);
+  });
+
+  it('shows the user-supplied SBOM message on PAYLOAD_TOO_LARGE failures', async () => {
+    submitScanMock.mockRejectedValue(new ApiError('Payload too large', PAYLOAD_TOO_LARGE_ERROR_CODE));
+
+    const command = createCommand();
+    vi.spyOn(command, 'parse').mockResolvedValue({
+      flags: {
+        automated: false,
+        saveTrimmedSbom: false,
+        file: '/tmp/sample.sbom.json',
+      },
+    });
+    vi.spyOn(command, 'error').mockImplementation((message: string) => {
+      throw new Error(message);
+    });
+
+    await expect(command.scanSbom(sampleSbom)).rejects.toThrow(
+      'File exceeds the 10MB limit. Try providing a smaller or partial SBOM.',
+    );
+  });
+
+  it('shows the generated SBOM message on PAYLOAD_TOO_LARGE failures', async () => {
+    submitScanMock.mockRejectedValue(new ApiError('Payload too large', PAYLOAD_TOO_LARGE_ERROR_CODE));
+
+    const command = createCommand();
+    vi.spyOn(command, 'parse').mockResolvedValue({
+      flags: {
+        automated: false,
+        saveTrimmedSbom: false,
+        dir: process.cwd(),
+      },
+    });
+    vi.spyOn(command, 'error').mockImplementation((message: string) => {
+      throw new Error(message);
+    });
+
+    await expect(command.scanSbom(sampleSbom)).rejects.toThrow(
+      'Generated SBOM exceeds the 10MB upload limit. Try scanning a smaller scope (e.g. a single project or subdirectory).',
+    );
   });
 
   it('keeps scan_load_time on successful completion events', async () => {
