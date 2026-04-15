@@ -6,7 +6,7 @@ import { ApiError, PAYLOAD_TOO_LARGE_ERROR_CODE } from '../../api/errors.ts';
 import { submitScan } from '../../api/nes.client.ts';
 import { config, filenamePrefix, SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../config/constants.ts';
 import { track } from '../../service/analytics.svc.ts';
-import { AUTH_ERROR_MESSAGES, getTokenForScanWithSource } from '../../service/auth.svc.ts';
+import { AUTH_ERROR_MESSAGES, getTokenForScanWithSource, type TokenSource } from '../../service/auth.svc.ts';
 import { createSbom } from '../../service/cdx.svc.ts';
 import {
   countComponentsByStatus,
@@ -87,7 +87,7 @@ export default class ScanEol extends Command {
   public async run(): Promise<EolReport | undefined> {
     const { flags } = await this.parse(ScanEol);
 
-    const { source } = await getTokenForScanWithSource();
+    const { source } = await this.getTokenSourceForScan();
     if (source === 'ci') {
       this.log('CI credentials found');
       this.log('Using CI credentials');
@@ -255,6 +255,14 @@ export default class ScanEol extends Command {
 
   private getScanLoadTime(scanStartTime: number): number {
     return (performance.now() - scanStartTime) / 1000;
+  }
+
+  private async getTokenSourceForScan(): Promise<{ token: string; source: TokenSource }> {
+    try {
+      return await getTokenForScanWithSource();
+    } catch (error) {
+      this.error(getErrorMessage(error));
+    }
   }
 
   private getPayloadTooLargeMessage(hasUserProvidedSbom: boolean): string {

@@ -17,10 +17,12 @@ vi.mock('../../src/config/constants.ts', async (importOriginal) => {
 });
 
 import {
+  CITokenCommunicationError,
   exchangeCITokenForAccess,
   getOrgAccessTokensUnauthenticated,
   provisionCIToken,
 } from '../../src/api/ci-token.client.ts';
+import { ApiError } from '../../src/api/errors.ts';
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
 
 const mockHeaders = {
@@ -48,8 +50,8 @@ function mockGraphQLResponse(data: {
   } as unknown as Response;
 }
 
-function mockGraphQLErrorResponse(message: string) {
-  const payload = { errors: [{ message }] };
+function mockGraphQLErrorResponse(message: string, extensions?: Record<string, unknown>) {
+  const payload = { errors: [{ message, extensions }] };
   return {
     ok: true,
     status: 200,
@@ -220,18 +222,96 @@ describe('ci-token.client', () => {
       });
     });
 
-    it('throws when GraphQL returns errors', async () => {
+    it('treats GraphQL errors without codes as communication errors', async () => {
       fetchMock.push(mockGraphQLErrorResponse('Invalid refresh token'));
 
-      await expect(getOrgAccessTokensUnauthenticated({ previousToken: 'bad-token' })).rejects.toThrow(
-        /Invalid refresh token/,
-      );
+      const promise = getOrgAccessTokensUnauthenticated({ previousToken: 'bad-token' });
+      await expect(promise).rejects.toBeInstanceOf(CITokenCommunicationError);
+      await expect(promise).rejects.toThrow(/Invalid refresh token/);
     });
 
     it('throws when response is not ok', async () => {
       fetchMock.push(mockErrorResponse(500, 'Internal Server Error'));
 
-      await expect(getOrgAccessTokensUnauthenticated({ previousToken: 'token' })).rejects.toThrow(/500/);
+      const promise = getOrgAccessTokensUnauthenticated({ previousToken: 'token' });
+      await expect(promise).rejects.toBeInstanceOf(CITokenCommunicationError);
+      await expect(promise).rejects.toThrow(/500/);
+    });
+
+    it('throws communication error when GraphQL data is null', async () => {
+      fetchMock.push({
+        ok: true,
+        status: 200,
+        headers: mockHeaders,
+        async json() {
+          return { data: null };
+        },
+        async text() {
+          return JSON.stringify({ data: null });
+        },
+      } as unknown as Response);
+
+      const promise = getOrgAccessTokensUnauthenticated({ previousToken: 'token' });
+      await expect(promise).rejects.toBeInstanceOf(CITokenCommunicationError);
+      await expect(promise).rejects.toThrow(/missing accessToken/);
+    });
+
+    it('throws communication error when getOrgAccessTokens is null', async () => {
+      fetchMock.push(
+        mockGraphQLResponse({
+          iamV2: {
+            access: {
+              getOrgAccessTokens: undefined,
+            },
+          },
+        }),
+      );
+
+      const promise = getOrgAccessTokensUnauthenticated({ previousToken: 'token' });
+      await expect(promise).rejects.toBeInstanceOf(CITokenCommunicationError);
+      await expect(promise).rejects.toThrow(/missing accessToken/);
+    });
+
+    it('throws communication error when accessToken is missing', async () => {
+      fetchMock.push(
+        mockGraphQLResponse({
+          iamV2: {
+            access: {
+              getOrgAccessTokens: {
+                refreshToken: 'refresh-only',
+              },
+            },
+          },
+        }),
+      );
+
+      const promise = getOrgAccessTokensUnauthenticated({ previousToken: 'token' });
+      await expect(promise).rejects.toBeInstanceOf(CITokenCommunicationError);
+      await expect(promise).rejects.toThrow(/missing accessToken/);
+    });
+
+    it('throws communication error on fetch failure', async () => {
+      fetchMock.push(Promise.reject(new Error('connect ETIMEDOUT gateway.test')));
+
+      const promise = getOrgAccessTokensUnauthenticated({ previousToken: 'token' });
+      await expect(promise).rejects.toBeInstanceOf(CITokenCommunicationError);
+      await expect(promise).rejects.toThrow(/ETIMEDOUT/);
+    });
+
+    it('treats explicit auth GraphQL codes as ApiError', async () => {
+      fetchMock.push(mockGraphQLErrorResponse('Not authorized', { code: 'UNAUTHENTICATED' }));
+
+      const promise = getOrgAccessTokensUnauthenticated({ previousToken: 'token' });
+      await expect(promise).rejects.toBeInstanceOf(ApiError);
+      await expect(promise).rejects.toThrow(/Not authorized/);
+    });
+
+    it('treats resolver-like GraphQL errors as communication errors', async () => {
+      fetchMock.push(mockGraphQLErrorResponse("Cannot read properties of undefined (reading 'accessToken')"));
+
+      const promise = getOrgAccessTokensUnauthenticated({ previousToken: 'token' });
+      await expect(promise).rejects.toBeInstanceOf(CITokenCommunicationError);
+      await expect(promise).rejects.toThrow(/accessToken/);
     });
   });
 

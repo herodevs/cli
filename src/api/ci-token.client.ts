@@ -25,6 +25,13 @@ export interface ProvisionCITokenOptions {
   previousToken?: string | null;
 }
 
+export class CITokenCommunicationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CITokenCommunicationError';
+  }
+}
+
 type GetOrgAccessTokensResponse = {
   iamV2?: {
     access?: {
@@ -39,29 +46,45 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
   return code;
 }
 
+function classifyCiTokenError(
+  errors: ReadonlyArray<GraphQLFormattedError> | undefined,
+  error: unknown,
+  fallbackMessage: string,
+): Error {
+  if (errors?.length) {
+    const message = errors[0].message ?? fallbackMessage;
+    const code = extractErrorCode(errors);
+    if (code) {
+      return new ApiError(message, code);
+    }
+
+    return new CITokenCommunicationError(message);
+  }
+
+  const message = error instanceof Error ? error.message : error ? String(error) : fallbackMessage;
+  return new CITokenCommunicationError(message || fallbackMessage);
+}
+
 async function getOrgAccessTokens(
   input: IamAccessOrgTokensInput,
 ): Promise<{ accessToken: string; refreshToken: string }> {
   const client = createApollo(graphqlUrl, requireAccessToken);
-  const res = await client.mutate<GetOrgAccessTokensResponse, { input: IamAccessOrgTokensInput }>({
-    mutation: getOrgAccessTokensMutation,
-    variables: {
-      input,
-    },
-  });
+  let res: Awaited<ReturnType<typeof client.mutate<GetOrgAccessTokensResponse, { input: IamAccessOrgTokensInput }>>>;
+  try {
+    res = await client.mutate<GetOrgAccessTokensResponse, { input: IamAccessOrgTokensInput }>({
+      mutation: getOrgAccessTokensMutation,
+      variables: {
+        input,
+      },
+    });
+  } catch (error) {
+    throw classifyCiTokenError(undefined, error, 'CI token provisioning failed');
+  }
 
   const errors = getGraphQLErrors(res);
   if (res?.error || errors?.length) {
     debugLogger('Error returned from getOrgAccessTokens mutation: %o', res.error ?? errors);
-    if (errors?.length) {
-      const code = extractErrorCode(errors);
-      if (code) {
-        throw new ApiError(errors[0].message ?? 'CI token provisioning failed', code);
-      }
-      throw new Error(errors[0].message ?? 'CI token provisioning failed');
-    }
-    const msg = res?.error instanceof Error ? res.error.message : res?.error ? String(res.error) : '';
-    throw new Error(msg || 'CI token provisioning failed');
+    throw classifyCiTokenError(errors, res?.error, 'CI token provisioning failed');
   }
 
   const tokens = res.data?.iamV2?.access?.getOrgAccessTokens;
@@ -88,28 +111,25 @@ async function callGetOrgAccessTokensInternal(
   tokenProvider: TokenProvider,
 ): Promise<{ accessToken: string; refreshToken: string }> {
   const client = createApollo(graphqlUrl, tokenProvider);
-  const res = await client.mutate<GetOrgAccessTokensResponse, { input: IamAccessOrgTokensInput }>({
-    mutation: getOrgAccessTokensMutation,
-    variables: { input },
-  });
+  let res: Awaited<ReturnType<typeof client.mutate<GetOrgAccessTokensResponse, { input: IamAccessOrgTokensInput }>>>;
+  try {
+    res = await client.mutate<GetOrgAccessTokensResponse, { input: IamAccessOrgTokensInput }>({
+      mutation: getOrgAccessTokensMutation,
+      variables: { input },
+    });
+  } catch (error) {
+    throw classifyCiTokenError(undefined, error, 'CI token refresh failed');
+  }
 
   const errors = getGraphQLErrors(res);
   if (res?.error || errors?.length) {
     debugLogger('Error returned from getOrgAccessTokens mutation: %o', res.error ?? errors);
-    if (errors?.length) {
-      const code = extractErrorCode(errors);
-      if (code) {
-        throw new ApiError(errors[0].message ?? 'CI token refresh failed', code);
-      }
-      throw new Error(errors[0].message ?? 'CI token refresh failed');
-    }
-    const msg = res?.error instanceof Error ? res.error.message : res?.error ? String(res.error) : '';
-    throw new Error(msg || 'CI token refresh failed');
+    throw classifyCiTokenError(errors, res?.error, 'CI token refresh failed');
   }
 
   const tokens = res.data?.iamV2?.access?.getOrgAccessTokens;
   if (!tokens?.accessToken) {
-    throw new Error('getOrgAccessTokens response missing accessToken');
+    throw new CITokenCommunicationError('getOrgAccessTokens response missing accessToken');
   }
 
   return {

@@ -15,18 +15,14 @@ vi.mock('../../src/service/auth-token.svc.ts', () => ({
   isAccessTokenExpired: vi.fn(),
 }));
 
-vi.mock('../../src/api/ci-token.client.ts', () => ({
-  __esModule: true,
-  exchangeCITokenForAccess: vi.fn(),
-}));
-
 vi.mock('../../src/service/ci-token.svc.ts', () => ({
   __esModule: true,
   getCIToken: vi.fn(),
   saveCIToken: vi.fn(),
 }));
 
-import { exchangeCITokenForAccess } from '../../src/api/ci-token.client.ts';
+import * as ciTokenClient from '../../src/api/ci-token.client.ts';
+import { ApiError, INVALID_TOKEN_ERROR_CODE } from '../../src/api/errors.ts';
 import { requireCIAccessToken } from '../../src/service/ci-auth.svc.ts';
 import { getCIToken, saveCIToken } from '../../src/service/ci-token.svc.ts';
 
@@ -40,7 +36,7 @@ describe('ci-auth.svc', () => {
   it('does not saveCIToken when token comes from env', async () => {
     mockConfig.ciTokenFromEnv = 'env-refresh-token';
     (getCIToken as Mock).mockReturnValue('env-refresh-token');
-    (exchangeCITokenForAccess as Mock).mockResolvedValue({
+    vi.spyOn(ciTokenClient, 'exchangeCITokenForAccess').mockResolvedValue({
       accessToken: 'access',
       refreshToken: 'rotated-refresh',
     });
@@ -56,16 +52,44 @@ describe('ci-auth.svc', () => {
       name: 'CITokenError',
       code: 'CI_TOKEN_INVALID',
     });
-    expect(exchangeCITokenForAccess).not.toHaveBeenCalled();
+    expect(ciTokenClient.exchangeCITokenForAccess).not.toHaveBeenCalled();
   });
 
-  it('throws when exchange fails', async () => {
+  it('throws refresh failure when exchange is explicitly rejected by the server', async () => {
     (getCIToken as Mock).mockReturnValue('ci-refresh-token');
-    (exchangeCITokenForAccess as Mock).mockRejectedValue(new Error('exchange failed'));
+    vi.spyOn(ciTokenClient, 'exchangeCITokenForAccess').mockRejectedValue(
+      new ApiError('Invalid refresh token', INVALID_TOKEN_ERROR_CODE),
+    );
 
     await expect(requireCIAccessToken()).rejects.toMatchObject({
       name: 'CITokenError',
       code: 'CI_TOKEN_REFRESH_FAILED',
+    });
+  });
+
+  it('throws communication failure when exchange returns malformed/null server data', async () => {
+    (getCIToken as Mock).mockReturnValue('ci-refresh-token');
+    vi.spyOn(ciTokenClient, 'exchangeCITokenForAccess').mockRejectedValue(
+      new ciTokenClient.CITokenCommunicationError('getOrgAccessTokens response missing accessToken'),
+    );
+
+    await expect(requireCIAccessToken()).rejects.toMatchObject({
+      name: 'CITokenError',
+      code: 'CI_TOKEN_COMMUNICATION_FAILED',
+      message:
+        'There was an error communicating with the HeroDevs server while refreshing the CI token. Please verify server connectivity/configuration and try again.',
+    });
+  });
+
+  it('defaults unexpected exchange failures to communication failure', async () => {
+    (getCIToken as Mock).mockReturnValue('ci-refresh-token');
+    vi.spyOn(ciTokenClient, 'exchangeCITokenForAccess').mockRejectedValue(
+      new Error('connect ETIMEDOUT gateway.prod.apps.herodevs.io'),
+    );
+
+    await expect(requireCIAccessToken()).rejects.toMatchObject({
+      name: 'CITokenError',
+      code: 'CI_TOKEN_COMMUNICATION_FAILED',
     });
   });
 });
