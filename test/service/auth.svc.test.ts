@@ -157,6 +157,21 @@ describe('auth.svc', () => {
       });
     });
 
+    it('propagates communication CITokenError when CI refresh cannot reach the server', async () => {
+      (getCIToken as Mock).mockReturnValue('ci-refresh-token');
+      (requireCIAccessToken as Mock).mockRejectedValue(
+        new CITokenError(
+          'There was an error communicating with the HeroDevs server while refreshing the CI token. Please verify server connectivity/configuration and try again.',
+          'CI_TOKEN_COMMUNICATION_FAILED',
+        ),
+      );
+
+      await expect(requireAccessTokenForScan()).rejects.toMatchObject({
+        name: 'CITokenError',
+        code: 'CI_TOKEN_COMMUNICATION_FAILED',
+      });
+    });
+
     it('returns token when access token is valid (login path)', async () => {
       (getStoredTokens as Mock).mockResolvedValue({ accessToken: 'valid-token' });
       (isAccessTokenExpired as Mock).mockReturnValue(false);

@@ -2,6 +2,7 @@ import type { CdxBom, EolReport } from '@herodevs/eol-shared';
 import type { Config } from '@oclif/core';
 import { ApiError, FORBIDDEN_ERROR_CODE, PAYLOAD_TOO_LARGE_ERROR_CODE } from '../../../src/api/errors.ts';
 import ScanEol from '../../../src/commands/scan/eol.ts';
+import { CITokenError } from '../../../src/service/auth.svc.ts';
 
 const {
   trackMock,
@@ -237,5 +238,39 @@ describe('scan:eol analytics timing', () => {
     const properties = getTrackProperties('CLI EOL Scan Completed');
     expect(properties.scan_load_time).toEqual(expect.any(Number));
     expect(properties.scan_load_time as number).toBeGreaterThanOrEqual(0);
+  });
+
+  it('formats CI token errors without exposing the internal error class name', async () => {
+    getTokenForScanWithSourceMock.mockRejectedValue(
+      new CITokenError(
+        'There was an error communicating with the HeroDevs server while refreshing the CI token. Please verify server connectivity/configuration and try again.',
+        'CI_TOKEN_COMMUNICATION_FAILED',
+      ),
+    );
+
+    const command = createCommand();
+    vi.spyOn(command, 'parse').mockResolvedValue({
+      flags: {
+        file: '/tmp/sample.sbom.json',
+        save: false,
+        output: undefined,
+        saveSbom: false,
+        sbomOutput: undefined,
+        saveTrimmedSbom: false,
+        hideReportUrl: false,
+        automated: false,
+      },
+    });
+    const errorSpy = vi.spyOn(command, 'error').mockImplementation((input: string | Error) => {
+      const message = input instanceof Error ? input.message : input;
+      throw new Error(message);
+    });
+
+    await expect(command.run()).rejects.toThrow(
+      'There was an error communicating with the HeroDevs server while refreshing the CI token. Please verify server connectivity/configuration and try again.',
+    );
+    expect(errorSpy).toHaveBeenCalledWith(
+      'There was an error communicating with the HeroDevs server while refreshing the CI token. Please verify server connectivity/configuration and try again.',
+    );
   });
 });
