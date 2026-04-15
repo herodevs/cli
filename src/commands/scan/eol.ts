@@ -2,7 +2,7 @@ import type { CdxBom, EolReport } from '@herodevs/eol-shared';
 import { trimCdxBom } from '@herodevs/eol-shared';
 import { Command, Flags } from '@oclif/core';
 import ora from 'ora';
-import { ApiError } from '../../api/errors.ts';
+import { ApiError, PAYLOAD_TOO_LARGE_ERROR_CODE } from '../../api/errors.ts';
 import { submitScan } from '../../api/nes.client.ts';
 import { config, filenamePrefix, SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../config/constants.ts';
 import { track } from '../../service/analytics.svc.ts';
@@ -233,6 +233,10 @@ export default class ScanEol extends Command {
           number_of_packages: numberOfPackages,
         }));
 
+        if (error.code === PAYLOAD_TOO_LARGE_ERROR_CODE) {
+          this.error(this.getPayloadTooLargeMessage(Boolean(flags.file)));
+        }
+
         const message = AUTH_ERROR_MESSAGES[error.code] ?? error.message?.trim();
         this.error(message);
       }
@@ -251,6 +255,15 @@ export default class ScanEol extends Command {
 
   private getScanLoadTime(scanStartTime: number): number {
     return (performance.now() - scanStartTime) / 1000;
+  }
+
+  private getPayloadTooLargeMessage(hasUserProvidedSbom: boolean): string {
+    const USER_PROVIDED_SBOM_TOO_LARGE_MESSAGE =
+      'File exceeds the 10MB limit. Try providing a smaller or partial SBOM.';
+    const GENERATED_SBOM_TOO_LARGE_MESSAGE =
+      'Generated SBOM exceeds the 10MB upload limit. Try scanning a smaller scope (e.g. a single project or subdirectory).';
+
+    return hasUserProvidedSbom ? USER_PROVIDED_SBOM_TOO_LARGE_MESSAGE : GENERATED_SBOM_TOO_LARGE_MESSAGE;
   }
 
   private saveReport(report: EolReport, dir: string, outputPath?: string): string {

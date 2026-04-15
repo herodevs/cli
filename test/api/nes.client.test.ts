@@ -3,8 +3,10 @@ import { vi } from 'vitest';
 
 vi.mock('../../src/config/constants.ts', async (importOriginal) => importOriginal());
 
+import { ApiError, PAYLOAD_TOO_LARGE_ERROR_CODE } from '../../src/api/errors.ts';
 import { submitScan } from '../../src/api/nes.client.ts';
 import { SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../src/config/constants.ts';
+import { requireAccessTokenForScan } from '../../src/service/auth.svc.ts';
 import { FetchMock } from '../utils/mocks/fetch.mock.ts';
 
 vi.mock('../../src/service/auth.svc.ts', () => ({
@@ -123,6 +125,54 @@ describe('nes.client', () => {
       sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
     };
     await expect(submitScan(input)).rejects.toThrow(/Failed to create EOL report/);
+  });
+
+  it('throws ApiError with PAYLOAD_TOO_LARGE code when server returns 413', async () => {
+    fetchMock.push({
+      headers: { get: () => 'text/plain' },
+      status: 413,
+      async text() {
+        return '';
+      },
+    } as unknown as Response);
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    const error = await submitScan(input).catch((e) => e);
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.code).toBe(PAYLOAD_TOO_LARGE_ERROR_CODE);
+  });
+
+  it('throws ApiError with PAYLOAD_TOO_LARGE when retry after 401 returns 413', async () => {
+    vi.mocked(requireAccessTokenForScan).mockReset();
+    vi.mocked(requireAccessTokenForScan)
+      .mockResolvedValueOnce('expired-token')
+      .mockResolvedValueOnce('refreshed-token');
+
+    fetchMock.push({
+      headers: { get: () => 'text/plain' },
+      status: 401,
+      async text() {
+        return '';
+      },
+    } as unknown as Response);
+    fetchMock.push({
+      headers: { get: () => 'text/plain' },
+      status: 413,
+      async text() {
+        return '';
+      },
+    } as unknown as Response);
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    const error = await submitScan(input).catch((e) => e);
+
+    expect(error).toBeInstanceOf(ApiError);
+    expect(error.code).toBe(PAYLOAD_TOO_LARGE_ERROR_CODE);
+    expect(vi.mocked(requireAccessTokenForScan).mock.calls).toEqual([[], [true]]);
   });
 
   describe('scanOrigin', () => {

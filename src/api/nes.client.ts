@@ -31,6 +31,9 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
     const errors = getGraphQLErrors(res);
     if (res?.error || errors?.length) {
       debugLogger('Error returned from createReport mutation: %o', res.error || errors);
+      if (res?.error instanceof ApiError) {
+        throw res.error;
+      }
       if (errors?.length) {
         const code = extractErrorCode(errors);
         if (code) {
@@ -76,6 +79,9 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
         const queryErrors = getGraphQLErrors(response);
         if (response?.error || queryErrors?.length || !response.data?.eol) {
           debugLogger('Error in getReport query response: %o', response?.error ?? queryErrors ?? response);
+          if (response?.error instanceof ApiError) {
+            throw response.error;
+          }
           if (queryErrors?.length) {
             const code = extractErrorCode(queryErrors);
             if (code) {

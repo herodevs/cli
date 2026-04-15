@@ -76,18 +76,22 @@ type CreateSbomDependencies = {
   postProcess: typeof postProcess;
 };
 
+type BomGenerationResult = {
+  bomJson: CdxBom;
+};
+
 export function createSbomFactory({
   createBom: createBomDependency = createBom,
   postProcess: postProcessDependency = postProcess,
 }: Partial<CreateSbomDependencies> = {}) {
   return async function createSbom(directory: string): Promise<CdxBom> {
-    const sbom: any = await createBomDependency(directory, SBOM_DEFAULT__OPTIONS);
+    const sbom = (await createBomDependency(directory, SBOM_DEFAULT__OPTIONS)) as BomGenerationResult | undefined;
 
     if (!sbom) {
       throw new Error('SBOM not generated');
     }
 
-    const postProcessedSbom: any = postProcessDependency(sbom, SBOM_DEFAULT__OPTIONS);
+    const postProcessedSbom = postProcessDependency(sbom, SBOM_DEFAULT__OPTIONS) as BomGenerationResult | undefined;
 
     if (!postProcessedSbom) {
       throw new Error('SBOM not generated');
