@@ -57,7 +57,7 @@
     "glob": "^13.0.0",
     "graphql": "^16.13.2",
     "node-machine-id": "^1.1.12",
-    "ora": "^9.0.0",
+    "ora": "^9.3.0",
     "packageurl-js": "^2.0.1",
     "sloc": "^0.3.2",
     "terminal-link": "^5.0.0",
