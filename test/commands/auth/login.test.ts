@@ -189,9 +189,13 @@ describe('AuthLogin', () => {
       const server = getLatestServer();
 
       await flushAsync();
-      sendCallbackThroughStub({ code: 'test-code', state });
+      const response = sendCallbackThroughStub({ code: 'test-code', state });
 
       await expect(pendingCode).resolves.toBe(tokenResponse);
+      expect(response.writeHead).toHaveBeenCalledWith(302, {
+        Location: 'https://apps.herodevs.com/eol/cli-logged-in',
+      });
+      expect(response.end).toHaveBeenCalledWith();
       expect(questionMock).toHaveBeenCalledWith(expect.stringContaining(authUrl), expect.any(Function));
       expect(closeMock).toHaveBeenCalledTimes(1);
       expect(openMock).toHaveBeenCalledWith(authUrl);
