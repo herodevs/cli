@@ -26,6 +26,14 @@ import { ApiError, INVALID_TOKEN_ERROR_CODE } from '../../src/api/errors.ts';
 import { requireCIAccessToken } from '../../src/service/ci-auth.svc.ts';
 import { getCIToken, saveCIToken } from '../../src/service/ci-token.svc.ts';
 
+function createTokenWithExp(offsetSeconds: number) {
+  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+  const payload = Buffer.from(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + offsetSeconds })).toString(
+    'base64url',
+  );
+  return `${header}.${payload}.signature`;
+}
+
 describe('ci-auth.svc', () => {
   beforeEach(() => {
     vi.resetAllMocks();
@@ -53,6 +61,43 @@ describe('ci-auth.svc', () => {
       code: 'CI_TOKEN_INVALID',
     });
     expect(ciTokenClient.exchangeCITokenForAccess).not.toHaveBeenCalled();
+  });
+
+  it('throws expired error without exchanging the CI token when JWT exp is expired', async () => {
+    (getCIToken as Mock).mockReturnValue(createTokenWithExp(-60));
+    const exchangeSpy = vi.spyOn(ciTokenClient, 'exchangeCITokenForAccess');
+
+    await expect(requireCIAccessToken()).rejects.toMatchObject({
+      name: 'CITokenError',
+      code: 'CI_TOKEN_EXPIRED',
+      message:
+        'Your CI token has expired. To provision a new CI token, run hd auth provision-ci-token (after logging in with hd auth login).',
+    });
+    expect(exchangeSpy).not.toHaveBeenCalled();
+  });
+
+  it('throws expired error for env CI token without exchanging when JWT exp is expired', async () => {
+    const expiredToken = createTokenWithExp(-60);
+    mockConfig.ciTokenFromEnv = expiredToken;
+    (getCIToken as Mock).mockReturnValue(expiredToken);
+    const exchangeSpy = vi.spyOn(ciTokenClient, 'exchangeCITokenForAccess');
+
+    await expect(requireCIAccessToken()).rejects.toMatchObject({
+      name: 'CITokenError',
+      code: 'CI_TOKEN_EXPIRED',
+    });
+    expect(exchangeSpy).not.toHaveBeenCalled();
+  });
+
+  it('exchanges the CI token when JWT exp is not expired', async () => {
+    (getCIToken as Mock).mockReturnValue(createTokenWithExp(120));
+    const exchangeSpy = vi.spyOn(ciTokenClient, 'exchangeCITokenForAccess').mockResolvedValue({
+      accessToken: 'access',
+      refreshToken: 'rotated-refresh',
+    });
+
+    await expect(requireCIAccessToken()).resolves.toBe('access');
+    expect(exchangeSpy).toHaveBeenCalledOnce();
   });
 
   it('throws refresh failure when exchange is explicitly rejected by the server', async () => {

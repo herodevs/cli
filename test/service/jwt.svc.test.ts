@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { decodeJwtPayload } from '../../src/service/jwt.svc.ts';
+import { decodeJwtPayload, isJwtExpired } from '../../src/service/jwt.svc.ts';
 
 function createJwtToken(payload: unknown): string {
   const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
@@ -42,6 +42,26 @@ describe('jwt.svc', () => {
       expect(decodeJwtPayload(createJwtToken(['array-payload']))).toBeUndefined();
       expect(decodeJwtPayload(createJwtToken(123))).toBeUndefined();
       expect(decodeJwtPayload(createJwtToken(null))).toBeUndefined();
+    });
+  });
+
+  describe('isJwtExpired', () => {
+    it('returns true when the token exp is in the past', () => {
+      const token = createJwtToken({ exp: Math.floor(Date.now() / 1000) - 60 });
+
+      expect(isJwtExpired(token)).toBe(true);
+    });
+
+    it('returns false when the token exp is in the future beyond skew', () => {
+      const token = createJwtToken({ exp: Math.floor(Date.now() / 1000) + 120 });
+
+      expect(isJwtExpired(token)).toBe(false);
+    });
+
+    it('returns undefined when expiration cannot be determined', () => {
+      expect(isJwtExpired(createJwtToken({ sub: 'user-1' }))).toBeUndefined();
+      expect(isJwtExpired('not-a-jwt')).toBeUndefined();
+      expect(isJwtExpired(undefined)).toBeUndefined();
     });
   });
 });

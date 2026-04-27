@@ -1,5 +1,5 @@
 import { createConfStore, decryptValue, encryptValue } from './encrypted-store.svc.ts';
-import { decodeJwtPayload } from './jwt.svc.ts';
+import { isJwtExpired } from './jwt.svc.ts';
 import { debugLogger } from './log.svc.ts';
 
 export interface StoredTokens {
@@ -67,11 +67,5 @@ export async function clearStoredTokens() {
 }
 
 export function isAccessTokenExpired(token: string | undefined): boolean {
-  const payload = decodeJwtPayload(token) as { exp?: number } | undefined;
-  if (!payload?.exp) {
-    return true;
-  }
-
-  const now = Date.now() / 1000;
-  return now + TOKEN_SKEW_SECONDS >= payload.exp;
+  return isJwtExpired(token, TOKEN_SKEW_SECONDS) ?? true;
 }
