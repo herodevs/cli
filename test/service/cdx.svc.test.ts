@@ -9,7 +9,7 @@ beforeAll(() => {
 type SbomOptions = typeof import('../../src/service/cdx.svc.ts').SBOM_DEFAULT__OPTIONS;
 type BomResult = { bomJson: unknown };
 type CreateBomFn = (path: string, options: SbomOptions) => Promise<BomResult | null>;
-type PostProcessFn = (sbom: BomResult, options: SbomOptions) => BomResult | null;
+type PostProcessFn = (sbom: BomResult, options: SbomOptions, filePath: string) => BomResult | null;
 
 const createBomMock = vi.fn<CreateBomFn>();
 const postProcessMock = vi.fn<PostProcessFn>();
@@ -31,6 +31,7 @@ describe('cdx.svc createSbom', () => {
     });
     const res = await createSbom('/tmp/project');
     expect(res).toEqual(bomJson);
+    expect(postProcessMock).toHaveBeenCalledWith({ bomJson }, mod.SBOM_DEFAULT__OPTIONS, '/tmp/project');
   });
 
   it('throws when cdxgen returns a falsy value', async () => {
