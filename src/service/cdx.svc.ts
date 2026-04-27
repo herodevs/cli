@@ -73,16 +73,22 @@ export const SBOM_DEFAULT__OPTIONS = {
  */
 type CreateSbomDependencies = {
   createBom: typeof createBom;
-  postProcess: typeof postProcess;
+  postProcess: PostProcessDependency;
 };
 
 type BomGenerationResult = {
   bomJson: CdxBom;
 };
 
+type PostProcessDependency = (
+  sbom: BomGenerationResult,
+  options: typeof SBOM_DEFAULT__OPTIONS,
+  filePath: string,
+) => BomGenerationResult | undefined;
+
 export function createSbomFactory({
   createBom: createBomDependency = createBom,
-  postProcess: postProcessDependency = postProcess,
+  postProcess: postProcessDependency = postProcess as unknown as PostProcessDependency,
 }: Partial<CreateSbomDependencies> = {}) {
   return async function createSbom(directory: string): Promise<CdxBom> {
     const sbom = (await createBomDependency(directory, SBOM_DEFAULT__OPTIONS)) as BomGenerationResult | undefined;
@@ -91,7 +97,7 @@ export function createSbomFactory({
       throw new Error('SBOM not generated');
     }
 
-    const postProcessedSbom = postProcessDependency(sbom, SBOM_DEFAULT__OPTIONS) as BomGenerationResult | undefined;
+    const postProcessedSbom = postProcessDependency(sbom, SBOM_DEFAULT__OPTIONS, directory);
 
     if (!postProcessedSbom) {
       throw new Error('SBOM not generated');
