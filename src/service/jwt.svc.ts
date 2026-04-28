@@ -19,3 +19,14 @@ export function decodeJwtPayload(token: string | undefined): Record<string, unkn
     return;
   }
 }
+
+export function isJwtExpired(token: string | undefined, skewSeconds = 30): boolean | undefined {
+  const payload = decodeJwtPayload(token);
+  const exp = payload?.exp;
+  if (typeof exp !== 'number') {
+    return;
+  }
+
+  const now = Date.now() / 1000;
+  return now + skewSeconds >= exp;
+}
