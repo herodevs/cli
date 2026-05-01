@@ -34,6 +34,10 @@ export default class Vex extends Command {
       command: '<%= config.bin %> <%= command.id %> --file sbom.json --save',
     },
     {
+      description: 'Exclude packages matching a PURL pattern',
+      command: '<%= config.bin %> <%= command.id %> --exclude-package "pkg:npm/lodash*"',
+    },
+    {
       description: 'Combine multiple filters (AND logic)',
       command: '<%= config.bin %> <%= command.id %> --file sbom.json --vuln "CVE-*" --status affected',
     },
@@ -59,6 +63,12 @@ export default class Vex extends Command {
       description: 'Filter by VEX analysis status (repeatable)',
       multiple: true,
       options: ['affected', 'not_affected', 'fixed', 'under_investigation'],
+    }),
+    'exclude-package': Flags.string({
+      char: 'e',
+      description:
+        'Glob pattern matched against product PURLs to exclude (repeatable, e.g. --exclude-package "pkg:npm/lodash*"). Removes statements where any product matches.',
+      multiple: true,
     }),
     save: Flags.boolean({
       char: 's',
@@ -88,7 +98,12 @@ export default class Vex extends Command {
       this.error(`Failed to fetch VEX statement. ${message}`);
     }
 
-    const hasFilters = flags.file || flags.package?.length || flags.vuln?.length || flags.status?.length;
+    const hasFilters =
+      flags.file ||
+      flags.package?.length ||
+      flags.vuln?.length ||
+      flags.status?.length ||
+      flags['exclude-package']?.length;
 
     if (hasFilters) {
       const sbom = flags.file ? this.loadSbom(flags.file) : undefined;
@@ -97,6 +112,7 @@ export default class Vex extends Command {
         packagePatterns: flags.package,
         vulnPatterns: flags.vuln,
         statuses: flags.status,
+        excludePackagePatterns: flags['exclude-package'],
       });
     }
 

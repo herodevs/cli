@@ -15,6 +15,7 @@ import type { CdxBom } from '@herodevs/eol-shared';
 import { config } from '../../src/config/constants.ts';
 import {
   applyVexFilters,
+  excludeByPackagePatterns,
   fetchVexStatement,
   filterByComponents,
   filterByPackagePatterns,
@@ -271,6 +272,62 @@ describe('vex.svc', () => {
     });
   });
 
+  describe('excludeByPackagePatterns', () => {
+    it('removes statements whose products match the exclude pattern', () => {
+      const result = excludeByPackagePatterns(mockVex, ['pkg:npm/lodash*']);
+
+      const names = result.statements.map((s) => s.vulnerability.name);
+      expect(names).not.toContain('CVE-2021-23337');
+      expect(names).not.toContain('CVE-2020-8203');
+    });
+
+    it('keeps statements whose products do not match', () => {
+      const result = excludeByPackagePatterns(mockVex, ['pkg:npm/lodash*']);
+
+      const names = result.statements.map((s) => s.vulnerability.name);
+      expect(names).toContain('CVE-2018-20676');
+      expect(names).toContain('CVE-2022-31129');
+    });
+
+    it('supports multiple patterns (OR logic — excludes if any pattern matches)', () => {
+      const result = excludeByPackagePatterns(mockVex, ['pkg:npm/lodash*', 'pkg:npm/moment*']);
+
+      const names = result.statements.map((s) => s.vulnerability.name);
+      expect(names).toContain('CVE-2018-20676');
+      expect(names).not.toContain('CVE-2021-23337');
+      expect(names).not.toContain('CVE-2022-31129');
+      expect(names).not.toContain('CVE-2020-8203');
+    });
+
+    it('matching is case-insensitive', () => {
+      const result = excludeByPackagePatterns(mockVex, ['pkg:NPM/LODASH*']);
+
+      const names = result.statements.map((s) => s.vulnerability.name);
+      expect(names).not.toContain('CVE-2021-23337');
+      expect(names).not.toContain('CVE-2020-8203');
+    });
+
+    it('returns original VEX unchanged when patterns list is empty', () => {
+      const result = excludeByPackagePatterns(mockVex, []);
+
+      expect(result).toBe(mockVex);
+    });
+
+    it('returns empty statements when all products match exclude pattern', () => {
+      const result = excludeByPackagePatterns(mockVex, ['pkg:npm/*']);
+
+      expect(result.statements).toHaveLength(0);
+    });
+
+    it('preserves non-statement fields on the document', () => {
+      const result = excludeByPackagePatterns(mockVex, ['pkg:npm/lodash*']);
+
+      expect(result['@context']).toBe(mockVex['@context']);
+      expect(result['@id']).toBe(mockVex['@id']);
+      expect(result.author).toBe(mockVex.author);
+    });
+  });
+
   describe('applyVexFilters', () => {
     it('returns original VEX unchanged when no filters are provided', () => {
       const result = applyVexFilters(mockVex, {});
@@ -321,6 +378,27 @@ describe('vex.svc', () => {
 
       expect(result.statements).toHaveLength(1);
       expect(result.statements[0].vulnerability.name).toBe('CVE-2021-23337');
+    });
+
+    it('applies excludePackagePatterns filter when provided', () => {
+      const result = applyVexFilters(mockVex, { excludePackagePatterns: ['pkg:npm/lodash*'] });
+
+      const names = result.statements.map((s) => s.vulnerability.name);
+      expect(names).not.toContain('CVE-2021-23337');
+      expect(names).not.toContain('CVE-2020-8203');
+      expect(names).toContain('CVE-2018-20676');
+      expect(names).toContain('CVE-2022-31129');
+    });
+
+    it('applies excludePackagePatterns after include filters (AND logic)', () => {
+      // packagePatterns keeps only lodash statements; excludePackagePatterns then removes all of them
+      const result = applyVexFilters(mockVex, {
+        packagePatterns: ['pkg:npm/lodash*'],
+        excludePackagePatterns: ['pkg:npm/lodash@4.17.20'],
+      });
+
+      expect(result.statements).toHaveLength(1);
+      expect(result.statements[0].vulnerability.name).toBe('CVE-2020-8203');
     });
   });
 });

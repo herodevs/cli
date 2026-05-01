@@ -164,6 +164,52 @@ describe('vex command', () => {
       );
     });
 
+    it('passes exclude-package patterns to applyVexFilters', async () => {
+      const command = createCommand();
+      vi.spyOn(command, 'parse').mockResolvedValue({
+        flags: { 'exclude-package': ['pkg:npm/lodash*', 'pkg:npm/express*'] },
+      });
+      vi.spyOn(command, 'log').mockImplementation(() => {});
+      vi.spyOn(command, 'jsonEnabled').mockReturnValue(false);
+
+      await command.run();
+
+      expect(applyVexFiltersMock).toHaveBeenCalledWith(
+        sampleVex,
+        expect.objectContaining({ excludePackagePatterns: ['pkg:npm/lodash*', 'pkg:npm/express*'] }),
+      );
+    });
+
+    it('triggers filtering when only --exclude-package is provided', async () => {
+      const command = createCommand();
+      vi.spyOn(command, 'parse').mockResolvedValue({ flags: { 'exclude-package': ['pkg:npm/lodash*'] } });
+      vi.spyOn(command, 'log').mockImplementation(() => {});
+      vi.spyOn(command, 'jsonEnabled').mockReturnValue(false);
+
+      await command.run();
+
+      expect(applyVexFiltersMock).toHaveBeenCalledOnce();
+    });
+
+    it('combines --exclude-package with --package (AND logic)', async () => {
+      const command = createCommand();
+      vi.spyOn(command, 'parse').mockResolvedValue({
+        flags: { package: ['pkg:npm/lodash*'], 'exclude-package': ['pkg:npm/lodash@4.17.20'] },
+      });
+      vi.spyOn(command, 'log').mockImplementation(() => {});
+      vi.spyOn(command, 'jsonEnabled').mockReturnValue(false);
+
+      await command.run();
+
+      expect(applyVexFiltersMock).toHaveBeenCalledWith(
+        sampleVex,
+        expect.objectContaining({
+          packagePatterns: ['pkg:npm/lodash*'],
+          excludePackagePatterns: ['pkg:npm/lodash@4.17.20'],
+        }),
+      );
+    });
+
     it('skips applyVexFilters entirely when no filters are provided', async () => {
       const command = createCommand();
       vi.spyOn(command, 'parse').mockResolvedValue({ flags: {} });

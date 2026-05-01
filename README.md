@@ -357,17 +357,22 @@ Download and filter the HeroDevs VEX statement
 ```
 USAGE
   $ hd vex [--json] [-f <value>] [-p <value>...] [-v <value>...] [--status
-    affected|not_affected|fixed|under_investigation...] [-s] [-o <value>]
+    affected|not_affected|fixed|under_investigation...] [-e <value>...] [-s] [-o <value>]
 
 FLAGS
-  -f, --file=<value>        Path to a CycloneDX or SPDX 2.3 SBOM; filters VEX entries to packages present in the SBOM
-  -o, --output=<value>      Save VEX statement to a custom path (defaults to herodevs.vex.json when not provided)
-  -p, --package=<value>...  Glob pattern matched against product PURLs (repeatable, e.g. --package "pkg:npm/lodash*").
-                            Keeps statements where any product matches.
-  -s, --save                Save VEX statement to herodevs.vex.json in the current directory
-  -v, --vuln=<value>...     Glob pattern matched against vulnerability IDs (repeatable, e.g. --vuln "CVE-2021-*")
-      --status=<option>...  Filter by VEX analysis status (repeatable)
-                            <options: affected|not_affected|fixed|under_investigation>
+  -e, --exclude-package=<value>...  Glob pattern matched against product PURLs to exclude (repeatable, e.g.
+                                    --exclude-package "pkg:npm/lodash*"). Removes statements where any product matches.
+  -f, --file=<value>                Path to a CycloneDX or SPDX 2.3 SBOM; filters VEX entries to packages present in the
+                                    SBOM
+  -o, --output=<value>              Save VEX statement to a custom path (defaults to herodevs.vex.json when not
+                                    provided)
+  -p, --package=<value>...          Glob pattern matched against product PURLs (repeatable, e.g. --package
+                                    "pkg:npm/lodash*"). Keeps statements where any product matches.
+  -s, --save                        Save VEX statement to herodevs.vex.json in the current directory
+  -v, --vuln=<value>...             Glob pattern matched against vulnerability IDs (repeatable, e.g. --vuln
+                                    "CVE-2021-*")
+      --status=<option>...          Filter by VEX analysis status (repeatable)
+                                    <options: affected|not_affected|fixed|under_investigation>
 
 GLOBAL FLAGS
   --json  Format output as json.
@@ -399,6 +404,10 @@ EXAMPLES
   Save filtered VEX to a file
 
     $ hd vex --file sbom.json --save
+
+  Exclude packages matching a PURL pattern
+
+    $ hd vex --exclude-package "pkg:npm/lodash*"
 
   Combine multiple filters (AND logic)
 

@@ -110,6 +110,16 @@ export function filterByStatus(vex: OpenVexDocument, statuses: string[]): OpenVe
   return { ...vex, statements: filtered };
 }
 
+export function excludeByPackagePatterns(vex: OpenVexDocument, patterns: string[]): OpenVexDocument {
+  if (patterns.length === 0) return vex;
+
+  const filtered = vex.statements.filter(
+    (stmt) => !stmt.products.some((product) => matchesAnyPattern(product['@id'], patterns)),
+  );
+
+  return { ...vex, statements: filtered };
+}
+
 export function applyVexFilters(
   vex: OpenVexDocument,
   filters: {
@@ -117,6 +127,7 @@ export function applyVexFilters(
     packagePatterns?: string[];
     vulnPatterns?: string[];
     statuses?: string[];
+    excludePackagePatterns?: string[];
   },
 ): OpenVexDocument {
   let result = vex;
@@ -124,5 +135,6 @@ export function applyVexFilters(
   if (filters.packagePatterns?.length) result = filterByPackagePatterns(result, filters.packagePatterns);
   if (filters.vulnPatterns?.length) result = filterByVulnPatterns(result, filters.vulnPatterns);
   if (filters.statuses?.length) result = filterByStatus(result, filters.statuses);
+  if (filters.excludePackagePatterns?.length) result = excludeByPackagePatterns(result, filters.excludePackagePatterns);
   return result;
 }
