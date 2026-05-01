@@ -15,6 +15,7 @@ pnpm-lock.yaml
 # Various CLI Output Files
 herodevs.report.json
 herodevs.sbom.json
+herodevs.openvex.json
 bom.json
 sbom.json
 cdx.json

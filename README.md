@@ -102,6 +102,7 @@ USAGE
 * [`hd tracker init`](#hd-tracker-init)
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
+* [`hd vex`](#hd-vex)
 
 ### `hd auth login`
 
@@ -177,10 +178,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2025-04-23] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-05-01] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2026-04-23] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-05-01] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
@@ -336,7 +337,7 @@ EXAMPLES
 
   Update to a specific version:
 
-    $ hd update --version 2.0.6
+    $ hd update --version 1.0.0
 
   Interactively select version:
 
@@ -348,6 +349,63 @@ EXAMPLES
 ```
 
 _See code: [@oclif/plugin-update](https://github.com/oclif/plugin-update/blob/4.7.32/src/commands/update.ts)_
+
+### `hd vex`
+
+Download and filter the HeroDevs VEX statement
+
+```
+USAGE
+  $ hd vex [--json] [-f <value>] [-p <value>...] [-v <value>...] [--status
+    affected|not_affected|fixed|under_investigation...] [-s] [-o <value>]
+
+FLAGS
+  -f, --file=<value>        Path to a CycloneDX or SPDX 2.3 SBOM; filters VEX entries to packages present in the SBOM
+  -o, --output=<value>      Save VEX statement to a custom path (defaults to herodevs.vex.json when not provided)
+  -p, --package=<value>...  Glob pattern matched against product PURLs (repeatable, e.g. --package "pkg:npm/lodash*").
+                            Keeps statements where any product matches.
+  -s, --save                Save VEX statement to herodevs.vex.json in the current directory
+  -v, --vuln=<value>...     Glob pattern matched against vulnerability IDs (repeatable, e.g. --vuln "CVE-2021-*")
+      --status=<option>...  Filter by VEX analysis status (repeatable)
+                            <options: affected|not_affected|fixed|under_investigation>
+
+GLOBAL FLAGS
+  --json  Format output as json.
+
+DESCRIPTION
+  Download and filter the HeroDevs VEX statement
+
+EXAMPLES
+  Download the full HeroDevs VEX statement
+
+    $ hd vex
+
+  Filter to packages present in an SBOM
+
+    $ hd vex --file /path/to/sbom.json
+
+  Filter by vulnerability ID pattern
+
+    $ hd vex --vuln "CVE-2021-*"
+
+  Filter by package PURL pattern
+
+    $ hd vex --package "pkg:npm/express*"
+
+  Filter by status
+
+    $ hd vex --status not_affected
+
+  Save filtered VEX to a file
+
+    $ hd vex --file sbom.json --save
+
+  Combine multiple filters (AND logic)
+
+    $ hd vex --file sbom.json --vuln "CVE-*" --status affected
+```
+
+_See code: [src/commands/vex/index.ts](https://github.com/herodevs/cli/blob/v2.0.6/src/commands/vex/index.ts)_
 <!-- commandsstop -->
 
 ## CI/CD Usage

@@ -129,17 +129,19 @@ export function validateDirectory(dirPath: string): void {
   }
 }
 
-type SaveArtifactKind = 'sbom' | 'sbomTrimmed' | 'report';
+type SaveArtifactKind = 'sbom' | 'sbomTrimmed' | 'report' | 'vex';
 
 type SaveArtifactRequest =
   | { kind: 'sbom'; payload: CdxBom; outputPath?: string }
   | { kind: 'sbomTrimmed'; payload: CdxBom }
-  | { kind: 'report'; payload: EolReport; outputPath?: string };
+  | { kind: 'report'; payload: EolReport; outputPath?: string }
+  | { kind: 'vex'; payload: object; outputPath?: string };
 
 const artifactFilenames: Record<SaveArtifactKind, string> = {
   sbom: `${filenamePrefix}.sbom.json`,
   sbomTrimmed: `${filenamePrefix}.sbom-trimmed.json`,
   report: `${filenamePrefix}.report.json`,
+  vex: `${filenamePrefix}.openvex.json`,
 };
 
 /**

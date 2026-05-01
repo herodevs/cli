@@ -35,6 +35,7 @@ export const config = {
   graphqlPath: process.env.GRAPHQL_PATH || '/graphql',
   analyticsUrl: process.env.ANALYTICS_URL || 'https://apps.herodevs.com/api/eol/track',
   eolLogInUrl: process.env.EOL_LOG_IN_URL || 'https://apps.herodevs.com/eol/cli-logged-in',
+  vexStatementsUrl: process.env.VEX_STATEMENTS_URL || 'https://apps.herodevs.com/api/ontology/vex/statements',
   concurrentPageRequests,
   pageSize,
   ciTokenFromEnv: process.env.HD_CI_CREDENTIAL?.trim() || undefined,
