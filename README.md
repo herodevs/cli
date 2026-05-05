@@ -84,7 +84,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version|-v)
-@herodevs/cli/2.0.6 darwin-arm64 node-v24.14.1
+@herodevs/cli/2.0.6 darwin-arm64 node-v22.15.1
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -178,10 +178,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2025-05-01] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-05-05] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2026-05-01] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-05-05] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
@@ -364,11 +364,11 @@ FLAGS
                                     --exclude-package "pkg:npm/lodash*"). Removes statements where any product matches.
   -f, --file=<value>                Path to a CycloneDX or SPDX 2.3 SBOM; filters VEX entries to packages present in the
                                     SBOM
-  -o, --output=<value>              Save VEX statement to a custom path (defaults to herodevs.vex.json when not
+  -o, --output=<value>              Save VEX statement to a custom path (defaults to herodevs.openvex.json when not
                                     provided)
   -p, --package=<value>...          Glob pattern matched against product PURLs (repeatable, e.g. --package
                                     "pkg:npm/lodash*"). Keeps statements where any product matches.
-  -s, --save                        Save VEX statement to herodevs.vex.json in the current directory
+  -s, --save                        Save VEX statement to herodevs.openvex.json in the current directory
   -v, --vuln=<value>...             Glob pattern matched against vulnerability IDs (repeatable, e.g. --vuln
                                     "CVE-2021-*")
       --status=<option>...          Filter by VEX analysis status (repeatable)
