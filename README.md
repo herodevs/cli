@@ -84,7 +84,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version|-v)
-@herodevs/cli/2.0.6 darwin-arm64 node-v22.15.1
+@herodevs/cli/2.0.6 darwin-arm64 node-v24.15.0
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -337,7 +337,7 @@ EXAMPLES
 
   Update to a specific version:
 
-    $ hd update --version 1.0.0
+    $ hd update --version 2.0.6
 
   Interactively select version:
 
