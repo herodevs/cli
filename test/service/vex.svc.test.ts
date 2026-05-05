@@ -52,6 +52,15 @@ const mockVex: OpenVexDocument = {
       products: [{ '@id': 'pkg:npm/lodash@4.17.15' }],
       status: 'under_investigation',
     },
+    {
+      vulnerability: { name: 'CVE-2099-MULTI' },
+      products: [
+        { '@id': 'pkg:npm/react@17.0.0' },
+        { '@id': 'pkg:npm/react@18.0.0' },
+        { '@id': 'pkg:npm/react@19.0.0' },
+      ],
+      status: 'not_affected',
+    },
   ],
 };
 
@@ -160,6 +169,17 @@ describe('vex.svc', () => {
       expect(result['@id']).toBe(mockVex['@id']);
       expect(result.author).toBe(mockVex.author);
     });
+
+    it('narrows products to only those present in the SBOM, keeps statement', () => {
+      extractPurlsFromCdxBomMock.mockReturnValue(['pkg:npm/react@17.0.0']);
+
+      const result = filterByComponents(mockVex, mockSbom);
+
+      const multi = result.statements.find((s) => s.vulnerability.name === 'CVE-2099-MULTI');
+      expect(multi).toBeDefined();
+      expect(multi!.products).toHaveLength(1);
+      expect(multi!.products[0]['@id']).toBe('pkg:npm/react@17.0.0');
+    });
   });
 
   describe('filterByPackagePatterns', () => {
@@ -200,6 +220,22 @@ describe('vex.svc', () => {
       const result = filterByPackagePatterns(mockVex, ['pkg:npm/nonexistent*']);
 
       expect(result.statements).toHaveLength(0);
+    });
+
+    it('narrows products array to only matching products, keeps statement', () => {
+      const result = filterByPackagePatterns(mockVex, ['pkg:npm/react@17*']);
+
+      const multi = result.statements.find((s) => s.vulnerability.name === 'CVE-2099-MULTI');
+      expect(multi).toBeDefined();
+      expect(multi!.products).toHaveLength(1);
+      expect(multi!.products[0]['@id']).toBe('pkg:npm/react@17.0.0');
+    });
+
+    it('removes statement when no products match the pattern', () => {
+      const result = filterByPackagePatterns(mockVex, ['pkg:npm/vue*']);
+
+      const names = result.statements.map((s) => s.vulnerability.name);
+      expect(names).not.toContain('CVE-2099-MULTI');
     });
   });
 
@@ -247,14 +283,14 @@ describe('vex.svc', () => {
     it('keeps only statements with the given status', () => {
       const result = filterByStatus(mockVex, ['not_affected']);
 
-      expect(result.statements).toHaveLength(1);
-      expect(result.statements[0].status).toBe('not_affected');
+      expect(result.statements).toHaveLength(2);
+      expect(result.statements.every((s) => s.status === 'not_affected')).toBe(true);
     });
 
     it('supports filtering by multiple statuses', () => {
       const result = filterByStatus(mockVex, ['not_affected', 'fixed']);
 
-      expect(result.statements).toHaveLength(2);
+      expect(result.statements).toHaveLength(3);
       expect(result.statements.every((s) => s.status === 'not_affected' || s.status === 'fixed')).toBe(true);
     });
 
@@ -325,6 +361,25 @@ describe('vex.svc', () => {
       expect(result['@context']).toBe(mockVex['@context']);
       expect(result['@id']).toBe(mockVex['@id']);
       expect(result.author).toBe(mockVex.author);
+    });
+
+    it('removes only matching products, keeps statement when some products remain', () => {
+      const result = excludeByPackagePatterns(mockVex, ['pkg:npm/react@17*']);
+
+      const multi = result.statements.find((s) => s.vulnerability.name === 'CVE-2099-MULTI');
+      expect(multi).toBeDefined();
+      expect(multi!.products).toHaveLength(2);
+      expect(multi!.products.map((p) => p['@id'])).toEqual([
+        'pkg:npm/react@18.0.0',
+        'pkg:npm/react@19.0.0',
+      ]);
+    });
+
+    it('removes statement when all products are excluded', () => {
+      const result = excludeByPackagePatterns(mockVex, ['pkg:npm/react*']);
+
+      const names = result.statements.map((s) => s.vulnerability.name);
+      expect(names).not.toContain('CVE-2099-MULTI');
     });
   });
 

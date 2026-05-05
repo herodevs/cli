@@ -73,11 +73,11 @@ export default class Vex extends Command {
     save: Flags.boolean({
       char: 's',
       default: false,
-      description: `Save VEX statement to ${filenamePrefix}.vex.json in the current directory`,
+      description: `Save VEX statement to ${filenamePrefix}.openvex.json in the current directory`,
     }),
     output: Flags.string({
       char: 'o',
-      description: `Save VEX statement to a custom path (defaults to ${filenamePrefix}.vex.json when not provided)`,
+      description: `Save VEX statement to a custom path (defaults to ${filenamePrefix}.openvex.json when not provided)`,
     }),
   };
 

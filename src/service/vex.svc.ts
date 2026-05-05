@@ -74,12 +74,15 @@ export function filterByComponents(vex: OpenVexDocument, sbom: CdxBom): OpenVexD
 
   if (normalizePurls.size === 0) return vex;
 
-  const filtered = vex.statements.filter((stmt) =>
-    stmt.products.some((product) => {
-      const base = normalizePurl(product['@id']);
-      return base !== null && normalizePurls.has(base);
-    }),
-  );
+  const filtered = vex.statements
+    .map((stmt) => ({
+      ...stmt,
+      products: stmt.products.filter((product) => {
+        const base = normalizePurl(product['@id']);
+        return base !== null && normalizePurls.has(base);
+      }),
+    }))
+    .filter((stmt) => stmt.products.length > 0);
 
   return { ...vex, statements: filtered };
 }
@@ -87,9 +90,12 @@ export function filterByComponents(vex: OpenVexDocument, sbom: CdxBom): OpenVexD
 export function filterByPackagePatterns(vex: OpenVexDocument, patterns: string[]): OpenVexDocument {
   if (patterns.length === 0) return vex;
 
-  const filtered = vex.statements.filter((stmt) =>
-    stmt.products.some((product) => matchesAnyPattern(product['@id'], patterns)),
-  );
+  const filtered = vex.statements
+    .map((stmt) => ({
+      ...stmt,
+      products: stmt.products.filter((product) => matchesAnyPattern(product['@id'], patterns)),
+    }))
+    .filter((stmt) => stmt.products.length > 0);
 
   return { ...vex, statements: filtered };
 }
@@ -113,9 +119,12 @@ export function filterByStatus(vex: OpenVexDocument, statuses: string[]): OpenVe
 export function excludeByPackagePatterns(vex: OpenVexDocument, patterns: string[]): OpenVexDocument {
   if (patterns.length === 0) return vex;
 
-  const filtered = vex.statements.filter(
-    (stmt) => !stmt.products.some((product) => matchesAnyPattern(product['@id'], patterns)),
-  );
+  const filtered = vex.statements
+    .map((stmt) => ({
+      ...stmt,
+      products: stmt.products.filter((product) => !matchesAnyPattern(product['@id'], patterns)),
+    }))
+    .filter((stmt) => stmt.products.length > 0);
 
   return { ...vex, statements: filtered };
 }
