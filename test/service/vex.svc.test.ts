@@ -99,9 +99,7 @@ describe('vex.svc', () => {
         statusText: 'Service Unavailable',
       } as unknown as Response);
 
-      await expect(fetchVexStatement()).rejects.toThrow(
-        'Failed to fetch VEX statement: HTTP 503 Service Unavailable',
-      );
+      await expect(fetchVexStatement()).rejects.toThrow('Failed to fetch VEX statement: HTTP 503 Service Unavailable');
     });
 
     it('fetches from the configured VEX statements URL', async () => {
@@ -177,8 +175,8 @@ describe('vex.svc', () => {
 
       const multi = result.statements.find((s) => s.vulnerability.name === 'CVE-2099-MULTI');
       expect(multi).toBeDefined();
-      expect(multi!.products).toHaveLength(1);
-      expect(multi!.products[0]['@id']).toBe('pkg:npm/react@17.0.0');
+      expect(multi?.products).toHaveLength(1);
+      expect(multi?.products[0]['@id']).toBe('pkg:npm/react@17.0.0');
     });
   });
 
@@ -227,8 +225,8 @@ describe('vex.svc', () => {
 
       const multi = result.statements.find((s) => s.vulnerability.name === 'CVE-2099-MULTI');
       expect(multi).toBeDefined();
-      expect(multi!.products).toHaveLength(1);
-      expect(multi!.products[0]['@id']).toBe('pkg:npm/react@17.0.0');
+      expect(multi?.products).toHaveLength(1);
+      expect(multi?.products[0]['@id']).toBe('pkg:npm/react@17.0.0');
     });
 
     it('removes statement when no products match the pattern', () => {
@@ -368,11 +366,8 @@ describe('vex.svc', () => {
 
       const multi = result.statements.find((s) => s.vulnerability.name === 'CVE-2099-MULTI');
       expect(multi).toBeDefined();
-      expect(multi!.products).toHaveLength(2);
-      expect(multi!.products.map((p) => p['@id'])).toEqual([
-        'pkg:npm/react@18.0.0',
-        'pkg:npm/react@19.0.0',
-      ]);
+      expect(multi?.products).toHaveLength(2);
+      expect(multi?.products.map((p) => p['@id'])).toEqual(['pkg:npm/react@18.0.0', 'pkg:npm/react@19.0.0']);
     });
 
     it('removes statement when all products are excluded', () => {

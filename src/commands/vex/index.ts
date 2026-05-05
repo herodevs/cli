@@ -3,7 +3,7 @@ import { filenamePrefix } from '../../config/constants.ts';
 import { track } from '../../service/analytics.svc.ts';
 import { readSbomFromFile, saveArtifactToFile } from '../../service/file.svc.ts';
 import { getErrorMessage } from '../../service/log.svc.ts';
-import { type OpenVexDocument, applyVexFilters, fetchVexStatement } from '../../service/vex.svc.ts';
+import { applyVexFilters, fetchVexStatement, type OpenVexDocument } from '../../service/vex.svc.ts';
 
 export default class Vex extends Command {
   static override description = 'Download and filter the HeroDevs VEX statement';

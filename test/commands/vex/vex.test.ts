@@ -330,7 +330,7 @@ describe('vex command', () => {
 
       await command.run();
 
-      const events = trackMock.mock.calls.map(([event]: [string]) => event);
+      const events = trackMock.mock.calls.map((event) => event[0]);
       expect(events).toContain('CLI VEX Download Started');
       expect(events).toContain('CLI VEX Download Completed');
     });
@@ -343,7 +343,7 @@ describe('vex command', () => {
 
       await command.run();
 
-      const completedCall = trackMock.mock.calls.find(([event]: [string]) => event === 'CLI VEX Download Completed');
+      const completedCall = trackMock.mock.calls.find((event) => event[0] === 'CLI VEX Download Completed');
       expect(completedCall).toBeDefined();
       const getProperties = completedCall?.[1] as (ctx: Record<string, unknown>) => Record<string, unknown>;
       const properties = getProperties({ command: 'vex', command_flags: '--vuln CVE-*' });
@@ -362,7 +362,7 @@ describe('vex command', () => {
 
       await command.run().catch(() => {});
 
-      const events = trackMock.mock.calls.map(([event]: [string]) => event);
+      const events = trackMock.mock.calls.map((event) => event[0]);
       expect(events).toContain('CLI VEX Download Failed');
     });
   });
