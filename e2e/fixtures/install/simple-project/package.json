@@ -1,0 +1,8 @@
+{
+  "name": "hd-install-simple-project",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "hd-demo-dep": "1.0.0"
+  }
+}

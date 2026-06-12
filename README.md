@@ -97,6 +97,7 @@ USAGE
 * [`hd auth logout`](#hd-auth-logout)
 * [`hd auth provision-ci-token`](#hd-auth-provision-ci-token)
 * [`hd help [COMMAND]`](#hd-help-command)
+* [`hd install`](#hd-install)
 * [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
 * [`hd tracker init`](#hd-tracker-init)
@@ -165,6 +166,20 @@ DESCRIPTION
 
 _See code: [@oclif/plugin-help](https://github.com/oclif/plugin-help/blob/6.2.44/src/commands/help.ts)_
 
+### `hd install`
+
+Install dependencies through the HeroDevs NES npm proxy
+
+```
+USAGE
+  $ hd install
+
+DESCRIPTION
+  Install dependencies through the HeroDevs NES npm proxy
+```
+
+_See code: [src/commands/install.ts](https://github.com/herodevs/cli/blob/v2.0.6/src/commands/install.ts)_
+
 ### `hd report committers`
 
 Generate report of committers to a git repository
@@ -177,10 +192,10 @@ USAGE
 FLAGS
   -c, --csv                 Output in CSV format
   -d, --directory=<value>   Directory to search
-  -e, --afterDate=<value>   [default: 2025-04-23] Start date (format: yyyy-MM-dd)
+  -e, --afterDate=<value>   [default: 2025-05-27] Start date (format: yyyy-MM-dd)
   -m, --months=<value>      [default: 12] The number of months of git history to review. Cannot be used along beforeDate
                             and afterDate
-  -s, --beforeDate=<value>  [default: 2026-04-23] End date (format: yyyy-MM-dd)
+  -s, --beforeDate=<value>  [default: 2026-05-27] End date (format: yyyy-MM-dd)
   -s, --save                Save the committers report as herodevs.committers.<output>
   -x, --exclude=<value>...  Path Exclusions (eg -x="./src/bin" -x="./dist")
       --json                Output to JSON format
