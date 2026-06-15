@@ -30,6 +30,7 @@ query GetEolReport($input: GetEolReportInput) {
             }
           }
         }
+        remediations
       }
       page
       totalRecords

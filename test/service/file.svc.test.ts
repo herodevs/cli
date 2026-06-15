@@ -225,6 +225,33 @@ describe('file.svc', () => {
       expect(outputPath.includes(tempDir)).toBe(true);
     });
 
+    it('should preserve per-component remediations in the saved report', async () => {
+      tempDir = createTempDir();
+
+      const reportWithRemediations: EolReport = {
+        ...mockReport,
+        components: [
+          {
+            purl: 'pkg:npm/bootstrap@3.1.1',
+            metadata: null,
+            remediations: [
+              {
+                type: 'nes_available',
+                description: 'Secured, supported, drop-in replacement',
+                action: { type: 'direct', url: 'https://www.herodevs.com/support/bootstrap-nes' },
+                target: { purl: 'pkg:npm/bootstrap@3.1.1', version: '3.1.1' },
+              },
+            ],
+          },
+        ],
+      };
+
+      const outputPath = saveArtifactToFile(tempDir, { kind: 'report', payload: reportWithRemediations });
+
+      const parsed = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+      expect(parsed.components[0].remediations).toEqual(reportWithRemediations.components[0].remediations);
+    });
+
     it('should save report to a custom path', async () => {
       tempDir = createTempDir();
       const customDir = join(tempDir, 'nested');
