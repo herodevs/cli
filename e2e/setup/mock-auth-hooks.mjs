@@ -1,6 +1,6 @@
 /**
- * ESM loader hooks that replace auth.svc.ts with a mock during E2E tests.
- * This avoids writing encrypted token files during E2E tests.
+ * ESM loader hooks that replace auth services with mocks during E2E tests.
+ * This avoids writing encrypted token files or calling HeroDevs auth APIs during E2E tests.
  */
 export async function load(url, context, nextLoad) {
   if (url.endsWith('/service/auth.svc.ts') || url.endsWith('/service/auth.svc.js')) {
@@ -29,6 +29,16 @@ export async function load(url, context, nextLoad) {
         export function getTokenForScanWithSource() { return Promise.resolve({ token: 'test-token', source: 'oauth' }); }
         export function getTokenProvider() { return () => Promise.resolve('test-token'); }
         export function requireAccessTokenForScan() { return Promise.resolve('test-token'); }
+      `,
+    };
+  }
+
+  if (url.endsWith('/service/install/registry-auth.svc.ts') || url.endsWith('/service/install/registry-auth.svc.js')) {
+    return {
+      format: 'module',
+      shortCircuit: true,
+      source: `
+        export function getNesRegistryAuthToken() { return Promise.resolve('test-registry-token'); }
       `,
     };
   }

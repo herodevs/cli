@@ -3,6 +3,7 @@ import os from 'node:os';
 import { track as _track, Identify, identify, init, setOptOut, Types } from '@amplitude/analytics-node';
 import NodeMachineId from 'node-machine-id';
 import { config } from '../config/constants.ts';
+import type { InstallEolPackageSummary, InstallNesPackageSummary } from '../types/install.ts';
 import { getStoredTokens, type StoredTokens } from './auth-token.svc.ts';
 import { decodeJwtPayload } from './jwt.svc.ts';
 import { debugLogger, getErrorMessage } from './log.svc.ts';
@@ -34,6 +35,12 @@ interface AnalyticsContext {
   command?: string;
   command_flags?: string;
   error?: string;
+  eol_no_nes_count?: number;
+  eol_no_nes_packages?: InstallEolPackageSummary[];
+  nes_available_not_entitled_count?: number;
+  nes_available_not_entitled_packages?: InstallNesPackageSummary[];
+  nes_matched_package_count?: number;
+  nes_matched_packages?: InstallNesPackageSummary[];
 
   // Scan Results
   eol_true_count?: number;
