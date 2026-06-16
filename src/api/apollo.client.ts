@@ -2,6 +2,22 @@ import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { requireAccessTokenForScan } from '../service/auth.svc.ts';
 import { ApiError, PAYLOAD_TOO_LARGE_ERROR_CODE } from './errors.ts';
 
+declare module '@apollo/client/core' {
+  interface TypeOverrides {
+    signatureStyle: 'classic';
+  }
+  namespace ApolloClient {
+    namespace DeclareDefaultOptions {
+      interface Query {
+        errorPolicy: 'all';
+      }
+      interface Mutate {
+        errorPolicy: 'all';
+      }
+    }
+  }
+}
+
 export type TokenProvider = (forceRefresh?: boolean) => Promise<string>;
 
 function isTokenEndpoint(input: string | URL | Request): boolean {
