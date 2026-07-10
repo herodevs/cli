@@ -1,6 +1,7 @@
 import type { CdxBom, EolReport } from '@herodevs/eol-shared';
 import { trimCdxBom } from '@herodevs/eol-shared';
 import { Command, Flags } from '@oclif/core';
+import { Presets, SingleBar } from 'cli-progress';
 import ora from 'ora';
 import { ApiError, PAYLOAD_TOO_LARGE_ERROR_CODE } from '../../api/errors.ts';
 import { submitScan } from '../../api/nes.client.ts';
@@ -214,14 +215,42 @@ export default class ScanEol extends Command {
       }));
     }
 
-    spinner.start('Scanning for EOL packages');
+    spinner.start('Scanning for EOL Packages');
+    let reportCreated = false;
+    let progressBar: SingleBar | undefined;
+
     try {
       const scanOrigin = flags.automated ? SCAN_ORIGIN_AUTOMATED : SCAN_ORIGIN_CLI;
-      const scan = await submitScan({ sbom: trimmedSbom, scanOrigin });
-      spinner.succeed('Scan completed');
+      const scan = await submitScan(
+        { sbom: trimmedSbom, scanOrigin },
+        {
+          onReportCreated: (reportId) => {
+            reportCreated = true;
+            spinner.succeed(`Created Scan Report ${reportId}`);
+          },
+          onPageProgress: (completedPageCount, totalPageCount) => {
+            if (!progressBar) {
+              progressBar = new SingleBar(
+                { format: 'Compiling Report Results {bar} | {value}/{total} pages', hideCursor: true },
+                Presets.shades_grey,
+              );
+              progressBar.start(totalPageCount, completedPageCount);
+            } else {
+              progressBar.update(completedPageCount);
+            }
+
+            if (completedPageCount >= totalPageCount) {
+              progressBar.stop();
+            }
+          },
+        },
+      );
       return scan;
     } catch (error) {
-      spinner.fail('Scanning failed');
+      progressBar?.stop();
+      if (!reportCreated) {
+        spinner.fail('Failed to Create Scan Report');
+      }
       const scanLoadTime = this.getScanLoadTime(scanStartTime);
 
       if (error instanceof ApiError) {

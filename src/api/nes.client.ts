@@ -20,8 +20,13 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
   return code;
 }
 
+export interface ScanProgressHandlers {
+  onReportCreated?: (reportId: string) => void;
+  onPageProgress?: (completedPageCount: number, totalPageCount: number) => void;
+}
+
 export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
-  return async (input: CreateEolReportInput): Promise<EolReport> => {
+  return async (input: CreateEolReportInput, handlers?: ScanProgressHandlers): Promise<EolReport> => {
     let res: Awaited<ReturnType<typeof client.mutate<EolReportMutationResponse, { input: CreateEolReportInput }>>>;
     res = await client.mutate<EolReportMutationResponse, { input: CreateEolReportInput }>({
       mutation: createReportMutation,
@@ -49,31 +54,43 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
       throw new Error('Failed to create EOL report');
     }
 
+    handlers?.onReportCreated?.(result.id);
+
     const totalRecords = result.totalRecords || 0;
-    const totalPages = Math.ceil(totalRecords / config.pageSize);
-    const pages = Array.from({ length: totalPages }, (_, index) =>
-      client.query<EolReportQueryResponse, { input: GetEolReportInput }>({
-        query: getEolReportQuery,
-        variables: {
-          input: {
-            id: result.id,
-            page: index + 1,
-            size: config.pageSize,
-          },
-        },
-      }),
-    );
+    const totalPageCount = Math.ceil(totalRecords / config.pageSize);
+    const pageNumbers = Array.from({ length: totalPageCount }, (_, index) => index + 1);
 
     const components: EolReport['components'] = [];
     let reportMetadata: EolReport | null = null;
+    let completedPageCount = 0;
 
-    for (let i = 0; i < pages.length; i += config.concurrentPageRequests) {
-      const batch = pages.slice(i, i + config.concurrentPageRequests);
-      let batchResponses: Awaited<
-        ReturnType<typeof client.query<EolReportQueryResponse, { input: GetEolReportInput }>>
-      >[];
+    handlers?.onPageProgress?.(completedPageCount, totalPageCount);
 
-      batchResponses = await Promise.all(batch);
+    for (let i = 0; i < pageNumbers.length; i += config.concurrentPageRequests) {
+      const batch = pageNumbers.slice(i, i + config.concurrentPageRequests);
+      const batchResponses = await Promise.all(
+        batch.map((page) => {
+          const pageResponse = client.query<EolReportQueryResponse, { input: GetEolReportInput }>({
+            query: getEolReportQuery,
+            variables: {
+              input: {
+                id: result.id,
+                page,
+                size: config.pageSize,
+              },
+            },
+          });
+
+          pageResponse
+            .catch(() => undefined)
+            .finally(() => {
+              completedPageCount += 1;
+              handlers?.onPageProgress?.(completedPageCount, totalPageCount);
+            });
+
+          return pageResponse;
+        }),
+      );
 
       for (const response of batchResponses) {
         const queryErrors = getGraphQLErrors(response);
@@ -119,9 +136,9 @@ export class NesClient {
 /**
  * Submit a scan for a list of purls
  */
-export function submitScan(input: CreateEolReportInput): Promise<EolReport> {
+export function submitScan(input: CreateEolReportInput, handlers?: ScanProgressHandlers): Promise<EolReport> {
   const url = config.graphqlHost + config.graphqlPath;
   debugLogger('Submitting scan to %s', url);
   const client = new NesClient(url);
-  return client.startScan(input);
+  return client.startScan(input, handlers);
 }

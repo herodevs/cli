@@ -175,6 +175,56 @@ describe('nes.client', () => {
     expect(vi.mocked(requireAccessTokenForScan).mock.calls).toEqual([[], [true]]);
   });
 
+  describe('progress handlers', () => {
+    it('invokes onReportCreated with the report id and onPageProgress across paginated batches', async () => {
+      const components = [{ purl: 'pkg:npm/bootstrap@3.1.1', metadata: { isEol: true } }];
+
+      fetchMock
+        .addGraphQL({
+          eol: { createReport: { success: true, id: 'test-progress', totalRecords: components.length } },
+        })
+        .addGraphQL({
+          eol: {
+            report: {
+              id: 'test-progress',
+              createdOn: new Date().toISOString(),
+              metadata: {},
+              components,
+              page: 1,
+              totalRecords: components.length,
+            },
+          },
+        });
+
+      const input: CreateEolReportInput = {
+        sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+      };
+
+      const onReportCreated = vi.fn();
+      const onPageProgress = vi.fn();
+
+      await submitScan(input, { onReportCreated, onPageProgress });
+
+      expect(onReportCreated).toHaveBeenCalledExactlyOnceWith('test-progress');
+      expect(onPageProgress).toHaveBeenCalledWith(0, 1);
+      expect(onPageProgress).toHaveBeenCalledWith(1, 1);
+    });
+
+    it('does not invoke onReportCreated when the createReport mutation fails', async () => {
+      fetchMock.addGraphQL({
+        eol: { createReport: { success: false, id: null, totalRecords: 0 } },
+      });
+
+      const input: CreateEolReportInput = {
+        sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+      };
+
+      const onReportCreated = vi.fn();
+      await expect(submitScan(input, { onReportCreated })).rejects.toThrow(/Failed to create EOL report/);
+      expect(onReportCreated).not.toHaveBeenCalled();
+    });
+  });
+
   describe('scanOrigin', () => {
     it('passes scanOrigin to createReport mutation when provided', async () => {
       const components = [{ purl: 'pkg:npm/test@1.0.0', metadata: { isEol: false } }];
