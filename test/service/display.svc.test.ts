@@ -39,7 +39,7 @@ describe('display.svc', () => {
       },
       {
         purl: 'pkg:npm/test3@3.0.0',
-        metadata: null,
+        metadata: { unknownReason: 'not_identifiable' },
       },
       {
         purl: 'pkg:npm/%40scoped/package@1.0.0',
@@ -79,6 +79,29 @@ describe('display.svc', () => {
       expect(counts.UNKNOWN).toBe(1);
       expect(counts.EOL_UPCOMING).toBe(0);
       expect(counts.NES_AVAILABLE).toBe(1);
+    });
+
+    it('should count components with only an unknownReason as UNKNOWN, not OK', () => {
+      const unknownReports: EolReport = {
+        ...mockReport,
+        components: [
+          {
+            purl: 'pkg:npm/mystery@1.0.0',
+            metadata: { unknownReason: 'not_identifiable' },
+          },
+          {
+            purl: 'pkg:npm/queued@2.0.0',
+            metadata: { unknownReason: 'queued' },
+          },
+        ],
+      };
+
+      const counts = countComponentsByStatus(unknownReports);
+
+      expect(counts.UNKNOWN).toBe(2);
+      expect(counts.OK).toBe(0);
+      expect(counts.EOL).toBe(0);
+      expect(counts.EOL_UPCOMING).toBe(0);
     });
 
     it('should extract ecosystems correctly from various PURL formats', () => {
