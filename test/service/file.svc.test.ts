@@ -233,7 +233,7 @@ describe('file.svc', () => {
         components: [
           {
             purl: 'pkg:npm/bootstrap@3.1.1',
-            metadata: null,
+            metadata: { unknownReason: 'not_identifiable' },
             remediations: [
               {
                 type: 'nes_available',
