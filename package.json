@@ -68,7 +68,7 @@
     "@oclif/test": "^4.1.18",
     "@types/cli-progress": "^3.11.6",
     "@types/debug": "^4.1.13",
-    "@types/inquirer": "^9.0.9",
+    "@types/inquirer": "^9.0.10",
     "@types/mock-fs": "^4.13.4",
     "@types/node": "^24.10.1",
     "@types/ora": "^3.2.0",
