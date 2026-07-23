@@ -13,7 +13,7 @@ jobs:
     name: Commit Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - uses: wagoid/commitlint-github-action@b948419dd99f3fd78a6548d48f94e3df7f6bf3ed # v6.2.1
@@ -23,7 +23,7 @@ jobs:
     needs: commit-lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Setup Biome CLI
         uses: biomejs/setup-biome@4c91541eaada48f67d7dbd7833600ce162b68f51 # v2.7.1
       - name: Run Biome
@@ -34,7 +34,7 @@ jobs:
     needs: code-quality
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install ShellCheck
         run: sudo apt-get install shellcheck
       - name: Run ShellCheck
@@ -55,7 +55,7 @@ jobs:
       EOL_REPORT_URL: ${{ secrets.EOL_REPORT_URL }}
       TRACKING_OPT_OUT: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: "Use Node.js ${{matrix.node}}.x"
         uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6.1.0
         with:
