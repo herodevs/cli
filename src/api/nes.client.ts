@@ -10,7 +10,7 @@ import { config } from '../config/constants.ts';
 import { debugLogger } from '../service/log.svc.ts';
 import { stripTypename } from '../utils/strip-typename.ts';
 import { createApollo } from './apollo.client.ts';
-import { ApiError, type ApiErrorCode, isApiErrorCode } from './errors.ts';
+import { ApiError, type ApiErrorCode, isApiErrorCode, isSbomErrorCode, SbomError } from './errors.ts';
 import { createReportMutation, getEolReportQuery } from './gql-operations.ts';
 import { getGraphQLErrors } from './graphql-errors.ts';
 
@@ -18,6 +18,20 @@ function extractErrorCode(errors: ReadonlyArray<GraphQLFormattedError>): ApiErro
   const code = (errors[0]?.extensions as { code?: string })?.code;
   if (!code || !isApiErrorCode(code)) return;
   return code;
+}
+
+/**
+ * Recognize SBOM validation rejections so the thrown error keeps both the code
+ * and the API-provided message/details for the createReport path.
+ */
+function extractSbomError(errors: ReadonlyArray<GraphQLFormattedError>): SbomError | undefined {
+  const extensions = errors[0]?.extensions as { code?: string; purl?: string; totalComponents?: number } | undefined;
+  const code = extensions?.code;
+  if (!code || !isSbomErrorCode(code)) return;
+  return new SbomError(errors[0].message, code, {
+    purl: extensions.purl,
+    totalComponents: extensions.totalComponents,
+  });
 }
 
 export interface ScanProgressHandlers {
@@ -40,6 +54,10 @@ export const SbomScanner = (client: ReturnType<typeof createApollo>) => {
         throw res.error;
       }
       if (errors?.length) {
+        const sbomError = extractSbomError(errors);
+        if (sbomError) {
+          throw sbomError;
+        }
         const code = extractErrorCode(errors);
         if (code) {
           throw new ApiError(errors[0].message, code);

@@ -3,7 +3,13 @@ import { vi } from 'vitest';
 
 vi.mock('../../src/config/constants.ts', async (importOriginal) => importOriginal());
 
-import { ApiError, PAYLOAD_TOO_LARGE_ERROR_CODE } from '../../src/api/errors.ts';
+import {
+  ApiError,
+  INVALID_PURL_ERROR_CODE,
+  PAYLOAD_TOO_LARGE_ERROR_CODE,
+  SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE,
+  SbomError,
+} from '../../src/api/errors.ts';
 import { submitScan } from '../../src/api/nes.client.ts';
 import { SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../src/config/constants.ts';
 import { requireAccessTokenForScan } from '../../src/service/auth.svc.ts';
@@ -125,6 +131,64 @@ describe('nes.client', () => {
       sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
     };
     await expect(submitScan(input)).rejects.toThrow(/Failed to create EOL report/);
+  });
+
+  it('throws SbomError preserving the code and API message for SBOM validation errors', async () => {
+    fetchMock.addGraphQL({ eol: { createReport: null } }, [
+      {
+        message: 'No identifiable components',
+        path: ['eol', 'createReport'],
+        extensions: { code: SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE, totalComponents: 12 },
+      },
+    ]);
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    const error = await submitScan(input).catch((e) => e);
+
+    expect(error).toBeInstanceOf(SbomError);
+    expect(error.code).toBe(SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE);
+    expect(error.message).toBe('No identifiable components');
+    expect(error.details).toEqual({ purl: undefined, totalComponents: 12 });
+  });
+
+  it('preserves purl details on INVALID_PURL SBOM errors', async () => {
+    fetchMock.addGraphQL({ eol: { createReport: null } }, [
+      {
+        message: 'Invalid purl',
+        path: ['eol', 'createReport'],
+        extensions: { code: INVALID_PURL_ERROR_CODE, purl: 'pkg:npm/@@bad' },
+      },
+    ]);
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    const error = await submitScan(input).catch((e) => e);
+
+    expect(error).toBeInstanceOf(SbomError);
+    expect(error.code).toBe(INVALID_PURL_ERROR_CODE);
+    expect(error.details?.purl).toBe('pkg:npm/@@bad');
+  });
+
+  it('falls back to the generic error for unrecognized error codes', async () => {
+    fetchMock.addGraphQL({ eol: { createReport: null } }, [
+      {
+        message: 'Something unexpected',
+        path: ['eol', 'createReport'],
+        extensions: { code: 'SOME_UNKNOWN_CODE' },
+      },
+    ]);
+
+    const input: CreateEolReportInput = {
+      sbom: { bomFormat: 'CycloneDX', components: [], specVersion: '1.4', version: 1 },
+    };
+    const error = await submitScan(input).catch((e) => e);
+
+    expect(error).not.toBeInstanceOf(SbomError);
+    expect(error).not.toBeInstanceOf(ApiError);
+    expect(error.message).toMatch(/Failed to create EOL report/);
   });
 
   it('throws ApiError with PAYLOAD_TOO_LARGE code when server returns 413', async () => {
