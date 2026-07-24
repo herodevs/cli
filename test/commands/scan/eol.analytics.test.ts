@@ -1,7 +1,17 @@
 import type { CdxBom, EolReport } from '@herodevs/eol-shared';
 import type { Config } from '@oclif/core';
-import { ApiError, FORBIDDEN_ERROR_CODE, PAYLOAD_TOO_LARGE_ERROR_CODE } from '../../../src/api/errors.ts';
-import ScanEol from '../../../src/commands/scan/eol.ts';
+import {
+  ApiError,
+  EMPTY_SBOM_ERROR_CODE,
+  FORBIDDEN_ERROR_CODE,
+  INVALID_PURL_ERROR_CODE,
+  INVALID_SBOM_JSON_ERROR_CODE,
+  PAYLOAD_TOO_LARGE_ERROR_CODE,
+  SBOM_MISSING_COMPONENTS_ERROR_CODE,
+  SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE,
+  SbomError,
+} from '../../../src/api/errors.ts';
+import ScanEol, { getSbomErrorMessage, SBOM_ERROR_MESSAGES } from '../../../src/commands/scan/eol.ts';
 import { CITokenError } from '../../../src/service/auth.svc.ts';
 
 const {
@@ -213,6 +223,47 @@ describe('scan:eol analytics timing', () => {
     );
   });
 
+  it('surfaces the SBOM message and tracks the specific code on SbomError failures', async () => {
+    submitScanMock.mockRejectedValue(
+      new SbomError('No identifiable components', SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE, {
+        totalComponents: 12,
+      }),
+    );
+
+    const command = createCommand();
+    vi.spyOn(command, 'parse').mockResolvedValue({
+      flags: { automated: false, saveTrimmedSbom: false, file: '/tmp/sample.sbom.json' },
+    });
+    vi.spyOn(command, 'error').mockImplementation((message: string) => {
+      throw new Error(message);
+    });
+
+    await expect(command.scanSbom(sampleSbom)).rejects.toThrow(
+      "None of the packages (components) in this SBOM include package URLs (purls), so we can't identify them for analysis. Regenerate the SBOM with a tool that includes purls, such as cdxgen or Syft — or run the scan without --file to let the CLI generate one from your project — and try again.",
+    );
+
+    const properties = getTrackProperties('CLI EOL Scan Failed');
+    expect(properties.scan_failure_reason).toBe(SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE);
+    expect(properties.scan_load_time).toEqual(expect.any(Number));
+    expect(properties.number_of_packages).toBe(1);
+  });
+
+  it('includes the offending purl for INVALID_PURL SBOM failures', async () => {
+    submitScanMock.mockRejectedValue(new SbomError('Invalid purl', INVALID_PURL_ERROR_CODE, { purl: 'pkg:npm/@@bad' }));
+
+    const command = createCommand();
+    vi.spyOn(command, 'parse').mockResolvedValue({
+      flags: { automated: false, saveTrimmedSbom: false, file: '/tmp/sample.sbom.json' },
+    });
+    vi.spyOn(command, 'error').mockImplementation((message: string) => {
+      throw new Error(message);
+    });
+
+    await expect(command.scanSbom(sampleSbom)).rejects.toThrow(
+      'One of the packages (components) in this SBOM has a malformed package URL (purl): pkg:npm/@@bad. Regenerate the SBOM with an up-to-date tool such as cdxgen or Syft — or run the scan without --file to let the CLI generate one from your project — and try again.',
+    );
+  });
+
   it('keeps scan_load_time on successful completion events', async () => {
     const command = createCommand();
 
@@ -272,5 +323,43 @@ describe('scan:eol analytics timing', () => {
     expect(errorSpy).toHaveBeenCalledWith(
       'There was an error communicating with the HeroDevs server while refreshing the CI token. Please verify server connectivity/configuration and try again.',
     );
+  });
+});
+
+describe('getSbomErrorMessage', () => {
+  it('returns the base copy for codes without file/generated tailoring', () => {
+    const error = new SbomError('x', INVALID_SBOM_JSON_ERROR_CODE);
+    expect(getSbomErrorMessage(error, true)).toBe(SBOM_ERROR_MESSAGES[INVALID_SBOM_JSON_ERROR_CODE]);
+    expect(getSbomErrorMessage(error, false)).toBe(SBOM_ERROR_MESSAGES[INVALID_SBOM_JSON_ERROR_CODE]);
+  });
+
+  it('tailors EMPTY_SBOM wording for user-provided vs generated SBOMs', () => {
+    const error = new SbomError('x', EMPTY_SBOM_ERROR_CODE);
+    expect(getSbomErrorMessage(error, true)).toMatch(/file doesn't contain any SBOM data/);
+    expect(getSbomErrorMessage(error, false)).toMatch(/generated SBOM contained no data/);
+  });
+
+  it('tailors SBOM_MISSING_COMPONENTS wording for user-provided vs generated SBOMs', () => {
+    const error = new SbomError('x', SBOM_MISSING_COMPONENTS_ERROR_CODE);
+    expect(getSbomErrorMessage(error, true)).toBe(SBOM_ERROR_MESSAGES[SBOM_MISSING_COMPONENTS_ERROR_CODE]);
+    expect(getSbomErrorMessage(error, false)).toMatch(/generated SBOM has no packages/);
+  });
+
+  it('tailors SBOM_NO_IDENTIFIABLE_COMPONENTS wording for user-provided vs generated SBOMs', () => {
+    const error = new SbomError('x', SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE);
+    expect(getSbomErrorMessage(error, true)).toMatch(/run the scan without --file/);
+    expect(getSbomErrorMessage(error, false)).toBe(SBOM_ERROR_MESSAGES[SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE]);
+  });
+
+  it('interpolates the purl for INVALID_PURL and hints CLI generation for user-provided SBOMs', () => {
+    const withPurl = new SbomError('x', INVALID_PURL_ERROR_CODE, { purl: 'pkg:npm/@@bad' });
+    expect(getSbomErrorMessage(withPurl, true)).toContain('pkg:npm/@@bad');
+    expect(getSbomErrorMessage(withPurl, true)).toMatch(/run the scan without --file/);
+
+    // Generated SBOM (no --file) omits the CLI-generation hint and, without a purl,
+    // matches the canonical base copy.
+    const withoutPurl = new SbomError('x', INVALID_PURL_ERROR_CODE);
+    expect(getSbomErrorMessage(withoutPurl, false)).toBe(SBOM_ERROR_MESSAGES[INVALID_PURL_ERROR_CODE]);
+    expect(getSbomErrorMessage(withoutPurl, false)).not.toMatch(/run the scan without --file/);
   });
 });

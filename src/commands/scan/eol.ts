@@ -3,7 +3,16 @@ import { trimCdxBom } from '@herodevs/eol-shared';
 import { Command, Flags } from '@oclif/core';
 import { Presets, SingleBar } from 'cli-progress';
 import ora from 'ora';
-import { ApiError, PAYLOAD_TOO_LARGE_ERROR_CODE } from '../../api/errors.ts';
+import {
+  ApiError,
+  EMPTY_SBOM_ERROR_CODE,
+  INVALID_PURL_ERROR_CODE,
+  PAYLOAD_TOO_LARGE_ERROR_CODE,
+  SBOM_MISSING_COMPONENTS_ERROR_CODE,
+  SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE,
+  SbomError,
+  type SbomErrorCode,
+} from '../../api/errors.ts';
 import { submitScan } from '../../api/nes.client.ts';
 import { config, filenamePrefix, SCAN_ORIGIN_AUTOMATED, SCAN_ORIGIN_CLI } from '../../config/constants.ts';
 import { track } from '../../service/analytics.svc.ts';
@@ -18,6 +27,53 @@ import {
 } from '../../service/display.svc.ts';
 import { readSbomFromFile, saveArtifactToFile, validateDirectory } from '../../service/file.svc.ts';
 import { getErrorMessage } from '../../service/log.svc.ts';
+
+/**
+ * CLI-friendly copy for each SBOM validation code. Kept separate from
+ * AUTH_ERROR_MESSAGES — these are SBOM problems, not auth problems.
+ */
+export const SBOM_ERROR_MESSAGES: Record<SbomErrorCode, string> = {
+  EMPTY_SBOM: "This SBOM doesn't contain any data. Provide a valid CycloneDX or SPDX SBOM and try again.",
+  INVALID_SBOM_JSON: "This SBOM isn't valid JSON. Provide a well-formed CycloneDX or SPDX SBOM and try again.",
+  SBOM_MISSING_COMPONENTS:
+    "This SBOM doesn't list any packages (components), so there's nothing to analyze. Provide an SBOM that includes packages and try again.",
+  SBOM_NO_IDENTIFIABLE_COMPONENTS:
+    "None of the packages (components) in this SBOM include package URLs (purls), so we can't identify them for analysis. Regenerate the SBOM with a tool that includes purls, such as cdxgen or Syft, and try again.",
+  INVALID_PURL:
+    "One of the packages (components) in this SBOM has a malformed package URL (purl). Regenerate the SBOM with an up-to-date tool such as cdxgen or Syft, and try again. If the issue persists, that purl likely doesn't conform to the purl spec and will need to be manually addressed.",
+};
+
+/**
+ * Resolve the user-facing message for an SBOM rejection, tailoring wording for
+ * user-provided (`--file`) vs CLI-generated SBOMs where it adds clarity, and
+ * folding in error details (e.g. the offending purl) when the API supplies them.
+ */
+export function getSbomErrorMessage(error: SbomError, hasUserProvidedSbom: boolean): string {
+  switch (error.code) {
+    case EMPTY_SBOM_ERROR_CODE:
+      return hasUserProvidedSbom
+        ? "This file doesn't contain any SBOM data. Provide a valid CycloneDX or SPDX SBOM file and try again."
+        : 'The generated SBOM contained no data. Try scanning a directory that has installed dependencies.';
+    case SBOM_MISSING_COMPONENTS_ERROR_CODE:
+      return hasUserProvidedSbom
+        ? SBOM_ERROR_MESSAGES[SBOM_MISSING_COMPONENTS_ERROR_CODE]
+        : 'The generated SBOM has no packages (components). Make sure the scanned project has installed dependencies and try again.';
+    case SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE:
+      return hasUserProvidedSbom
+        ? "None of the packages (components) in this SBOM include package URLs (purls), so we can't identify them for analysis. Regenerate the SBOM with a tool that includes purls, such as cdxgen or Syft — or run the scan without --file to let the CLI generate one from your project — and try again."
+        : SBOM_ERROR_MESSAGES[SBOM_NO_IDENTIFIABLE_COMPONENTS_ERROR_CODE];
+    case INVALID_PURL_ERROR_CODE: {
+      const purl = error.details?.purl;
+      const problem = `One of the packages (components) in this SBOM has a malformed package URL (purl)${purl ? `: ${purl}` : ''}.`;
+      const fix = hasUserProvidedSbom
+        ? 'Regenerate the SBOM with an up-to-date tool such as cdxgen or Syft — or run the scan without --file to let the CLI generate one from your project — and try again.'
+        : 'Regenerate the SBOM with an up-to-date tool such as cdxgen or Syft, and try again.';
+      return `${problem} ${fix} If the issue persists, that purl likely doesn't conform to the purl spec and will need to be manually addressed.`;
+    }
+    default:
+      return SBOM_ERROR_MESSAGES[error.code];
+  }
+}
 
 export default class ScanEol extends Command {
   static override description = 'Scan a given SBOM for EOL data';
@@ -252,6 +308,18 @@ export default class ScanEol extends Command {
         spinner.fail('Failed to Create Scan Report');
       }
       const scanLoadTime = this.getScanLoadTime(scanStartTime);
+
+      if (error instanceof SbomError) {
+        track('CLI EOL Scan Failed', (context) => ({
+          command: context.command,
+          command_flags: context.command_flags,
+          scan_failure_reason: error.code,
+          scan_load_time: scanLoadTime,
+          number_of_packages: numberOfPackages,
+        }));
+
+        this.error(getSbomErrorMessage(error, Boolean(flags.file)));
+      }
 
       if (error instanceof ApiError) {
         track('CLI EOL Scan Failed', (context) => ({
