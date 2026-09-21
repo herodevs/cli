@@ -1,4 +1,4 @@
-import type { EolReport, EolScanComponentMetadata } from '@herodevs/eol-shared';
+import type { DependencySummary, EolReport, EolScanComponentMetadata } from '@herodevs/eol-shared';
 import {
   countComponentsByStatus,
   formatDataPrivacyLink,
@@ -7,12 +7,21 @@ import {
   formatWebReportUrl,
 } from '../../src/service/display.svc.ts';
 
+const directProdDependencySummary = {
+  directDependency: true,
+  transitiveDependency: false,
+  prodDependency: true,
+  devDependency: false,
+  dependencies: [],
+} satisfies DependencySummary;
+
 describe('display.svc', () => {
   const mockReport: EolReport = {
     id: 'test-id',
     components: [
       {
         purl: 'pkg:npm/test@1.0.0',
+        dependencySummary: directProdDependencySummary,
         metadata: {
           isEol: true,
           eolAt: '2023-01-01T00:00:00.000Z',
@@ -30,6 +39,7 @@ describe('display.svc', () => {
       },
       {
         purl: 'pkg:npm/test2@2.0.0',
+        dependencySummary: directProdDependencySummary,
         metadata: {
           isEol: false,
           eolAt: null,
@@ -39,10 +49,12 @@ describe('display.svc', () => {
       },
       {
         purl: 'pkg:npm/test3@3.0.0',
+        dependencySummary: directProdDependencySummary,
         metadata: { unknownReason: 'not_identifiable' },
       },
       {
         purl: 'pkg:npm/%40scoped/package@1.0.0',
+        dependencySummary: directProdDependencySummary,
         metadata: {
           isEol: false,
           eolAt: null,
@@ -52,6 +64,7 @@ describe('display.svc', () => {
       },
       {
         purl: 'pkg:maven/org.springframework/spring-core@5.3.21',
+        dependencySummary: directProdDependencySummary,
         metadata: {
           isEol: true,
           eolAt: '2023-01-01T00:00:00.000Z',
@@ -87,10 +100,12 @@ describe('display.svc', () => {
         components: [
           {
             purl: 'pkg:npm/mystery@1.0.0',
+            dependencySummary: directProdDependencySummary,
             metadata: { unknownReason: 'not_identifiable' },
           },
           {
             purl: 'pkg:npm/queued@2.0.0',
+            dependencySummary: directProdDependencySummary,
             metadata: { unknownReason: 'queued' },
           },
         ],
