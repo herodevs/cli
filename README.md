@@ -99,6 +99,7 @@ USAGE
 * [`hd help [COMMAND]`](#hd-help-command)
 * [`hd report committers`](#hd-report-committers)
 * [`hd scan eol`](#hd-scan-eol)
+* [`hd scan sbom`](#hd-scan-sbom)
 * [`hd tracker init`](#hd-tracker-init)
 * [`hd tracker run`](#hd-tracker-run)
 * [`hd update [CHANNEL]`](#hd-update-channel)
@@ -251,6 +252,47 @@ EXAMPLES
 ```
 
 _See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.8/src/commands/scan/eol.ts)_
+
+### `hd scan sbom`
+
+Generate a CycloneDX SBOM for a directory
+
+```
+USAGE
+  $ hd scan sbom [-f <value> | -d <value>] [-o <value>]
+
+FLAGS
+  -d, --dir=<value>     [default: <current directory>] The directory to scan in order to generate a CycloneDX SBOM
+  -f, --file=<value>    The file path of an existing SBOM to load (supports CycloneDX and SPDX 2.3 formats)
+  -o, --output=<value>  Save the SBOM to a file instead of printing it to stdout. Defaults to herodevs.sbom.json when
+                        given a directory or omitted a filename
+
+DESCRIPTION
+  Generate a CycloneDX SBOM for a directory
+
+EXAMPLES
+  Default behavior (no command or flags specified)
+
+    $ hd
+
+  Equivalent to
+
+    $ hd scan sbom --dir .
+
+  Load and reformat an existing SBOM instead of generating one
+
+    $ hd scan sbom --file /path/to/sbom.json
+
+  Save the SBOM to a file instead of printing it to stdout
+
+    $ hd scan sbom --output ./herodevs.sbom.json
+
+  Generate an SBOM, then scan it in a separate step
+
+    $ hd scan sbom --output sbom.json && hd scan eol --file sbom.json
+```
+
+_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v2.0.8/src/commands/scan/sbom.ts)_
 
 ### `hd tracker init`
 
