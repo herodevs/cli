@@ -2,8 +2,16 @@ import fs from 'node:fs';
 import { mkdir, mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { CdxBom, EolReport, SPDX23 } from '@herodevs/eol-shared';
+import type { CdxBom, DependencySummary, EolReport, SPDX23 } from '@herodevs/eol-shared';
 import { readSbomFromFile, saveArtifactToFile, validateDirectory } from '../../src/service/file.svc.ts';
+
+const directProdDependencySummary = {
+  directDependency: true,
+  transitiveDependency: false,
+  prodDependency: true,
+  devDependency: false,
+  dependencies: [],
+} satisfies DependencySummary;
 
 describe('file.svc', () => {
   let tempDir: string;
@@ -233,6 +241,7 @@ describe('file.svc', () => {
         components: [
           {
             purl: 'pkg:npm/bootstrap@3.1.1',
+            dependencySummary: directProdDependencySummary,
             metadata: { unknownReason: 'not_identifiable' },
             remediations: [
               {
