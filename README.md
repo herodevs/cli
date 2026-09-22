@@ -55,11 +55,11 @@ npm install -g @herodevs/cli
 HeroDevs CLI is available as a binary installation, without requiring `npm`. To do that, you may either download and run the script manually, or use the following cURL or Wget command:
 
 ```sh
-curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.9/scripts/install.sh | bash
+curl -o- https://raw.githubusercontent.com/herodevs/cli/v2.0.10/scripts/install.sh | bash
 ```
 
 ```sh
-wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.9/scripts/install.sh | bash
+wget -qO- https://raw.githubusercontent.com/herodevs/cli/v2.0.10/scripts/install.sh | bash
 ```
 
 ## Scanning Behavior
@@ -84,7 +84,7 @@ $ npm install -g @herodevs/cli
 $ hd COMMAND
 running command...
 $ hd (--version|-v)
-@herodevs/cli/2.0.9 darwin-arm64 node-v24.13.1
+@herodevs/cli/2.0.10 darwin-arm64 node-v24.13.1
 $ hd --help [COMMAND]
 USAGE
   $ hd COMMAND
@@ -116,7 +116,7 @@ DESCRIPTION
   OAuth CLI login
 ```
 
-_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.9/src/commands/auth/login.ts)_
+_See code: [src/commands/auth/login.ts](https://github.com/herodevs/cli/blob/v2.0.10/src/commands/auth/login.ts)_
 
 ### `hd auth logout`
 
@@ -130,7 +130,7 @@ DESCRIPTION
   Logs out of HeroDevs OAuth and clears stored tokens
 ```
 
-_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.9/src/commands/auth/logout.ts)_
+_See code: [src/commands/auth/logout.ts](https://github.com/herodevs/cli/blob/v2.0.10/src/commands/auth/logout.ts)_
 
 ### `hd auth provision-ci-token`
 
@@ -144,7 +144,7 @@ DESCRIPTION
   Provision a CI/CD long-lived refresh token for headless auth
 ```
 
-_See code: [src/commands/auth/provision-ci-token.ts](https://github.com/herodevs/cli/blob/v2.0.9/src/commands/auth/provision-ci-token.ts)_
+_See code: [src/commands/auth/provision-ci-token.ts](https://github.com/herodevs/cli/blob/v2.0.10/src/commands/auth/provision-ci-token.ts)_
 
 ### `hd help [COMMAND]`
 
@@ -200,7 +200,7 @@ EXAMPLES
   $ hd report committers --csv
 ```
 
-_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.9/src/commands/report/committers.ts)_
+_See code: [src/commands/report/committers.ts](https://github.com/herodevs/cli/blob/v2.0.10/src/commands/report/committers.ts)_
 
 ### `hd scan eol`
 
@@ -251,7 +251,7 @@ EXAMPLES
     $ hd scan eol --json
 ```
 
-_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.9/src/commands/scan/eol.ts)_
+_See code: [src/commands/scan/eol.ts](https://github.com/herodevs/cli/blob/v2.0.10/src/commands/scan/eol.ts)_
 
 ### `hd scan sbom`
 
@@ -292,7 +292,7 @@ EXAMPLES
     $ hd scan sbom --output sbom.json && hd scan eol --file sbom.json
 ```
 
-_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v2.0.8/src/commands/scan/sbom.ts)_
+_See code: [src/commands/scan/sbom.ts](https://github.com/herodevs/cli/blob/v2.0.10/src/commands/scan/sbom.ts)_
 
 ### `hd tracker init`
 
@@ -326,7 +326,7 @@ EXAMPLES
   $ hd tracker init -o
 ```
 
-_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.9/src/commands/tracker/init.ts)_
+_See code: [src/commands/tracker/init.ts](https://github.com/herodevs/cli/blob/v2.0.10/src/commands/tracker/init.ts)_
 
 ### `hd tracker run`
 
@@ -351,7 +351,7 @@ EXAMPLES
   $ hd tracker run -d tracker -f settings.json
 ```
 
-_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.9/src/commands/tracker/run.ts)_
+_See code: [src/commands/tracker/run.ts](https://github.com/herodevs/cli/blob/v2.0.10/src/commands/tracker/run.ts)_
 
 ### `hd update [CHANNEL]`
 
